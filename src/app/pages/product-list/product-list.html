@@ -14,7 +14,9 @@
         </div>
         <!-- Lista de productos -->
         <div class="mt-8 grid grid-cols-4 gap-4">
-          
+          @for (product of products; track product.idProducto) {
+            <app-product-card></app-product-card>
+          }
         </div>
       </div>
     </div>
