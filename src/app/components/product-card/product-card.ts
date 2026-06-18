@@ -1,8 +1,9 @@
-import { Component, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
+import { LucideSquarePen, LucideTrash2 } from '@lucide/angular';
 
 @Component({
   selector: 'app-product-card',
-  imports: [],
+  imports: [LucideSquarePen, LucideTrash2],
   templateUrl: './product-card.html',
   styleUrl: './product-card.css',
   host: {
@@ -13,4 +14,9 @@ export class ProductCard {
 
   product = input.required<any>()
 
+  delete = output<number>();
+
+  onDelete() {
+    this.delete.emit(this.product().idProducto);
+  }
 }

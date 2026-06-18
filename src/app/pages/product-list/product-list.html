@@ -18,6 +18,7 @@
           @for (product of products; track $index) {
             <app-product-card
               [product]="product"
+              (delete)="deleteProduct($event)"
             ></app-product-card>
           }
         </div>

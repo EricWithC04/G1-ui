@@ -48,4 +48,21 @@ export class ProductList implements OnInit {
         }
       })
   }
+
+  deleteProduct(id: number) {
+    this.productService.deleteProduct(id)
+      .subscribe({
+
+      next: () => {
+
+        window.location.reload();
+
+      },
+
+      error: err => {
+        console.error(err);
+      }
+
+    })
+  }
 }
