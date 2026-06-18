@@ -1,17 +1,22 @@
-<app-header></app-header>
-
-<div class="container-fluid">
-  <div class="row">
-
-    <div class="col-3">
-      <app-sidebar></app-sidebar>
+<div class="h-screen flex flex-col">
+  <app-header></app-header>
+  
+  <div class="container-fluid flex-1 bg-gray-900">
+    <div class="row h-full flex">
+  
+      <div class="col-3 flex-1 px-4 py-4">
+        <app-sidebar></app-sidebar>
+      </div>
+  
+      <div class="col-9 flex flex-col flex-4 text-neutral-400 text-lg px-4 py-6">
+        <div class="w-full">
+          <h2 class="font-medium">Productos encontrados</h2>
+        </div>
+        <!-- Lista de productos -->
+        <div class="mt-8 grid grid-cols-4 gap-4">
+          
+        </div>
+      </div>
     </div>
-
-    <div class="col-9">
-      <h2>Productos</h2>
-
-      <!-- Lista vacía por ahora -->
-    </div>
-
   </div>
 </div>
