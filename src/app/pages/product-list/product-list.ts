@@ -12,19 +12,40 @@ import { ProductService } from '../../services/product';
 })
 export class ProductList implements OnInit {
   products: any[] = [];
+  newProduct: any = {
+    "nombre": "Notebook HP 15",
+    "descripcion": "Intel i5, 8GB RAM, 256GB SSD",
+    "precio": 620000.00,
+    "stock": 10,
+    "proveedor": "HP",
+    "categoria": { "idCategoria": 1 }
+  }
 
   constructor(
     private productService: ProductService,
     private cdf: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    
+
     this.productService.getProducts()
       .subscribe(products => {
         this.products = products
         this.cdf.detectChanges()
       })
 
+  }
+
+  saveProduct() {
+    this.productService.createProduct(this.newProduct)
+      .subscribe({
+        next: (response) => {
+          console.log('Producto creado', response);
+          window.location.reload();
+        },
+        error: (err) => {
+          console.error('Error al crear producto', err);
+        }
+      })
   }
 }
