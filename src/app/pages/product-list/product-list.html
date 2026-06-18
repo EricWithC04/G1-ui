@@ -10,13 +10,15 @@
   
       <div class="col-9 flex flex-col flex-4 text-neutral-400 text-lg px-4 py-6">
         <div class="w-full flex justify-between">
-          <h2 class="font-medium">Productos encontrados</h2>
+          <h2 class="font-medium">{{ products.length }} Productos encontrados</h2>
           <button class="bg-blue-600 text-gray-50 py-2 px-4 rounded-lg" (click)="saveProduct()">Crear Producto</button>
         </div>
         <!-- Lista de productos -->
         <div class="mt-8 grid grid-cols-4 gap-4">
           @for (product of products; track $index) {
-            <app-product-card></app-product-card>
+            <app-product-card
+              [product]="product"
+            ></app-product-card>
           }
         </div>
       </div>
