@@ -1,17 +1,28 @@
-<app-header></app-header>
-
-<div class="container-fluid">
-  <div class="row">
-
-    <div class="col-3">
-      <app-sidebar></app-sidebar>
+<div class="h-screen flex flex-col">
+  <app-header></app-header>
+  
+  <div class="container-fluid flex-1 bg-gray-900">
+    <div class="row h-full flex">
+  
+      <div class="col-3 flex-1 px-4 py-4">
+        <app-sidebar></app-sidebar>
+      </div>
+  
+      <div class="col-9 flex flex-col flex-4 text-neutral-400 text-lg px-4 py-6">
+        <div class="w-full flex justify-between">
+          <h2 class="font-medium">{{ products.length }} Productos encontrados</h2>
+          <button class="bg-blue-600 text-gray-50 py-2 px-4 rounded-lg" (click)="saveProduct()">Crear Producto</button>
+        </div>
+        <!-- Lista de productos -->
+        <div class="mt-8 grid grid-cols-4 gap-4">
+          @for (product of products; track $index) {
+            <app-product-card
+              [product]="product"
+              (delete)="deleteProduct($event)"
+            ></app-product-card>
+          }
+        </div>
+      </div>
     </div>
-
-    <div class="col-9">
-      <h2>Productos</h2>
-
-      <!-- Lista vacía por ahora -->
-    </div>
-
   </div>
 </div>
