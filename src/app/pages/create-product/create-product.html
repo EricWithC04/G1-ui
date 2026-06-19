@@ -10,7 +10,7 @@
   </h1>
 
   <!-- (ngSubmit) -> al apretar "Guardar" se ejecuta guardarProducto(). -->
-  <form class="flex flex-col gap-4 bg-gray-800 border border-white/10 p-6 rounded-xl" (ngSubmit)="guardarProducto()">
+  <form #f="ngForm" class="flex flex-col gap-4 bg-gray-800 border border-white/10 p-6 rounded-xl" (ngSubmit)="guardarProducto(f)">
 
     <!-- Aclaracion general: el ID del producto lo genera solo el sistema, no se carga. -->
     <p class="text-xs text-neutral-400">
@@ -22,17 +22,29 @@
     <label class="text-sm text-neutral-300">
       Proveedor <span class="text-red-400">*</span>
       <input class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white" type="text"
-        [(ngModel)]="product.proveedor" name="proveedor" required placeholder="Ej: Logitech">
+        [(ngModel)]="product.proveedor" #proveedorCtrl="ngModel" name="proveedor" required placeholder="Ej: Logitech">
       <!-- Hint: explica que poner y da un ejemplo. -->
       <span class="block text-xs text-neutral-400 mt-1">Marca o empresa que nos vende el producto. Obligatorio. Ej: Lenovo.</span>
     </label>
 
+    @if (proveedorCtrl.invalid && proveedorCtrl.touched) {
+      <p class="text-xs text-red-400 mt-1">
+        @if (proveedorCtrl.hasError('required')) { El campo es obligatorio. }
+      </p>
+    }
+
     <label class="text-sm text-neutral-300">
       Nombre <span class="text-red-400">*</span>
       <input class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white" type="text"
-        [(ngModel)]="product.nombre" name="nombre" required placeholder="Ej: Mouse Logitech G203">
+        [(ngModel)]="product.nombre" #nombreCtrl="ngModel" name="nombre" required placeholder="Ej: Mouse Logitech G203">
       <span class="block text-xs text-neutral-400 mt-1">Como se llama el producto en la tienda. Obligatorio.</span>
     </label>
+
+    @if (nombreCtrl.invalid && nombreCtrl.touched) {
+      <p class="text-xs text-red-400 mt-1">
+        @if (nombreCtrl.hasError('required')) { El campo es obligatorio. }
+      </p>
+    }
 
     <label class="text-sm text-neutral-300">
       Descripcion
@@ -45,16 +57,32 @@
       <label class="text-sm text-neutral-300">
         Precio <span class="text-red-400">*</span>
         <input class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white" type="number"
-          [(ngModel)]="product.precio" name="precio" min="0" step="0.01" placeholder="Ej: 45000.00">
+          [(ngModel)]="product.precio" #precioCtrl="ngModel" name="precio" required step="0.01" placeholder="Ej: 45000.00"
+          (keydown)="bloquearCaracteresInvalidos($event)"
+        >
         <span class="block text-xs text-neutral-400 mt-1">Numero con hasta 2 decimales. Ej: 45000.00.</span>
       </label>
       <label class="text-sm text-neutral-300">
         Stock <span class="text-red-400">*</span>
         <input class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white" type="number"
-          [(ngModel)]="product.stock" name="stock" min="0" placeholder="Ej: 12">
+          [(ngModel)]="product.stock" #stockCtrl="ngModel" name="stock" required placeholder="Ej: 12"
+          (keydown)="bloquearCaracteresInvalidos($event)"
+        >
         <span class="block text-xs text-neutral-400 mt-1">Cantidad entera de unidades disponibles. Ej: 12.</span>
       </label>
     </div>
+
+    @if (precioCtrl.invalid && precioCtrl.touched) {
+      <p class="text-xs text-red-400 mt-1">
+        @if (precioCtrl.hasError('required')) { El campo es obligatorio. }
+      </p>
+    }
+
+    @if (stockCtrl.invalid && stockCtrl.touched) {
+      <p class="text-xs text-red-400 mt-1">
+        @if (stockCtrl.hasError('required')) { El campo es obligatorio. }
+      </p>
+    }
 
     <!-- Desplegable de categorias. Recorremos la lista que vino del backend. -->
     <label class="text-sm text-neutral-300">

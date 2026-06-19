@@ -1,5 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProductService } from '../../services/product';
 import { CategoriaService } from '../../services/categoria.service';
@@ -101,6 +101,13 @@ export class CreateProduct implements OnInit {
     lector.readAsDataURL(archivo);
   }
 
+  // Para que no se puedan colocar caracteres raros en los inputs de numeros
+  bloquearCaracteresInvalidos(event: KeyboardEvent): void {
+  if (['e', 'E', '+', '-'].includes(event.key)) {
+    event.preventDefault();
+  }
+}
+
   // Saca la foto cargada (vuelve a dejar el producto sin imagen).
   quitarImagen(): void {
     this.product.imagen = undefined;
@@ -109,7 +116,11 @@ export class CreateProduct implements OnInit {
 
   // Se llama al enviar el formulario.
   // Si estamos editando, manda PUT; si no, manda POST. Despues vuelve a la lista.
-  guardarProducto(): void {
+  guardarProducto(f: NgForm): void {
+    if (f.invalid) {
+      Object.values(f.controls).forEach(c => c.markAsTouched());
+      return;
+    }
     const peticion = this.esEdicion
       ? this.productService.actualizar(this.editandoId!, this.product)
       : this.productService.crear(this.product);
