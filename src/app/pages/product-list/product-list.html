@@ -1,36 +1,41 @@
-<div class="h-screen flex flex-col">
-  <app-header></app-header>
-  
-  <div class="container-fluid flex-1 bg-gray-900">
-    <div class="row h-full flex">
-  
-      <div class="col-3 flex-1 px-4 py-4">
-        <app-sidebar></app-sidebar>
-      </div>
-  
-      <div class="col-9 flex flex-col flex-4 text-neutral-400 text-lg px-4 py-6">
-        <div class="w-full flex justify-between">
-          <h2 class="font-medium">{{ products.length }} Productos encontrados</h2>
-          <div class="flex items-center gap-2">
-            <div 
-              class="relative bg-blue-600 text-gray-50 h-10 w-10 rounded-lg"
-              routerLink="/new-product"
-            >
-              <svg lucideSquarePlus size="20" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></svg>
-            </div>
-            <button class="bg-blue-600 text-gray-50 py-2 px-4 rounded-lg" (click)="saveProduct()">Crear Producto</button>
-          </div>
-        </div>
-        <!-- Lista de productos -->
-        <div class="mt-8 grid grid-cols-4 gap-4">
-          @for (product of products; track $index) {
-            <app-product-card
-              [product]="product"
-              (delete)="deleteProduct($event)"
-            ></app-product-card>
-          }
-        </div>
-      </div>
-    </div>
+<!-- Encabezado de la pagina: titulo + buscador + boton para crear. -->
+<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+  <h2 class="text-xl font-semibold text-white">
+    {{ products().length }} productos
+  </h2>
+
+  <div class="flex items-center gap-2">
+    <!-- Buscador: al escribir y apretar Enter (o el boton) filtra por nombre.
+         [(ngModel)] conecta el input con la variable "busqueda" del componente. -->
+    <input
+      type="text"
+      [(ngModel)]="busqueda"
+      (keyup.enter)="cargar()"
+      placeholder="Buscar por nombre..."
+      class="bg-gray-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-neutral-500"
+    />
+    <button (click)="cargar()" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm">
+      Buscar
+    </button>
+    <button (click)="nuevo()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm">
+      + Nuevo producto
+    </button>
   </div>
 </div>
+
+<!-- Grilla de tarjetas de producto.
+     Recorremos la lista y por cada producto dibujamos una tarjeta. -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+  @for (product of products(); track product.idProducto) {
+    <app-product-card
+      [product]="product"
+      (editar)="editar($event)"
+      (borrar)="borrar($event)"
+    ></app-product-card>
+  }
+</div>
+
+<!-- Mensaje por si no hay productos para mostrar. -->
+@if (products().length === 0) {
+  <p class="text-neutral-400 mt-6">No hay productos para mostrar.</p>
+}

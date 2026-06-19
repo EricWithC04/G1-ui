@@ -1,0 +1,96 @@
+<h1 class="text-2xl font-bold text-white mb-6">Planes de cuotas</h1>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+  <!-- Formulario para crear un plan de cuotas. -->
+  <form class="bg-gray-800 border border-white/10 p-5 rounded-xl flex flex-col gap-3 h-fit" (ngSubmit)="guardar()">
+    <h2 class="font-semibold text-white">Nuevo plan</h2>
+
+    <p class="text-xs text-neutral-400">
+      Los campos con <span class="text-red-400">*</span> son obligatorios. El ID del plan lo genera el sistema.
+    </p>
+
+    <label class="text-sm text-neutral-300">
+      Cliente <span class="text-red-400">*</span>
+      <select class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
+        [(ngModel)]="form.cliente.idCliente" name="cliente" required>
+        @for (c of clientes(); track c.idCliente) {
+          <option [ngValue]="c.idCliente">#{{ c.idCliente }} - {{ c.usuario?.nombre }}</option>
+        }
+      </select>
+      <span class="block text-xs text-neutral-400 mt-1">Perfil de cliente que pide las cuotas. Elegilo de la lista. Obligatorio.</span>
+    </label>
+
+    <label class="text-sm text-neutral-300">
+      Pedido <span class="text-red-400">*</span>
+      <select class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
+        [(ngModel)]="form.pedido.idPedido" name="pedido" required>
+        @for (p of pedidos(); track p.idPedido) {
+          <option [ngValue]="p.idPedido">#{{ p.idPedido }} - {{ p.usuario?.nombre }}</option>
+        }
+      </select>
+      <span class="block text-xs text-neutral-400 mt-1">Pedido que se paga en cuotas. Elegilo de la lista. Obligatorio.</span>
+    </label>
+
+    <div class="grid grid-cols-2 gap-3">
+      <label class="text-sm text-neutral-300">
+        Cuotas <span class="text-red-400">*</span>
+        <input type="number" class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
+          [(ngModel)]="form.cantidadCuotas" name="cuotas" min="1" placeholder="Ej: 3">
+        <span class="block text-xs text-neutral-400 mt-1">Cantidad entera de cuotas. Ej: 3.</span>
+      </label>
+      <label class="text-sm text-neutral-300">
+        Interes % <span class="text-red-400">*</span>
+        <input type="number" class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
+          [(ngModel)]="form.interes" name="interes" min="0" step="0.01" placeholder="Ej: 15.00">
+        <span class="block text-xs text-neutral-400 mt-1">Porcentaje de interes. Numero con decimales. Ej: 15.00.</span>
+      </label>
+    </div>
+
+    <label class="text-sm text-neutral-300">
+      Estado <span class="text-red-400">*</span>
+      <select class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
+        [(ngModel)]="form.estado" name="estado">
+        <option value="ACTIVO">ACTIVO</option>
+        <option value="FINALIZADO">FINALIZADO</option>
+        <option value="CANCELADO">CANCELADO</option>
+      </select>
+      <span class="block text-xs text-neutral-400 mt-1">Situacion del plan de cuotas. Elegi una de la lista.</span>
+    </label>
+
+    <button type="submit" class="bg-blue-600 hover:bg-blue-500 p-2 rounded text-white">Crear</button>
+  </form>
+
+  <!-- Tabla con la lista de planes. -->
+  <div class="lg:col-span-2 bg-gray-800 border border-white/10 rounded-xl overflow-hidden">
+    <table class="w-full text-sm text-left">
+      <thead class="bg-gray-900 text-neutral-400">
+        <tr>
+          <th class="px-4 py-3">ID</th>
+          <th class="px-4 py-3">Pedido</th>
+          <th class="px-4 py-3">Cuotas</th>
+          <th class="px-4 py-3">Interes</th>
+          <th class="px-4 py-3">Estado</th>
+          <th class="px-4 py-3 text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of items(); track item.idPlan) {
+          <tr class="border-t border-white/10 text-neutral-200">
+            <td class="px-4 py-3">{{ item.idPlan }}</td>
+            <td class="px-4 py-3">#{{ item.pedido?.idPedido }}</td>
+            <td class="px-4 py-3">{{ item.cantidadCuotas }}</td>
+            <td class="px-4 py-3">{{ item.interes | number:'1.2-2' }} %</td>
+            <td class="px-4 py-3">{{ item.estado }}</td>
+            <td class="px-4 py-3 text-right">
+              <button (click)="borrar(item.idPlan)" class="text-red-400 hover:text-red-300">Borrar</button>
+            </td>
+          </tr>
+        }
+        @if (items().length === 0) {
+          <tr><td colspan="6" class="px-4 py-4 text-neutral-500">No hay planes.</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

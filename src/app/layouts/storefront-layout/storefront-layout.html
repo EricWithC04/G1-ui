@@ -1,0 +1,22 @@
+<!-- Marco de la tienda. Ocupa al menos toda la pantalla y ordena en columna. -->
+<div class="min-h-screen flex flex-col bg-gray-900 text-gray-100">
+
+  <!-- Encabezado de la tienda (logo, catalogo, carrito, login). -->
+  <app-store-header></app-store-header>
+
+  <!-- Contenido principal: aca se dibuja la pagina segun la URL.
+       flex-1 hace que ocupe todo el espacio disponible y empuje el footer abajo. -->
+  <main class="flex-1 w-full max-w-6xl mx-auto px-4 py-6">
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- Pie de pagina con una version chica del logo. -->
+  <footer class="border-t border-white/10 bg-slate-950">
+    <div class="max-w-6xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <img src="logo.png" alt="NovaTech" class="h-10 w-auto opacity-80" />
+      <p class="text-xs text-neutral-500">
+        &copy; {{ anio }} NovaTech Store. Todos los derechos reservados.
+      </p>
+    </div>
+  </footer>
+</div>
