@@ -1,47 +1,23 @@
-<div class="bg-gray-700 p-3 vh-100 border-white/20 border-1 text-gray-50 rounded-xl">
-  <ul class="nav flex-column space-y-4">
-    <li class="nav-item">
-      <a class="nav-link">Opción 1</a>
-    </li>
+<!-- Menu lateral con los links a cada modulo de la tienda. -->
+<aside class="w-60 shrink-0 bg-slate-950 border-r border-white/10 p-4 overflow-auto">
+  <ul class="flex flex-col gap-1">
 
-    <li class="nav-item">
-      <a class="nav-link">Opción 2</a>
-    </li>
-
-    <li class="nav-item">
-      <a class="nav-link">Opción 3</a>
-    </li>
-
-    <li class="nav-item">
-      <a class="nav-link">Opción 4</a>
-    </li>
-
-    <li class="nav-item">
-      <a class="nav-link">Opción 5</a>
-    </li>
-
-    <li class="nav-item">
-      <a class="nav-link">Opción 6</a>
-    </li>
-
-    <li class="nav-item">
-      <a class="nav-link">Opción 7</a>
-    </li>
-
-    <li class="nav-item">
-      <a class="nav-link">Opción 8</a>
-    </li>
-
-    <li class="nav-item">
-      <a class="nav-link">Opción 9</a>
-    </li>
-
-    <li class="nav-item">
-      <a class="nav-link">Opción 10</a>
-    </li>
-
-    <li class="nav-item">
-      <a class="nav-link">Opción 11</a>
-    </li>
+    <!-- Recorremos la lista "links" del componente y dibujamos un <li> por cada uno. -->
+    @for (link of links; track link.path) {
+      <li>
+        <!-- routerLink: a donde navega al hacer clic.
+             [routerLinkActiveOptions] con exact en true para que "Inicio" ('')
+             solo se marque activo en la pagina de inicio y no en todas.
+             routerLinkActive: aplica clases cuando esta es la pagina actual. -->
+        <a
+          [routerLink]="'/' + link.path"
+          [routerLinkActiveOptions]="{ exact: link.path === 'admin' }"
+          routerLinkActive="bg-blue-600 text-white"
+          class="block px-3 py-2 rounded-lg text-sm text-neutral-300 hover:bg-white/10 transition-colors"
+        >
+          {{ link.label }}
+        </a>
+      </li>
+    }
   </ul>
-</div>
+</aside>

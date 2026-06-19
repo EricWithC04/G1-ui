@@ -1,14 +1,14 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Header } from '../../components/header/header';
-import { Sidebar } from '../../components/sidebar/sidebar';
+// import { Sidebar } from '../../components/sidebar/sidebar';
 import { ProductCard } from '../../components/product-card/product-card';
 import { ProductService } from '../../services/product';
 import { LucideSquarePlus } from '@lucide/angular';
 
 @Component({
   selector: 'app-product-list',
-  imports: [Header, Sidebar, ProductCard, LucideSquarePlus, RouterLink],
+  imports: [Header, /* Sidebar */ ProductCard, LucideSquarePlus, RouterLink],
   templateUrl: './product-list.html',
   styleUrl: './product-list.css',
 })
