@@ -6,7 +6,7 @@ import { AdminLayout } from './layouts/admin-layout/admin-layout';
 
 // Guards (porteros) que controlan quien puede entrar a cada ruta.
 import { authGuard } from './guards/auth.guard';
-// import { adminGuard } from './guards/admin.guard';
+import { adminGuard } from './guards/admin.guard';
 
 // --- Paginas de autenticacion (sin layout, pantalla completa) ---
 import { Login } from './pages/login/login';
@@ -27,6 +27,8 @@ import { Catalogo } from './pages/catalogo/catalogo';
 import { ProductoDetalle } from './pages/producto-detalle/producto-detalle';
 import { CarritoCompra } from './pages/carrito-compra/carrito-compra';
 import { Checkout } from './pages/checkout/checkout';
+import { MisPedidos } from './pages/mis-pedidos/mis-pedidos';
+import { PerfilCliente } from './pages/perfil-cliente/perfil-cliente';
 
 export const routes: Routes = [
 
@@ -44,6 +46,8 @@ export const routes: Routes = [
             // Las siguientes necesitan estar logueado (authGuard):
             { path: 'carrito', component: CarritoCompra, canActivate: [authGuard] },
             { path: 'checkout', component: Checkout, canActivate: [authGuard] },
+            { path: 'mis-pedidos', component: MisPedidos, canActivate: [authGuard] },
+            { path: 'perfil', component: PerfilCliente, canActivate: [authGuard] },
         ],
     },
     
@@ -51,7 +55,7 @@ export const routes: Routes = [
     {
         path: 'admin',
         component: AdminLayout,
-        // canActivate: [adminGuard],
+        canActivate: [adminGuard],
         children: [
             { path: '', component: Dashboard },                       // inicio del panel
             { path: 'productos', component: ProductList },            // lista de productos
