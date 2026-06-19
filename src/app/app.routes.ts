@@ -14,6 +14,7 @@ import { AdminLayout } from './layouts/admin-layout/admin-layout';
 
 // --- Paginas de autenticacion (sin layout, pantalla completa) ---
 import { Login } from './pages/login/login';
+import { Register } from './pages/register/register';
 
 // --- Paginas del PANEL ADMIN (las que ya existian) ---
 import { Dashboard } from './pages/dashboard/dashboard';
@@ -31,6 +32,7 @@ export const routes: Routes = [
 
     // --- Login y registro: pantallas sueltas, sin header ni footer ---
     { path: 'login', component: Login },
+    { path: 'register', component: Register },
     
     // --- PANEL ADMIN: todo cuelga de /admin y solo entran los ADMIN (adminGuard) ---
     {
