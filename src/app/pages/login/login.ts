@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
@@ -11,28 +11,35 @@ import { AuthService } from '../../services/auth.service';
 //   CLIENTE -> /       (tienda)
 @Component({
   selector: 'app-login',
-  imports: [FormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './login.html',
 })
 export class Login {
 
-  // Datos del formulario (conectados con [(ngModel)] en el HTML).
-  email = '';
-  contrasena = '';
+  // Formulario reactivo con validaciones.
+  form: FormGroup;
 
   // Mensaje de error para mostrar si el login falla (signal = reactivo).
   error = signal<string | null>(null);
   // Mientras esperamos la respuesta del backend, deshabilitamos el boton.
   cargando = signal(false);
 
-  constructor(private auth: AuthService, private router: Router) {}
+  constructor(private auth: AuthService, private router: Router, private fb: FormBuilder) {
+    this.form = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      contrasena: ['', [Validators.required, Validators.minLength(1)]],
+    });
+  }
 
   // Se ejecuta al enviar el formulario.
   iniciarSesion(): void {
+    if (this.form.invalid) return;
+    
     this.error.set(null);
     this.cargando.set(true);
 
-    this.auth.login({ email: this.email, contrasena: this.contrasena }).subscribe({
+    const { email, contrasena } = this.form.value;
+    this.auth.login({ email, contrasena }).subscribe({
       next: usuario => {
         this.cargando.set(false);
         // Segun el rol, mandamos a un lado u otro.
