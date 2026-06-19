@@ -1,0 +1,21 @@
+<!-- Marco general del panel admin.
+     Ocupa toda la altura de la pantalla (h-screen) y ordena en columna:
+     arriba el encabezado y abajo el cuerpo. -->
+<div class="h-screen flex flex-col bg-gray-900 text-gray-100">
+
+  <!-- Encabezado fijo con el logo de NovaTech. -->
+  <app-header></app-header>
+
+  <!-- Cuerpo: a la izquierda el menu lateral, a la derecha el contenido. -->
+  <div class="flex flex-1 overflow-hidden">
+
+    <!-- Menu lateral con los links a cada modulo. -->
+    <app-sidebar></app-sidebar>
+
+    <!-- Aca Angular dibuja la pagina segun la ruta (URL) actual.
+         overflow-auto: si el contenido es largo, aparece scroll. -->
+    <main class="flex-1 overflow-auto p-6">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
