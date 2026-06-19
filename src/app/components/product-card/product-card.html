@@ -1,27 +1,43 @@
-<div class="flex-7"></div>
-<div class="flex flex-col flex-5 border-t border-white/20 bg-gray-700 px-4 py-2">
-    <div class="text-white">
-        <span class="text-sm text-neutral-400">{{ product().proveedor }}</span>
-        <p class="text-md font-semibold">{{ product().nombre }}</p>
-        <span class="text-sm text-neutral-400">4.8</span>
+<!-- Parte de arriba: la foto del producto. Si tiene imagen cargada la mostramos;
+     si no, dejamos un degradado de color como respaldo. -->
+@if (product().imagen) {
+  <img [src]="product().imagen" [alt]="product().nombre" class="flex-1 w-full object-cover min-h-40">
+} @else {
+  <div class="flex-1 bg-gradient-to-br from-slate-700 to-slate-900 min-h-40"></div>
+}
+
+<!-- Parte de abajo: los datos del producto y los botones. -->
+<div class="flex flex-col border-t border-white/20 px-4 py-3 gap-2">
+  <div class="text-white">
+    <!-- Proveedor en chico y gris. -->
+    <span class="text-xs text-neutral-400">{{ product().proveedor }}</span>
+    <!-- Nombre del producto. -->
+    <p class="text-sm font-semibold">{{ product().nombre }}</p>
+    <!-- Categoria (si viene). -->
+    <span class="text-xs text-neutral-400">{{ product().categoria?.nombre }}</span>
+  </div>
+
+  <div class="flex items-center justify-between">
+    <!-- Precio. El "|" es un "pipe": number:'1.2-2' muestra 2 decimales. -->
+    <span class="text-white text-lg font-semibold">$ {{ product().precio | number:'1.2-2' }}</span>
+
+    <div class="flex gap-2">
+      <!-- Boton borrar (rojo): al hacer clic llama onBorrar(). -->
+      <button
+        (click)="onBorrar()"
+        class="relative bg-red-600 hover:bg-red-500 text-gray-50 h-9 w-9 rounded-lg"
+        title="Borrar"
+      >
+        <svg lucideTrash2 size="18" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></svg>
+      </button>
+      <!-- Boton editar (azul): al hacer clic llama onEditar(). -->
+      <button
+        (click)="onEditar()"
+        class="relative bg-blue-600 hover:bg-blue-500 text-gray-50 h-9 w-9 rounded-lg"
+        title="Editar"
+      >
+        <svg lucideSquarePen size="18" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></svg>
+      </button>
     </div>
-    <div class="flex justify-between">
-        <div class="flex flex-col">
-            <div class="flex gap-2 items-center">
-                <span class="text-white text-xl font-semibold">${{ product().precio }}</span>
-                <!-- <span class="text-sm font-md line-through">$3800</span> -->
-            </div>
-            <span class="text-sm"></span>
-        </div>
-        <div class="flex gap-2">
-            <div class="relative bg-red-600 text-gray-50 h-10 w-10 rounded-lg cursor-pointer"
-                (click)="onDelete()"
-            >
-                <svg lucideTrash2 size="20" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></svg>
-            </div>
-            <div class="relative bg-blue-600 text-gray-50 h-10 w-10 rounded-lg cursor-pointer">
-                <svg lucideSquarePen size="20" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></svg>
-            </div>
-        </div>
-    </div>
+  </div>
 </div>
