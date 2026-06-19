@@ -1,38 +1,107 @@
-<div class="h-screen flex flex-col">
-    <app-header></app-header>
-    <div class="relative flex flex-1 justify-center items-center bg-gray-900">
-        <svg lucideArrowLeft 
-            class="absolute top-8 left-8 cursor-pointer text-gray-50"
-            routerLink="/"
-        ></svg>
-        <div class="w-120 flex flex-col mt-10 bg-gray-700 p-6 rounded-lg">
+<!-- Tarjeta centrada con el formulario. -->
+<div class="max-w-xl mx-auto">
 
-            <h1 class="text-2xl text-gray-50 font-bold mb-6">
-                Crear producto
-            </h1>
+  <!-- Link para volver a la lista de productos. -->
+  <a routerLink="/admin/productos" class="text-sm text-neutral-400 hover:text-white">&larr; Volver a productos</a>
 
-            <form class="flex flex-col gap-4 text-gray-50" /* (ngSubmit)="guardarProducto()" */>
+  <!-- El titulo cambia segun estemos creando o editando. -->
+  <h1 class="text-2xl font-bold text-white my-4">
+    {{ esEdicion ? 'Editar producto' : 'Crear producto' }}
+  </h1>
 
-                <input class="border p-2 rounded" type="text" placeholder="Proveedor" /* [(ngModel)]="product.nombre" */
-                    name="proveedor">
+  <!-- (ngSubmit) -> al apretar "Guardar" se ejecuta guardarProducto(). -->
+  <form class="flex flex-col gap-4 bg-gray-800 border border-white/10 p-6 rounded-xl" (ngSubmit)="guardarProducto()">
 
-                <input class="border p-2 rounded" type="text" placeholder="Nombre" /* [(ngModel)]="product.nombre" */
-                    name="nombre">
+    <!-- Aclaracion general: el ID del producto lo genera solo el sistema, no se carga. -->
+    <p class="text-xs text-neutral-400">
+      Los campos con <span class="text-red-400">*</span> son obligatorios.
+      El ID del producto lo genera automaticamente el sistema (no se carga a mano).
+    </p>
 
-                <textarea class="border p-2 rounded" placeholder="Descripción" /* [(ngModel)]="product.descripcion" */
-                    name="descripcion"></textarea>
+    <!-- Cada input se conecta con una propiedad del producto via [(ngModel)]. -->
+    <label class="text-sm text-neutral-300">
+      Proveedor <span class="text-red-400">*</span>
+      <input class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white" type="text"
+        [(ngModel)]="product.proveedor" name="proveedor" required placeholder="Ej: Logitech">
+      <!-- Hint: explica que poner y da un ejemplo. -->
+      <span class="block text-xs text-neutral-400 mt-1">Marca o empresa que nos vende el producto. Obligatorio. Ej: Lenovo.</span>
+    </label>
 
-                <input class="border p-2 rounded" type="number" placeholder="Precio" /* [(ngModel)]="product.precio" */
-                    name="precio">
+    <label class="text-sm text-neutral-300">
+      Nombre <span class="text-red-400">*</span>
+      <input class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white" type="text"
+        [(ngModel)]="product.nombre" name="nombre" required placeholder="Ej: Mouse Logitech G203">
+      <span class="block text-xs text-neutral-400 mt-1">Como se llama el producto en la tienda. Obligatorio.</span>
+    </label>
 
-                <button class="bg-blue-600 p-3 rounded text-white">
+    <label class="text-sm text-neutral-300">
+      Descripcion
+      <textarea class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
+        [(ngModel)]="product.descripcion" name="descripcion" placeholder="Ej: Mouse gamer 8000 DPI, retroiluminado"></textarea>
+      <span class="block text-xs text-neutral-400 mt-1">Detalle del producto (caracteristicas). Texto libre, opcional.</span>
+    </label>
 
-                    Guardar producto
-
-                </button>
-
-            </form>
-
-        </div>
+    <div class="grid grid-cols-2 gap-4">
+      <label class="text-sm text-neutral-300">
+        Precio <span class="text-red-400">*</span>
+        <input class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white" type="number"
+          [(ngModel)]="product.precio" name="precio" min="0" step="0.01" placeholder="Ej: 45000.00">
+        <span class="block text-xs text-neutral-400 mt-1">Numero con hasta 2 decimales. Ej: 45000.00.</span>
+      </label>
+      <label class="text-sm text-neutral-300">
+        Stock <span class="text-red-400">*</span>
+        <input class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white" type="number"
+          [(ngModel)]="product.stock" name="stock" min="0" placeholder="Ej: 12">
+        <span class="block text-xs text-neutral-400 mt-1">Cantidad entera de unidades disponibles. Ej: 12.</span>
+      </label>
     </div>
+
+    <!-- Desplegable de categorias. Recorremos la lista que vino del backend. -->
+    <label class="text-sm text-neutral-300">
+      Categoria <span class="text-red-400">*</span>
+      <select class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
+        [(ngModel)]="product.categoria.idCategoria" name="categoria">
+        @for (cat of categorias(); track cat.idCategoria) {
+          <option [ngValue]="cat.idCategoria">{{ cat.nombre }}</option>
+        }
+      </select>
+      <span class="block text-xs text-neutral-400 mt-1">Elegi una categoria existente de la lista. Obligatorio.</span>
+    </label>
+
+    <!-- Carga de la foto del producto. -->
+    <label class="text-sm text-neutral-300">
+      Foto del producto
+      <!-- type="file" abre el explorador para elegir una imagen.
+           accept="image/*" muestra solo imagenes.
+           (change) avisa al componente cuando se elige un archivo. -->
+      <input
+        class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-blue-600 file:text-white hover:file:bg-blue-500"
+        type="file"
+        accept="image/*"
+        (change)="onImagenSeleccionada($event)">
+      <span class="block text-xs text-neutral-400 mt-1">
+        Subi una imagen (jpg o png). Opcional pero recomendado. Peso maximo: 2 MB.
+      </span>
+
+      <!-- Si la imagen pesa de mas o no es valida, mostramos el error. -->
+      @if (errorImagen()) {
+        <span class="block text-xs text-red-400 mt-1">{{ errorImagen() }}</span>
+      }
+
+      <!-- Vista previa: si ya hay una foto cargada, la mostramos con un boton para sacarla. -->
+      @if (product.imagen) {
+        <div class="mt-3 flex items-center gap-3">
+          <img [src]="product.imagen" alt="Vista previa"
+            class="h-24 w-24 object-cover rounded-lg border border-white/10">
+          <button type="button" (click)="quitarImagen()"
+            class="text-xs text-red-400 hover:text-red-300">Quitar foto</button>
+        </div>
+      }
+    </label>
+
+    <!-- El texto del boton tambien cambia segun crear/editar. -->
+    <button type="submit" class="bg-blue-600 hover:bg-blue-500 p-3 rounded text-white font-medium">
+      {{ esEdicion ? 'Guardar cambios' : 'Crear producto' }}
+    </button>
+  </form>
 </div>
