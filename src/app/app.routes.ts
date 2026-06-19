@@ -5,7 +5,7 @@ import { StorefrontLayout } from './layouts/storefront-layout/storefront-layout'
 import { AdminLayout } from './layouts/admin-layout/admin-layout';
 
 // Guards (porteros) que controlan quien puede entrar a cada ruta.
-// import { authGuard } from './guards/auth.guard';
+import { authGuard } from './guards/auth.guard';
 // import { adminGuard } from './guards/admin.guard';
 
 // --- Paginas de autenticacion (sin layout, pantalla completa) ---
@@ -25,6 +25,8 @@ import { Planes } from './pages/planes/planes';
 import { Envios } from './pages/envios/envios';
 import { Catalogo } from './pages/catalogo/catalogo';
 import { ProductoDetalle } from './pages/producto-detalle/producto-detalle';
+import { CarritoCompra } from './pages/carrito-compra/carrito-compra';
+import { Checkout } from './pages/checkout/checkout';
 
 export const routes: Routes = [
 
@@ -39,6 +41,9 @@ export const routes: Routes = [
         children: [
             { path: '', component: Catalogo },                  // home / catalogo de productos
             { path: 'producto/:id', component: ProductoDetalle }, // detalle + resenas
+            // Las siguientes necesitan estar logueado (authGuard):
+            { path: 'carrito', component: CarritoCompra, canActivate: [authGuard] },
+            { path: 'checkout', component: Checkout, canActivate: [authGuard] },
         ],
     },
     
