@@ -1,11 +1,7 @@
-// import { Routes } from '@angular/router';
-// import { ProductList } from './pages/product-list/product-list'
-// import { CreateProduct } from './pages/create-product/create-product';
-
 import { Routes } from '@angular/router';
 
 // Layouts (marcos) de cada zona del sitio.
-// import { StorefrontLayout } from './layouts/storefront-layout/storefront-layout';
+import { StorefrontLayout } from './layouts/storefront-layout/storefront-layout';
 import { AdminLayout } from './layouts/admin-layout/admin-layout';
 
 // Guards (porteros) que controlan quien puede entrar a cada ruta.
@@ -27,12 +23,24 @@ import { Pedidos } from './pages/pedidos/pedidos';
 import { Pagos } from './pages/pagos/pagos';
 import { Planes } from './pages/planes/planes';
 import { Envios } from './pages/envios/envios';
+import { Catalogo } from './pages/catalogo/catalogo';
+import { ProductoDetalle } from './pages/producto-detalle/producto-detalle';
 
 export const routes: Routes = [
 
     // --- Login y registro: pantallas sueltas, sin header ni footer ---
     { path: 'login', component: Login },
     { path: 'register', component: Register },
+
+    // --- TIENDA (storefront): todo cuelga del layout de la tienda ---
+    {
+        path: '',
+        component: StorefrontLayout,
+        children: [
+            { path: '', component: Catalogo },                  // home / catalogo de productos
+            { path: 'producto/:id', component: ProductoDetalle }, // detalle + resenas
+        ],
+    },
     
     // --- PANEL ADMIN: todo cuelga de /admin y solo entran los ADMIN (adminGuard) ---
     {
