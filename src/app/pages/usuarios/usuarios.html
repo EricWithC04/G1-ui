@@ -40,13 +40,15 @@
     <label class="text-sm text-neutral-300">
       Contrasena <span class="text-red-400">*</span>
       <input type="password" class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
-        [(ngModel)]="form.contrasena" #passwordCtrl="ngModel" name="contrasena" required placeholder="Contrasena del usuario">
+        [(ngModel)]="form.contrasena" #passwordCtrl="ngModel" name="contrasena" required minlength="8" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$" placeholder="Contrasena del usuario">
       <span class="block text-xs text-neutral-400 mt-1">Se guarda encriptada (BCrypt). En alta es obligatoria; al editar, dejala vacia para no cambiarla.</span>
     </label>
 
     @if (passwordCtrl.invalid && passwordCtrl.touched) {
       <p class="text-xs text-red-400 mt-1">
-        @if (passwordCtrl.hasError('required')) { El campo es obligatorio. }
+        @if (passwordCtrl.hasError('required')) { La contraseña es obligatoria. }
+        @else if (passwordCtrl.hasError('minlength')) { Debe tener al menos 8 caracteres. }
+        @else if (passwordCtrl.hasError('pattern')) { Debe incluir mayúscula, minúscula y un número. }
       </p>
     }
 
