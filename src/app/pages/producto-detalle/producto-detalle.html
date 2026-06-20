@@ -34,7 +34,9 @@
         <!-- Selector de cantidad + boton agregar. -->
         <div class="flex items-center gap-3 mt-2">
             <input type="number" min="1" [(ngModel)]="cantidad"
-                class="w-20 bg-gray-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white" />
+                class="w-20 bg-gray-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white" 
+                (keydown)="bloquearCaracteresInvalidos($event)"
+            />
             <button (click)="agregarAlCarrito()"
                 class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-lg font-medium">
                 Agregar al carrito

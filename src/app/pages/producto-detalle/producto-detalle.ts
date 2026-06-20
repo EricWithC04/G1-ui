@@ -79,6 +79,13 @@ export class ProductoDetalle implements OnInit {
     return suma / rs.length;
   }
 
+// Para que no se puedan colocar caracteres raros en los inputs de numeros
+  bloquearCaracteresInvalidos(event: KeyboardEvent): void {
+  if (['e', 'E', '+', '-'].includes(event.key)) {
+    event.preventDefault();
+  }
+}
+
   // Agrega el producto (con la cantidad elegida) al carrito.
   agregarAlCarrito(): void {
     const p = this.producto();
