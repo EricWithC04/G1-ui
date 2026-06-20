@@ -1,5 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { PagoService } from '../../services/pago.service';
 import { PedidoService } from '../../services/pedido.service';
@@ -42,7 +42,18 @@ export class Pagos implements OnInit {
     this.service.listar().subscribe(data => this.items.set(data));
   }
 
-  guardar(): void {
+  // Para que no se puedan colocar caracteres raros en los inputs de numeros
+  bloquearCaracteresInvalidos(event: KeyboardEvent): void {
+  if (['e', 'E', '+', '-'].includes(event.key)) {
+    event.preventDefault();
+  }
+}
+
+  guardar(f: NgForm): void {
+    if (f.invalid) {
+      Object.values(f.controls).forEach(c => c.markAsTouched());
+      return;
+    }
     this.service.crear(this.form).subscribe({
       next: () => {
         this.form = {
