@@ -3,7 +3,7 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
   <!-- Formulario para crear un usuario. -->
-  <form class="bg-gray-800 border border-white/10 p-5 rounded-xl flex flex-col gap-3 h-fit" (ngSubmit)="guardar()">
+  <form #f="ngForm" class="bg-gray-800 border border-white/10 p-5 rounded-xl flex flex-col gap-3 h-fit" (ngSubmit)="guardar(f)">
     <h2 class="font-semibold text-white">Nuevo usuario</h2>
 
     <p class="text-xs text-neutral-400">
@@ -13,23 +13,42 @@
     <label class="text-sm text-neutral-300">
       Nombre <span class="text-red-400">*</span>
       <input class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
-        [(ngModel)]="form.nombre" name="nombre" required placeholder="Ej: Juan Perez">
+        [(ngModel)]="form.nombre" #nombreCtrl="ngModel" name="nombre" required placeholder="Ej: Juan Perez">
       <span class="block text-xs text-neutral-400 mt-1">Nombre y apellido de la persona. Obligatorio.</span>
     </label>
+
+    @if (nombreCtrl.invalid && nombreCtrl.touched) {
+      <p class="text-xs text-red-400 mt-1">
+        @if (nombreCtrl.hasError('required')) { El campo es obligatorio. }
+      </p>
+    }
 
     <label class="text-sm text-neutral-300">
       Email <span class="text-red-400">*</span>
       <input type="email" class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
-        [(ngModel)]="form.email" name="email" required placeholder="ejemplo@correo.com">
+        [(ngModel)]="form.email" #emailCtrl="ngModel" name="email" required email placeholder="ejemplo@correo.com">
       <span class="block text-xs text-neutral-400 mt-1">Correo unico, sirve para iniciar sesion. Formato: nombre@dominio.com. Obligatorio.</span>
     </label>
+
+    @if (emailCtrl.invalid && emailCtrl.touched) {
+      <p class="text-xs text-red-400 mt-1">
+        @if (emailCtrl.hasError('required')) { El campo es obligatorio. }
+        @else if (emailCtrl.hasError('email')) { Email invalido. }
+      </p>
+    }
 
     <label class="text-sm text-neutral-300">
       Contrasena <span class="text-red-400">*</span>
       <input type="password" class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
-        [(ngModel)]="form.contrasena" name="contrasena" placeholder="Contrasena del usuario">
+        [(ngModel)]="form.contrasena" #passwordCtrl="ngModel" name="contrasena" required placeholder="Contrasena del usuario">
       <span class="block text-xs text-neutral-400 mt-1">Se guarda encriptada (BCrypt). En alta es obligatoria; al editar, dejala vacia para no cambiarla.</span>
     </label>
+
+    @if (passwordCtrl.invalid && passwordCtrl.touched) {
+      <p class="text-xs text-red-400 mt-1">
+        @if (passwordCtrl.hasError('required')) { El campo es obligatorio. }
+      </p>
+    }
 
     <!-- Desplegable con los dos roles posibles. -->
     <label class="text-sm text-neutral-300">
