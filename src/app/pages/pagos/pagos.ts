@@ -35,7 +35,9 @@ export class Pagos implements OnInit {
   ngOnInit(): void {
     this.cargar();
     this.pedidoService.listar().subscribe(data => this.pedidos.set(data));
-    this.usuarioService.listar().subscribe(data => this.usuarios.set(data));
+    this.usuarioService.listar().subscribe(data => {
+      this.usuarios.set(data.filter(u => u.rol === 'ADMIN'));
+    });
   }
 
   cargar(): void {
