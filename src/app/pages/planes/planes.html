@@ -3,7 +3,7 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
   <!-- Formulario para crear un plan de cuotas. -->
-  <form class="bg-gray-800 border border-white/10 p-5 rounded-xl flex flex-col gap-3 h-fit" (ngSubmit)="guardar()">
+  <form #f="ngForm" class="bg-gray-800 border border-white/10 p-5 rounded-xl flex flex-col gap-3 h-fit" (ngSubmit)="guardar(f)">
     <h2 class="font-semibold text-white">Nuevo plan</h2>
 
     <p class="text-xs text-neutral-400">
@@ -35,17 +35,37 @@
     <div class="grid grid-cols-2 gap-3">
       <label class="text-sm text-neutral-300">
         Cuotas <span class="text-red-400">*</span>
-        <input type="number" class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
-          [(ngModel)]="form.cantidadCuotas" name="cuotas" min="1" placeholder="Ej: 3">
+        <input type="number" #cuotasCtrl="ngModel" class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
+          [(ngModel)]="form.cantidadCuotas" name="cuotas" required min="1" placeholder="Ej: 3"
+          (keydown)="bloquearCaracteresInvalidos($event)"
+        >
         <span class="block text-xs text-neutral-400 mt-1">Cantidad entera de cuotas. Ej: 3.</span>
       </label>
       <label class="text-sm text-neutral-300">
         Interes % <span class="text-red-400">*</span>
-        <input type="number" class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
-          [(ngModel)]="form.interes" name="interes" min="0" step="0.01" placeholder="Ej: 15.00">
+        <input type="number" #interesCtrl="ngModel" class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
+          [(ngModel)]="form.interes" name="interes" required min="0" step="0.01" placeholder="Ej: 15.00"
+          (keydown)="bloquearCaracteresInvalidos($event)"
+        >
         <span class="block text-xs text-neutral-400 mt-1">Porcentaje de interes. Numero con decimales. Ej: 15.00.</span>
       </label>
     </div>
+
+    @if (cuotasCtrl.invalid && cuotasCtrl.touched || interesCtrl.invalid && interesCtrl.touched) {
+      <p class="text-xs text-red-400 mt-1">
+        @if (cuotasCtrl.hasError('required')) { La cantidad de cuotas es obligatoria. }
+        @else if (cuotasCtrl.hasError('min')) { La cantidad de cuotas debe ser mayor a 0. }
+        @else if (interesCtrl.hasError('required')) { El campo interes es obligatorio. }
+        @else if (interesCtrl.hasError('min')) { El interes no puede ser negativo. }
+      </p>
+    }
+
+    <!-- @if (interesCtrl.invalid && interesCtrl.touched) {
+      <p class="text-xs text-red-400 mt-1">
+        @if (interesCtrl.hasError('required')) { El campo es obligatorio. }
+        @else if (interesCtrl.hasError('min')) { El interes no puede ser negativo. }
+      </p>
+    } -->
 
     <label class="text-sm text-neutral-300">
       Estado <span class="text-red-400">*</span>

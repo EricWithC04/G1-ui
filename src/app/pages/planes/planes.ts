@@ -1,5 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
 import { PlanCuotasService } from '../../services/plan-cuotas.service';
 import { PerfilService } from '../../services/perfil.service';
@@ -39,11 +39,22 @@ export class Planes implements OnInit {
     this.pedidoService.listar().subscribe(data => this.pedidos.set(data));
   }
 
+  // Para que no se puedan colocar caracteres raros en los inputs de numeros
+  bloquearCaracteresInvalidos(event: KeyboardEvent): void {
+  if (['e', 'E', '+', '-'].includes(event.key)) {
+    event.preventDefault();
+  }
+}
+
   cargar(): void {
     this.service.listar().subscribe(data => this.items.set(data));
   }
 
-  guardar(): void {
+  guardar(f: NgForm): void {
+    if (f.invalid) {
+      Object.values(f.controls).forEach(c => c.markAsTouched());
+      return;
+    }
     this.service.crear(this.form).subscribe({
       next: () => {
         this.form = {
