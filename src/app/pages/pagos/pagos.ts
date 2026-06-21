@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, computed, OnInit, signal } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { PagoService } from '../../services/pago.service';
@@ -18,6 +18,18 @@ export class Pagos implements OnInit {
   pedidos = signal<Pedido[]>([]);   // para elegir que pedido se paga
   usuarios = signal<Usuario[]>([]); // para elegir que admin lo aprobo
 
+  montoSeleccionado = signal<number>(0)
+
+  // pedidoSeleccionado = computed(() => {
+  //   const idPedido = this.form.pedido.idPedido; 
+  //   return this.pedidos().find(p => p.idPedido === idPedido);
+  // });
+
+  // montoMaximo = computed(() => {
+  //   const pedido = this.pedidoSeleccionado();
+  //   return pedido ? pedido.total : null;
+  // });
+
   // Formulario. fechaPago la pone el backend.
   form: Pago = {
     pedido: { idPedido: undefined } as Pedido,
@@ -34,7 +46,9 @@ export class Pagos implements OnInit {
 
   ngOnInit(): void {
     this.cargar();
-    this.pedidoService.listar().subscribe(data => this.pedidos.set(data));
+    this.pedidoService.listar().subscribe(data => {
+      this.pedidos.set(data)
+    });
     this.usuarioService.listar().subscribe(data => {
       this.usuarios.set(data.filter(u => u.rol === 'ADMIN'));
     });
@@ -46,10 +60,14 @@ export class Pagos implements OnInit {
 
   // Para que no se puedan colocar caracteres raros en los inputs de numeros
   bloquearCaracteresInvalidos(event: KeyboardEvent): void {
-  if (['e', 'E', '+', '-'].includes(event.key)) {
-    event.preventDefault();
+    if (['e', 'E', '+', '-'].includes(event.key)) {
+      event.preventDefault();
+    }
   }
-}
+
+  onPedidoChange(idPedido: number) {
+    this.montoSeleccionado.set(this.pedidos().find(p => p.idPedido === idPedido)?.total || 0);
+  }
 
   guardar(f: NgForm): void {
     if (f.invalid) {
