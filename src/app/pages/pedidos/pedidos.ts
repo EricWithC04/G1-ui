@@ -1,5 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { PedidoService } from '../../services/pedido.service';
 import { UsuarioService } from '../../services/usuario.service';
@@ -29,11 +29,22 @@ export class Pedidos implements OnInit {
     this.usuarioService.listar().subscribe(data => this.usuarios.set(data));
   }
 
+  // Para que no se puedan colocar caracteres raros en los inputs de numeros
+  bloquearCaracteresInvalidos(event: KeyboardEvent): void {
+  if (['e', 'E', '+', '-'].includes(event.key)) {
+    event.preventDefault();
+  }
+}
+
   cargar(): void {
     this.service.listar().subscribe(data => this.items.set(data));
   }
 
-  guardar(): void {
+  guardar(f: NgForm): void {
+    if (f.invalid) {
+      Object.values(f.controls).forEach(c => c.markAsTouched());
+      return
+    }
     this.service.crear(this.form).subscribe({
       next: () => {
         this.form = { usuario: { idUsuario: undefined } as Usuario, estado: 'PENDIENTE', total: 0 };

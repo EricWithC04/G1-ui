@@ -3,7 +3,7 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
   <!-- Formulario para registrar un pago. -->
-  <form class="bg-gray-800 border border-white/10 p-5 rounded-xl flex flex-col gap-3 h-fit" (ngSubmit)="guardar()">
+  <form #f="ngForm" class="bg-gray-800 border border-white/10 p-5 rounded-xl flex flex-col gap-3 h-fit" (ngSubmit)="guardar(f)">
     <h2 class="font-semibold text-white">Nuevo pago</h2>
 
     <p class="text-xs text-neutral-400">
@@ -14,7 +14,7 @@
     <label class="text-sm text-neutral-300">
       Pedido <span class="text-red-400">*</span>
       <select class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
-        [(ngModel)]="form.pedido.idPedido" name="pedido" required>
+        [(ngModel)]="form.pedido.idPedido" name="pedido" required (ngModelChange)="onPedidoChange($event)">
         @for (p of pedidos(); track p.idPedido) {
           <option [ngValue]="p.idPedido">#{{ p.idPedido }} - {{ p.usuario?.nombre }}</option>
         }
@@ -25,9 +25,19 @@
     <label class="text-sm text-neutral-300">
       Monto <span class="text-red-400">*</span>
       <input type="number" class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
-        [(ngModel)]="form.monto" name="monto" min="0" step="0.01" placeholder="Ej: 89000.00">
+        [(ngModel)]="form.monto" #montoCtrl="ngModel" name="monto" min="1" [max]="montoSeleccionado()" required step="0.01" placeholder="Ej: 89000.00"
+        (keydown)="bloquearCaracteresInvalidos($event)"
+      >
       <span class="block text-xs text-neutral-400 mt-1">Plata que se pago. Numero con hasta 2 decimales. Ej: 89000.00.</span>
     </label>
+
+    @if (montoCtrl.invalid && montoCtrl.touched) {
+      <p class="text-xs text-red-400 mt-1">
+        @if (montoCtrl.hasError('required')) { El campo es obligatorio. }
+        @else if (montoCtrl.hasError('min')) { El monto debe ser mayor a 0. }
+        @else if (montoCtrl.hasError('max')) { El monto no puede superar el total del pedido ({{ montoSeleccionado() }}). }
+      </p>
+    }
 
     <label class="text-sm text-neutral-300">
       Metodo <span class="text-red-400">*</span>

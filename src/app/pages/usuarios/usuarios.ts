@@ -1,5 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { UsuarioService } from '../../services/usuario.service';
 import { Usuario } from '../../models/models';
 
@@ -26,7 +26,11 @@ export class Usuarios implements OnInit {
     this.service.listar().subscribe(data => this.items.set(data));
   }
 
-  guardar(): void {
+  guardar(f: NgForm): void {
+    if (f.invalid) {
+      Object.values(f.controls).forEach(c => c.markAsTouched());
+      return;
+    }
     this.service.crear(this.form).subscribe({
       next: () => {
         this.form = { nombre: '', email: '', contrasena: '', rol: 'CLIENTE' };
