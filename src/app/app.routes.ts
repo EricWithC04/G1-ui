@@ -29,6 +29,7 @@ import { CarritoCompra } from './pages/carrito-compra/carrito-compra';
 import { Checkout } from './pages/checkout/checkout';
 import { MisPedidos } from './pages/mis-pedidos/mis-pedidos';
 import { PerfilCliente } from './pages/perfil-cliente/perfil-cliente';
+import { SeguimientoEnvio } from './pages/seguimiento-envio/seguimiento-envio';
 
 export const routes: Routes = [
 
@@ -44,6 +45,7 @@ export const routes: Routes = [
             { path: '', component: Catalogo },                  // home / catalogo de productos
             { path: 'producto/:id', component: ProductoDetalle }, // detalle + resenas
             // Las siguientes necesitan estar logueado (authGuard):
+            { path: 'seguimiento-envio/:id', component: SeguimientoEnvio, canActivate: [authGuard] },
             { path: 'carrito', component: CarritoCompra, canActivate: [authGuard] },
             { path: 'checkout', component: Checkout, canActivate: [authGuard] },
             { path: 'mis-pedidos', component: MisPedidos, canActivate: [authGuard] },
