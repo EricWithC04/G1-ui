@@ -13,7 +13,9 @@
     <label class="text-sm text-neutral-300">
       Cliente <span class="text-red-400">*</span>
       <select class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
-        [(ngModel)]="form.cliente.idCliente" name="cliente" required>
+        [(ngModel)]="form.cliente.idCliente" name="cliente" required
+        (ngModelChange)="onClienteChange($event)"
+      >
         @for (c of clientes(); track c.idCliente) {
           <option [ngValue]="c.idCliente">#{{ c.idCliente }} - {{ c.usuario?.nombre }}</option>
         }
@@ -24,13 +26,19 @@
     <label class="text-sm text-neutral-300">
       Pedido <span class="text-red-400">*</span>
       <select class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
-        [(ngModel)]="form.pedido.idPedido" name="pedido" required>
-        @for (p of pedidos(); track p.idPedido) {
+        [(ngModel)]="form.pedido.idPedido" #pedidoCtrl="ngModel" name="pedido" required [disabled]="!clienteSeleccionado()">
+        @for (p of pedidosFiltrados(); track p.idPedido) {
           <option [ngValue]="p.idPedido">#{{ p.idPedido }} - {{ p.usuario?.nombre }}</option>
         }
       </select>
       <span class="block text-xs text-neutral-400 mt-1">Pedido que se paga en cuotas. Elegilo de la lista. Obligatorio.</span>
     </label>
+
+    @if (pedidoCtrl.invalid && pedidoCtrl.touched) {
+      <p class="text-xs text-red-400 mt-1">
+        @if (pedidoCtrl.hasError('required')) { Debes seleccionar un pedido. }
+      </p>
+    }
 
     <div class="grid grid-cols-2 gap-3">
       <label class="text-sm text-neutral-300">
