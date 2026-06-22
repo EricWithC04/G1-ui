@@ -16,7 +16,7 @@ import { AuthService } from '../../services/auth.service';
 })
 export class Login {
 
-  // Formulario reactivo con validaciones.
+  readonly anio = new Date().getFullYear();
   form: FormGroup;
 
   // Mensaje de error para mostrar si el login falla (signal = reactivo).

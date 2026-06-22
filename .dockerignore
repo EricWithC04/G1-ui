@@ -1,0 +1,6 @@
+# Archivos que NO copiamos a la imagen de Docker.
+node_modules/
+dist/
+.angular/
+.git/
+*.md

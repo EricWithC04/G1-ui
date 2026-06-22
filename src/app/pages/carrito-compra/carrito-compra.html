@@ -1,66 +1,138 @@
-<h1 class="text-2xl font-bold text-white mb-6">Tu carrito</h1>
+<!-- Breadcrumb -->
+<nav class="flex items-center gap-2 text-xs text-neutral-500 mb-6">
+  <a routerLink="/" class="hover:text-white transition-colors">Inicio</a>
+  <span>/</span>
+  <span class="text-white">Mi carrito</span>
+</nav>
 
-<!-- Si el carrito esta vacio, mostramos un mensaje con link al catalogo. -->
+<h1 class="text-2xl font-bold text-white mb-6">
+  Mi carrito
+  @if (cart.items().length > 0) {
+    <span class="ml-2 text-base font-normal text-neutral-500">({{ cart.cantidadTotal() }} productos)</span>
+  }
+</h1>
+
 @if (cart.items().length === 0) {
-  <div class="bg-gray-800 border border-white/10 rounded-2xl p-8 text-center">
-    <p class="text-neutral-300 mb-4">Tu carrito esta vacio.</p>
-    <a routerLink="/" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-lg">
-      Ir al catalogo
+  <!-- Estado vacío -->
+  <div class="flex flex-col items-center justify-center py-20 text-center animate-fade-in">
+    <div class="w-24 h-24 rounded-full bg-gray-800 border border-white/8 flex items-center justify-center mb-6">
+      <svg class="text-neutral-600" xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+    </div>
+    <h3 class="text-lg font-semibold text-white mb-2">Tu carrito está vacío</h3>
+    <p class="text-neutral-400 text-sm mb-6">Explorá nuestro catálogo y encontrá lo que buscás.</p>
+    <a routerLink="/" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium active:scale-95">
+      Ir al catálogo
     </a>
   </div>
+
 } @else {
-  <!-- Lista de items del carrito. -->
-  <div class="flex flex-col gap-3">
-    @for (item of cart.items(); track item.producto.idProducto) {
-      <div class="bg-gray-800 border border-white/10 rounded-xl p-4 flex items-center gap-4">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        <!-- Mini "foto". Si el producto tiene imagen la mostramos; si no, dejamos el degradado. -->
-        @if (item.producto.imagen) {
-          <img [src]="item.producto.imagen" [alt]="item.producto.nombre" class="h-16 w-16 rounded-lg object-cover shrink-0">
-        } @else {
-          <div class="h-16 w-16 rounded-lg bg-gradient-to-br from-slate-700 to-slate-900 shrink-0"></div>
-        }
+    <!-- Lista de productos -->
+    <div class="lg:col-span-2 flex flex-col gap-3">
+      @for (item of cart.items(); track item.producto.idProducto) {
+        <div class="group flex items-center gap-4 bg-gray-800 border border-white/8 rounded-2xl p-4 hover:border-white/15 transition-all animate-fade-in">
 
-        <!-- Nombre y precio unitario. -->
-        <div class="flex-1 min-w-0">
-          <p class="text-white font-semibold truncate">{{ item.producto.nombre }}</p>
-          <p class="text-sm text-neutral-400">$ {{ item.producto.precio | number:'1.2-2' }} c/u</p>
+          <!-- Imagen -->
+          <a [routerLink]="['/producto', item.producto.idProducto]" class="shrink-0">
+            @if (item.producto.imagen) {
+              <img [src]="item.producto.imagen" [alt]="item.producto.nombre"
+                   class="w-20 h-20 rounded-xl object-cover border border-white/8">
+            } @else {
+              <div class="w-20 h-20 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 border border-white/8 flex items-center justify-center">
+                <svg class="text-slate-600" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="3" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
+              </div>
+            }
+          </a>
+
+          <!-- Info -->
+          <div class="flex-1 min-w-0">
+            <a [routerLink]="['/producto', item.producto.idProducto]"
+               class="text-sm font-semibold text-white hover:text-blue-300 line-clamp-2 transition-colors">
+              {{ item.producto.nombre }}
+            </a>
+            <p class="text-xs text-neutral-500 mt-0.5">$ {{ item.producto.precio | number:'1.0-0' }} c/u</p>
+          </div>
+
+          <!-- Cantidad +/- -->
+          <div class="flex items-center border border-white/10 rounded-xl overflow-hidden shrink-0">
+            <button
+              (click)="cambiar(item.producto.idProducto, item.cantidad > 1 ? item.cantidad - 1 : 1)"
+              [disabled]="item.cantidad <= 1"
+              class="w-9 h-9 flex items-center justify-center text-white hover:bg-white/10 disabled:opacity-30 transition-colors text-base font-medium"
+            >−</button>
+            <span class="w-8 text-center text-white text-sm font-semibold">{{ item.cantidad }}</span>
+            <button
+              (click)="cambiar(item.producto.idProducto, item.cantidad + 1)"
+              class="w-9 h-9 flex items-center justify-center text-white hover:bg-white/10 transition-colors text-base font-medium"
+            >+</button>
+          </div>
+
+          <!-- Subtotal -->
+          <div class="text-right shrink-0 min-w-24">
+            <p class="text-base font-bold text-white">$ {{ (item.producto.precio * item.cantidad) | number:'1.0-0' }}</p>
+          </div>
+
+          <!-- Quitar -->
+          <button
+            (click)="quitar(item.producto.idProducto)"
+            class="shrink-0 p-2 text-neutral-600 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
+            title="Eliminar"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+          </button>
         </div>
+      }
 
-        <!-- Selector de cantidad. Al cambiarlo, actualizamos el carrito. -->
-        <input
-          type="number"
-          min="1"
-          [ngModel]="item.cantidad"
-          (ngModelChange)="cambiar(item.producto.idProducto, $event)"
-          class="w-20 bg-gray-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
-        />
-
-        <!-- Subtotal de este renglon (precio x cantidad). -->
-        <div class="w-28 text-right text-white font-semibold">
-          $ {{ (item.producto.precio * item.cantidad) | number:'1.2-2' }}
-        </div>
-
-        <!-- Boton para quitar el producto. -->
-        <button (click)="quitar(item.producto.idProducto)" class="text-red-400 hover:text-red-300 text-sm">
-          Quitar
-        </button>
-      </div>
-    }
-  </div>
-
-  <!-- Resumen y boton de checkout. -->
-  <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-950 border border-white/10 rounded-2xl p-5">
-    <p class="text-lg text-white">
-      Total: <span class="font-bold">$ {{ cart.total() | number:'1.2-2' }}</span>
-    </p>
-    <div class="flex gap-2">
-      <a routerLink="/" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm">
+      <!-- Seguir comprando -->
+      <a routerLink="/" class="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white mt-2 transition-colors w-fit">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
         Seguir comprando
       </a>
-      <a routerLink="/checkout" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-lg font-medium">
-        Finalizar compra
-      </a>
     </div>
+
+    <!-- Resumen lateral -->
+    <div class="h-fit">
+      <div class="bg-slate-950 border border-white/8 rounded-2xl p-5 sticky top-24">
+        <h2 class="text-base font-bold text-white mb-4">Resumen del pedido</h2>
+
+        <!-- Items resumen -->
+        <div class="flex flex-col gap-2 mb-4">
+          @for (item of cart.items(); track item.producto.idProducto) {
+            <div class="flex justify-between text-sm">
+              <span class="text-neutral-400 line-clamp-1 flex-1 mr-2">{{ item.producto.nombre }} x{{ item.cantidad }}</span>
+              <span class="text-white shrink-0">$ {{ (item.producto.precio * item.cantidad) | number:'1.0-0' }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="border-t border-white/8 pt-4 mb-4">
+          <div class="flex justify-between text-sm text-neutral-400 mb-2">
+            <span>Subtotal</span>
+            <span class="text-white">$ {{ cart.total() | number:'1.0-0' }}</span>
+          </div>
+          <div class="flex justify-between text-sm text-neutral-400">
+            <span>Envío</span>
+            <span class="text-green-400">Gratis</span>
+          </div>
+        </div>
+
+        <div class="border-t border-white/8 pt-4 mb-5">
+          <div class="flex justify-between items-center">
+            <span class="text-white font-semibold">Total</span>
+            <span class="text-xl font-extrabold text-white">$ {{ cart.total() | number:'1.0-0' }}</span>
+          </div>
+          <p class="text-xs text-blue-400 mt-1 text-right">💳 Hasta 12 cuotas</p>
+        </div>
+
+        <a
+          routerLink="/checkout"
+          class="block w-full bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white text-center py-3.5 rounded-xl font-semibold shadow-lg shadow-blue-600/20"
+        >
+          Finalizar compra →
+        </a>
+      </div>
+    </div>
+
   </div>
 }

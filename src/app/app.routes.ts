@@ -29,6 +29,8 @@ import { CarritoCompra } from './pages/carrito-compra/carrito-compra';
 import { Checkout } from './pages/checkout/checkout';
 import { MisPedidos } from './pages/mis-pedidos/mis-pedidos';
 import { PerfilCliente } from './pages/perfil-cliente/perfil-cliente';
+import { CategoriaLanding } from './pages/categoria-landing/categoria-landing';
+import { PromoLanding } from './pages/promo-landing/promo-landing';
 
 export const routes: Routes = [
 
@@ -41,8 +43,21 @@ export const routes: Routes = [
         path: '',
         component: StorefrontLayout,
         children: [
-            { path: '', component: Catalogo },                  // home / catalogo de productos
-            { path: 'producto/:id', component: ProductoDetalle }, // detalle + resenas
+            { path: '', component: Catalogo },
+            { path: 'producto/:id', component: ProductoDetalle },
+            // Paginas de promos (banners del home)
+            { path: 'hot-sale', component: PromoLanding },
+            { path: 'cyber-week', component: PromoLanding },
+            // Paginas por categoria (banners del home)
+            { path: 'categoria/:slug', component: CategoriaLanding },
+            // Alias cortos para las categorias principales
+            { path: 'notebooks', redirectTo: 'categoria/notebooks', pathMatch: 'full' },
+            { path: 'perifericos', redirectTo: 'categoria/perifericos', pathMatch: 'full' },
+            { path: 'monitores', redirectTo: 'categoria/monitores', pathMatch: 'full' },
+            { path: 'componentes', redirectTo: 'categoria/componentes', pathMatch: 'full' },
+            { path: 'almacenamiento', redirectTo: 'categoria/almacenamiento', pathMatch: 'full' },
+            { path: 'audio', redirectTo: 'categoria/audio', pathMatch: 'full' },
+            { path: 'sillas-gamer', redirectTo: 'categoria/sillas-gamer', pathMatch: 'full' },
             // Las siguientes necesitan estar logueado (authGuard):
             { path: 'carrito', component: CarritoCompra, canActivate: [authGuard] },
             { path: 'checkout', component: Checkout, canActivate: [authGuard] },

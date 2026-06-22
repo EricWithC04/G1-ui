@@ -1,85 +1,125 @@
-<!-- Pantalla de registro: misma estetica que el login. -->
-<div class="min-h-screen bg-gray-900 text-gray-100 flex flex-col items-center justify-center px-4 py-8">
+<!-- Split: izquierda marca, derecha formulario -->
+<div class="min-h-screen bg-gray-900 text-gray-100 flex">
 
-  <!-- Logo de NovaTech arriba del formulario, centrado. -->
-  <a routerLink="/" class="mb-6">
-    <img src="logo.png" alt="NovaTech" class="h-24 w-auto" />
-  </a>
+  <!-- Panel izquierdo — branding (solo desktop) -->
+  <div class="hidden lg:flex flex-col justify-between w-1/2 bg-slate-950 border-r border-white/8 p-12">
+    <a routerLink="/">
+      <img src="logo.png" alt="NovaTech" class="h-10 w-auto" />
+    </a>
 
-  <!-- Tarjeta con el formulario. -->
-  <div class="w-full max-w-sm bg-gray-800 border border-white/10 rounded-2xl p-6 shadow-xl">
-    <h1 class="text-xl font-semibold text-white mb-1">Crear cuenta</h1>
-    <p class="text-sm text-neutral-400 mb-5">Registrate para empezar a comprar.</p>
-
-    <form [formGroup]="form" (ngSubmit)="registrarse()" class="flex flex-col gap-4">
-
-      <!-- Campo nombre -->
-      <div>
-        <label class="block text-sm text-neutral-300 mb-1">Nombre completo</label>
-        <input
-          type="text"
-          formControlName="nombre"
-          placeholder="Ej: Juan Perez"
-          class="w-full bg-gray-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-neutral-500"
-        />
-        @if (form.get('nombre')?.hasError('required') && form.get('nombre')?.touched) {
-          <p class="text-sm text-red-400 mt-1">Nombre requerido.</p>
-        }
-        @if (form.get('nombre')?.hasError('minlength') && form.get('nombre')?.touched) {
-          <p class="text-sm text-red-400 mt-1">Nombre debe tener al menos 3 caracteres.</p>
+    <div>
+      <h2 class="text-4xl font-extrabold text-white leading-tight mb-4">
+        Creá tu cuenta<br/>
+        <span class="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">y empezá a comprar</span>
+      </h2>
+      <p class="text-neutral-400 text-base mb-8">
+        Accedé a los mejores precios en tecnología con envío a todo el país.
+      </p>
+      <div class="flex flex-col gap-3">
+        @for (f of [
+          { icono: '⚡', texto: 'Registro rápido y gratuito' },
+          { icono: '🎁', texto: 'Ofertas exclusivas para miembros' },
+          { icono: '📦', texto: 'Seguí tus pedidos en tiempo real' }
+        ]; track f.icono) {
+          <div class="flex items-center gap-3 text-sm text-neutral-300">
+            <span class="text-lg">{{ f.icono }}</span>
+            {{ f.texto }}
+          </div>
         }
       </div>
+    </div>
 
-      <!-- Campo email -->
-      <div>
-        <label class="block text-sm text-neutral-300 mb-1">Email</label>
-        <input
-          type="email"
-          formControlName="email"
-          placeholder="tucorreo@ejemplo.com"
-          class="w-full bg-gray-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-neutral-500"
-        />
-        @if (form.get('email')?.hasError('required') && form.get('email')?.touched) {
-          <p class="text-sm text-red-400 mt-1">Email requerido.</p>
+    <p class="text-xs text-neutral-700">&copy; {{ anio }} NovaTech Store</p>
+  </div>
+
+  <!-- Panel derecho — formulario -->
+  <div class="flex flex-1 flex-col items-center justify-center px-6 py-12">
+
+    <!-- Logo móvil -->
+    <a routerLink="/" class="lg:hidden mb-8">
+      <img src="logo.png" alt="NovaTech" class="h-12 w-auto" />
+    </a>
+
+    <div class="w-full max-w-sm">
+      <h1 class="text-2xl font-bold text-white mb-1">Crear cuenta</h1>
+      <p class="text-sm text-neutral-400 mb-7">Completá tus datos para registrarte.</p>
+
+      <form [formGroup]="form" (ngSubmit)="registrarse()" class="flex flex-col gap-4">
+
+        <div>
+          <label class="block text-xs text-neutral-400 mb-1.5">Nombre completo</label>
+          <input
+            type="text"
+            formControlName="nombre"
+            placeholder="Ej: Juan Pérez"
+            class="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-600"
+          />
+          @if (form.get('nombre')?.hasError('required') && form.get('nombre')?.touched) {
+            <p class="text-xs text-red-400 mt-1">Nombre requerido.</p>
+          }
+          @if (form.get('nombre')?.hasError('minlength') && form.get('nombre')?.touched) {
+            <p class="text-xs text-red-400 mt-1">Mínimo 3 caracteres.</p>
+          }
+        </div>
+
+        <div>
+          <label class="block text-xs text-neutral-400 mb-1.5">Email</label>
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="tucorreo@ejemplo.com"
+            class="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-600"
+          />
+          @if (form.get('email')?.hasError('required') && form.get('email')?.touched) {
+            <p class="text-xs text-red-400 mt-1">Email requerido.</p>
+          }
+          @if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
+            <p class="text-xs text-red-400 mt-1">Email inválido.</p>
+          }
+        </div>
+
+        <div>
+          <label class="block text-xs text-neutral-400 mb-1.5">Contraseña</label>
+          <input
+            type="password"
+            formControlName="contrasena"
+            placeholder="Mínimo 6 caracteres"
+            class="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-600"
+          />
+          @if (form.get('contrasena')?.hasError('required') && form.get('contrasena')?.touched) {
+            <p class="text-xs text-red-400 mt-1">Contraseña requerida.</p>
+          }
+          @if (form.get('contrasena')?.hasError('minlength') && form.get('contrasena')?.touched) {
+            <p class="text-xs text-red-400 mt-1">Mínimo 6 caracteres.</p>
+          }
+        </div>
+
+        @if (error()) {
+          <div class="flex items-center gap-2 bg-red-500/10 border border-red-500/30 text-red-400 text-sm rounded-xl px-4 py-3 animate-fade-in">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+            {{ error() }}
+          </div>
         }
-        @if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
-          <p class="text-sm text-red-400 mt-1">Email inválido.</p>
-        }
+
+        <button
+          type="submit"
+          [disabled]="cargando() || form.invalid"
+          class="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-60 disabled:cursor-not-allowed text-white py-3 rounded-xl font-semibold shadow-lg shadow-blue-600/20 active:scale-[0.98]"
+        >
+          {{ cargando() ? 'Creando cuenta...' : 'Crear cuenta gratis' }}
+        </button>
+      </form>
+
+      <div class="flex items-center gap-3 my-5">
+        <div class="flex-1 border-t border-white/8"></div>
+        <span class="text-xs text-neutral-600">o</span>
+        <div class="flex-1 border-t border-white/8"></div>
       </div>
 
-      <!-- Campo contrasena -->
-      <div>
-        <label class="block text-sm text-neutral-300 mb-1">Contrasena</label>
-        <input
-          type="password"
-          formControlName="contrasena"
-          placeholder="Elegi una contrasena"
-          class="w-full bg-gray-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-neutral-500"
-        />
-        @if (form.get('contrasena')?.hasError('required') && form.get('contrasena')?.touched) {
-          <p class="text-sm text-red-400 mt-1">Contrasena requerida.</p>
-        }
-        @if (form.get('contrasena')?.hasError('minlength') && form.get('contrasena')?.touched) {
-          <p class="text-sm text-red-400 mt-1">Contrasena debe tener al menos 6 caracteres.</p>
-        }
-      </div>
-
-      @if (error()) {
-        <p class="text-sm text-red-400">{{ error() }}</p>
-      }
-
-      <button
-        type="submit"
-        [disabled]="cargando() || form.invalid"
-        class="bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white px-4 py-2 rounded-lg font-medium"
-      >
-        {{ cargando() ? 'Creando...' : 'Crear cuenta' }}
-      </button>
-    </form>
-
-    <p class="text-sm text-neutral-400 mt-5 text-center">
-      Ya tenes cuenta?
-      <a routerLink="/login" class="text-blue-400 hover:text-blue-300">Iniciar sesion</a>
-    </p>
+      <p class="text-sm text-neutral-400 text-center">
+        ¿Ya tenés cuenta?
+        <a routerLink="/login" class="text-blue-400 hover:text-blue-300 font-medium ml-1">Iniciá sesión</a>
+      </p>
+    </div>
   </div>
 </div>
