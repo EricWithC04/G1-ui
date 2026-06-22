@@ -1,23 +1,28 @@
-<!-- Menu lateral con los links a cada modulo de la tienda. -->
-<aside class="w-60 shrink-0 bg-slate-950 border-r border-white/10 p-4 overflow-auto">
-  <ul class="flex flex-col gap-1">
+<aside class="admin-sidebar">
+  <div class="admin-sidebar-brand">
+    <p class="admin-sidebar-brand-title">NovaTech ERP</p>
+    <p class="admin-sidebar-brand-sub">Panel administrativo</p>
+  </div>
 
-    <!-- Recorremos la lista "links" del componente y dibujamos un <li> por cada uno. -->
-    @for (link of links; track link.path) {
-      <li>
-        <!-- routerLink: a donde navega al hacer clic.
-             [routerLinkActiveOptions] con exact en true para que "Inicio" ('')
-             solo se marque activo en la pagina de inicio y no en todas.
-             routerLinkActive: aplica clases cuando esta es la pagina actual. -->
-        <a
-          [routerLink]="'/' + link.path"
-          [routerLinkActiveOptions]="{ exact: link.path === 'admin' }"
-          routerLinkActive="bg-blue-600 text-white"
-          class="block px-3 py-2 rounded-lg text-sm text-neutral-300 hover:bg-white/10 transition-colors"
-        >
-          {{ link.label }}
-        </a>
-      </li>
+  <nav class="admin-sidebar-nav">
+    @for (section of sections; track section.title) {
+      <div class="admin-sidebar-section">
+        <p class="admin-sidebar-section-title">{{ section.title }}</p>
+        <ul class="admin-sidebar-links">
+          @for (link of section.links; track link.path) {
+            <li>
+              <a
+                [routerLink]="'/' + link.path"
+                [routerLinkActiveOptions]="linkActiveOptions(link)"
+                routerLinkActive="admin-sidebar-link-active"
+                class="admin-sidebar-link"
+              >
+                {{ link.label }}
+              </a>
+            </li>
+          }
+        </ul>
+      </div>
     }
-  </ul>
+  </nav>
 </aside>

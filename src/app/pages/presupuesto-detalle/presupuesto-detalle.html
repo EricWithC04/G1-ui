@@ -1,0 +1,74 @@
+@if (presupuesto(); as p) {
+  <div class="admin-content">
+  <div class="admin-page-header flex flex-wrap justify-between gap-3">
+    <div>
+      <h1 class="admin-page-title">{{ p.numeroPresupuesto ?? ('Presupuesto #' + p.idPresupuesto) }}</h1>
+      <p class="admin-page-subtitle">
+        {{ p.cliente?.usuario?.nombre }} · <span [class]="badgeEstado(p.estado)">{{ p.estado }}</span>
+      </p>
+    </div>
+    <div class="flex gap-2">
+      <button type="button" class="admin-btn admin-btn-primary text-sm" (click)="imprimir()">Imprimir</button>
+      <a routerLink="/admin/presupuestos" class="admin-btn admin-btn-ghost text-sm">← Volver</a>
+    </div>
+  </div>
+
+  @if (ok()) { <p class="admin-alert admin-alert-success">{{ ok() }}</p> }
+  @if (error()) { <p class="admin-alert admin-alert-error">{{ error() }}</p> }
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <div class="admin-card p-5 lg:col-span-2">
+      <dl class="grid grid-cols-2 gap-4 text-sm">
+        <div><dt class="text-slate-500">Fecha</dt><dd>{{ p.fecha | date:'medium' }}</dd></div>
+        <div><dt class="text-slate-500">Validez</dt><dd>{{ p.validezHasta | date:'shortDate' }}</dd></div>
+        <div><dt class="text-slate-500">Condición IVA</dt><dd>{{ p.cliente?.condicionIva ?? '—' }}</dd></div>
+        <div><dt class="text-slate-500">CUIT</dt><dd>{{ p.cliente?.cuit ?? '—' }}</dd></div>
+      </dl>
+      @if (p.notas) {
+        <p class="text-sm text-slate-400 mt-4 border-t border-white/10 pt-4">{{ p.notas }}</p>
+      }
+    </div>
+    <div class="admin-card p-5 space-y-3">
+      <p class="text-sm text-slate-400">Subtotal: <strong class="text-white">${{ p.subtotal | number:'1.2-2' }}</strong></p>
+      <p class="text-sm text-slate-400">IVA: <strong class="text-white">${{ p.iva | number:'1.2-2' }}</strong></p>
+      <p class="text-lg font-bold text-white">Total: ${{ p.total | number:'1.2-2' }}</p>
+      <div class="flex flex-col gap-2 pt-3 border-t border-white/10">
+        @if (p.estado === 'BORRADOR') {
+          <button type="button" class="admin-btn admin-btn-primary text-sm" [disabled]="accionando()"
+            (click)="cambiarEstado('ENVIADO')">Enviar al cliente</button>
+        }
+        @if (p.estado === 'ENVIADO' || p.estado === 'BORRADOR') {
+          <button type="button" class="admin-btn admin-btn-success text-sm" [disabled]="accionando()"
+            (click)="cambiarEstado('APROBADO')">Aprobar</button>
+        }
+        @if (puedeFacturar()) {
+          <a [routerLink]="['/admin/facturacion/nueva']" [queryParams]="{ presupuestoId: p.idPresupuesto }" class="admin-btn admin-btn-primary text-sm text-center">Generar factura</a>
+        }
+        @if (p.estado !== 'FACTURADO') {
+          <button type="button" class="admin-btn admin-btn-ghost text-sm" [disabled]="accionando()"
+            (click)="generarRemito()">Generar remito</button>
+          <a [routerLink]="['/admin/presupuestos', p.idPresupuesto, 'editar']" class="admin-btn admin-btn-ghost text-sm text-center">Editar</a>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-card overflow-hidden">
+    <div class="admin-card-header">Detalle de líneas</div>
+    <table class="admin-table">
+      <thead><tr><th>Producto</th><th>Cant.</th><th>P. unit.</th><th>Desc.</th><th>Subtotal</th></tr></thead>
+      <tbody>
+        @for (l of p.lineas ?? []; track l.idDetalle) {
+          <tr>
+            <td>{{ l.producto?.nombre }}</td>
+            <td>{{ l.cantidad }}</td>
+            <td>${{ l.precioUnitario | number:'1.2-2' }}</td>
+            <td>{{ l.descuentoPorcentaje ?? 0 }}%</td>
+            <td>${{ l.subtotal | number:'1.2-2' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  </div>
+}

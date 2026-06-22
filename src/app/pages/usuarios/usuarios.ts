@@ -1,17 +1,27 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, computed, OnInit, signal } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { UsuarioService } from '../../services/usuario.service';
+import { AdminSearch } from '../../components/admin-search/admin-search';
+import { coincideBusqueda } from '../../utils/busqueda-admin';
 import { Usuario } from '../../models/models';
 
 // Pagina del modulo de Usuarios (clientes y administradores).
 @Component({
   selector: 'app-usuarios',
-  imports: [FormsModule],
+  imports: [FormsModule, AdminSearch],
   templateUrl: './usuarios.html',
 })
 export class Usuarios implements OnInit {
 
   items = signal<Usuario[]>([]);
+  busqueda = signal('');
+
+  itemsFiltrados = computed(() => {
+    const q = this.busqueda();
+    return this.items().filter(u =>
+      coincideBusqueda(q, u.idUsuario, u.nombre, u.email, u.rol),
+    );
+  });
 
   // Formulario para crear un usuario nuevo. Por defecto el rol es CLIENTE.
   form: Usuario = { nombre: '', email: '', contrasena: '', rol: 'CLIENTE' };

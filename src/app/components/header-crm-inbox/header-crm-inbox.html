@@ -1,0 +1,62 @@
+<div class="header-wa">
+  <button
+    type="button"
+    class="header-wa-btn"
+    (click)="toggle()"
+    [attr.aria-expanded]="abierto()"
+    aria-label="Mensajes omnicanal pendientes"
+    title="Mensajes omnicanal"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      <path d="M17 8H7"></path>
+      <path d="M17 12H11"></path>
+    </svg>
+    @if (cantidad() > 0) {
+      <span class="header-wa-badge">{{ cantidad() > 99 ? '99+' : cantidad() }}</span>
+    }
+  </button>
+
+  @if (abierto()) {
+    <div class="header-wa-panel">
+      <div class="header-wa-header">
+        <span>Mensajes omnicanal</span>
+        @if (cargando()) {
+          <span class="header-wa-loading">…</span>
+        }
+      </div>
+
+      @if (items().length === 0) {
+        <p class="header-wa-empty">No hay mensajes pendientes</p>
+      } @else {
+        <ul class="header-wa-list">
+          @for (c of items(); track c.idConversacion) {
+            <li>
+              <a
+                [routerLink]="['/admin/crm/inbox']"
+                [queryParams]="{ id: c.idConversacion }"
+                class="header-wa-item"
+                (click)="cerrar()"
+              >
+                <span class="header-wa-icon">{{ iconoCanal(c.canal) }}</span>
+                <span class="header-wa-body">
+                  <span class="header-wa-row">
+                    <span class="header-wa-title">{{ c.contactoNombre || 'Sin nombre' }}</span>
+                    @if (fechaActividad(c); as fecha) {
+                      <span class="header-wa-time">{{ fecha | date:'shortTime' }}</span>
+                    }
+                  </span>
+                  <span class="header-wa-msg">{{ preview(c) }}</span>
+                </span>
+              </a>
+            </li>
+          }
+        </ul>
+      }
+
+      <div class="header-wa-footer">
+        <a routerLink="/admin/crm/inbox" class="header-wa-link" (click)="cerrar()">Ver bandeja omnicanal</a>
+      </div>
+    </div>
+  }
+</div>

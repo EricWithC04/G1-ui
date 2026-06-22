@@ -68,6 +68,15 @@
 
   <!-- Tabla con la lista de usuarios. -->
   <div class="lg:col-span-2 bg-gray-800 border border-white/10 rounded-xl overflow-hidden">
+    <div class="p-4 border-b border-white/10">
+      <app-admin-search
+        [termino]="busqueda()"
+        (terminoChange)="busqueda.set($event)"
+        [total]="items().length"
+        [filtrados]="itemsFiltrados().length"
+        placeholder="Buscar por nombre, email o rol…"
+      />
+    </div>
     <table class="w-full text-sm text-left">
       <thead class="bg-gray-900 text-neutral-400">
         <tr>
@@ -79,7 +88,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (item of items(); track item.idUsuario) {
+        @for (item of itemsFiltrados(); track item.idUsuario) {
           <tr class="border-t border-white/10 text-neutral-200">
             <td class="px-4 py-3">{{ item.idUsuario }}</td>
             <td class="px-4 py-3">{{ item.nombre }}</td>
@@ -95,8 +104,11 @@
             </td>
           </tr>
         }
-        @if (items().length === 0) {
-          <tr><td colspan="5" class="px-4 py-4 text-neutral-500">No hay usuarios.</td></tr>
+        @if (itemsFiltrados().length === 0) {
+          <tr><td colspan="5" class="px-4 py-4 text-neutral-500">
+            @if (busqueda()) { No hay usuarios que coincidan con la búsqueda. }
+            @else { No hay usuarios. }
+          </td></tr>
         }
       </tbody>
     </table>

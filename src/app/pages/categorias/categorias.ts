@@ -1,7 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, computed, OnInit, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule, NgForm } from '@angular/forms';
 import { CategoriaService } from '../../services/categoria.service';
+import { AdminSearch } from '../../components/admin-search/admin-search';
+import { coincideBusqueda } from '../../utils/busqueda-admin';
 import { Categoria } from '../../models/models';
 import { validarNombreCategoria } from '../../utils/categoria-nombre';
 
@@ -9,13 +11,20 @@ import { validarNombreCategoria } from '../../utils/categoria-nombre';
 // Muestra la lista y tiene un formulario simple para crear una nueva.
 @Component({
   selector: 'app-categorias',
-  imports: [FormsModule],
+  imports: [FormsModule, AdminSearch],
   templateUrl: './categorias.html',
 })
 export class Categorias implements OnInit {
 
-  // Lista de categorias que viene del backend.
   items = signal<Categoria[]>([]);
+  busqueda = signal('');
+
+  itemsFiltrados = computed(() => {
+    const q = this.busqueda();
+    return this.items().filter(c =>
+      coincideBusqueda(q, c.idCategoria, c.nombre, c.descripcion),
+    );
+  });
 
   // Objeto del formulario para crear una categoria nueva.
   form: Categoria = { nombre: '', descripcion: '' };

@@ -1,0 +1,39 @@
+<app-config-page-shell titulo="Seguridad" subtitulo="Contraseñas, 2FA y sesiones">
+  @if (mensaje()) { <p class="admin-alert admin-alert-success">{{ mensaje() }}</p> }
+
+  <form class="admin-card p-5 flex flex-col gap-4 max-w-xl mt-2" (ngSubmit)="guardar()">
+    <h2 class="font-semibold text-white text-sm">Política de contraseñas y sesión</h2>
+    @for (c of campos(); track c.clave) {
+      <label class="text-sm text-slate-300">
+        {{ c.label }}
+        @if (c.tipo === 'checkbox') {
+          <div class="mt-1">
+            <input type="checkbox" [checked]="c.valor === 'true'" (change)="setCheckbox(c, $any($event.target).checked)" />
+          </div>
+        } @else {
+          <input class="admin-input mt-1" type="number" [(ngModel)]="c.valor" [name]="c.clave" />
+        }
+      </label>
+    }
+    <button type="submit" class="admin-btn admin-btn-primary w-fit" [disabled]="guardando()">Guardar política</button>
+  </form>
+
+  <div class="admin-card overflow-hidden mt-6">
+    <div class="admin-card-header">Eventos de login recientes</div>
+    <table class="admin-table">
+      <thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Detalle</th></tr></thead>
+      <tbody>
+        @for (e of eventosLogin(); track e.idRegistro) {
+          <tr>
+            <td class="text-slate-400 whitespace-nowrap">{{ e.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ e.usuarioNombre }}</td>
+            <td>{{ e.accion }}</td>
+            <td class="text-slate-300">{{ e.detalle }}</td>
+          </tr>
+        } @empty {
+          <tr><td colspan="4" class="text-center text-slate-500 py-6">Sin eventos de autenticación registrados</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</app-config-page-shell>

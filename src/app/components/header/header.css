@@ -1,0 +1,20 @@
+.header-search-center {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .header-search-center {
+    display: block;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(28rem, calc(100% - 2rem));
+    pointer-events: none;
+  }
+
+  .header-search-center app-header-global-search {
+    pointer-events: auto;
+    display: block;
+    width: 100%;
+  }
+}

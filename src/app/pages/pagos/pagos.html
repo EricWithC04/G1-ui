@@ -1,99 +1,151 @@
-<h1 class="text-2xl font-bold text-white mb-6">Pagos</h1>
+<div class="admin-content">
+  <div class="admin-page-header flex flex-wrap justify-between gap-3">
+    <div>
+      <h1 class="admin-page-title">Pagos</h1>
+      <p class="admin-page-subtitle">Registro y aprobación de cobranzas vinculadas a pedidos.</p>
+    </div>
+  </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  @if (cargando()) { <p class="text-slate-400 text-sm animate-pulse mb-4">Cargando pagos…</p> }
 
-  <!-- Formulario para registrar un pago. -->
-  <form #f="ngForm" class="bg-gray-800 border border-white/10 p-5 rounded-xl flex flex-col gap-3 h-fit" (ngSubmit)="guardar(f)">
-    <h2 class="font-semibold text-white">Nuevo pago</h2>
-
-    <p class="text-xs text-neutral-400">
-      Los campos con <span class="text-red-400">*</span> son obligatorios.
-      El ID y la fecha del pago los pone el sistema automaticamente.
-    </p>
-
-    <label class="text-sm text-neutral-300">
-      Pedido <span class="text-red-400">*</span>
-      <select class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
-        [(ngModel)]="form.pedido.idPedido" name="pedido" required (ngModelChange)="onPedidoChange($event)">
-        @for (p of pedidos(); track p.idPedido) {
-          <option [ngValue]="p.idPedido">#{{ p.idPedido }} - {{ p.usuario?.nombre }}</option>
+  @if (pagoSeleccionado(); as sel) {
+    <div class="admin-card p-5 mb-6 border-blue-500/30">
+      <div class="flex justify-between items-start mb-4">
+        <div>
+          <h2 class="text-lg font-semibold text-white">Pago #{{ sel.idPago }}</h2>
+          <p class="text-xs text-slate-400 mt-1">
+            Pedido #{{ sel.pedido?.idPedido }} · {{ sel.fechaPago | date:'short' }}
+          </p>
+        </div>
+        <button type="button" class="admin-btn admin-btn-ghost text-xs" (click)="cerrarDetalle()">Cerrar</button>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm mb-4">
+        <div class="bg-gray-900/60 rounded-lg p-3"><p class="text-slate-500 text-xs">Monto</p><p class="font-semibold text-emerald-400">${{ sel.monto | number:'1.2-2' }}</p></div>
+        <div class="bg-gray-900/60 rounded-lg p-3"><p class="text-slate-500 text-xs">Método</p><p>{{ sel.metodo }}</p></div>
+        <div class="bg-gray-900/60 rounded-lg p-3"><p class="text-slate-500 text-xs">Estado</p><p>{{ sel.estado ?? '—' }}</p></div>
+        <div class="bg-gray-900/60 rounded-lg p-3"><p class="text-slate-500 text-xs">Saldo pedido</p><p>${{ saldoDePedido(sel.pedido?.idPedido) | number:'1.2-2' }}</p></div>
+      </div>
+      <div class="flex gap-2">
+        @if (sel.pedido?.idPedido) {
+          <a [routerLink]="['/admin/pedidos']" [queryParams]="{ detalle: sel.pedido!.idPedido }" class="admin-btn admin-btn-ghost text-xs">Ver pedido</a>
         }
-      </select>
-      <span class="block text-xs text-neutral-400 mt-1">Pedido que se esta pagando. Elegilo de la lista. Obligatorio.</span>
-    </label>
-
-    <label class="text-sm text-neutral-300">
-      Monto <span class="text-red-400">*</span>
-      <input type="number" class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
-        [(ngModel)]="form.monto" #montoCtrl="ngModel" name="monto" min="1" [max]="montoSeleccionado()" required step="0.01" placeholder="Ej: 89000.00"
-        (keydown)="bloquearCaracteresInvalidos($event)"
-      >
-      <span class="block text-xs text-neutral-400 mt-1">Plata que se pago. Numero con hasta 2 decimales. Ej: 89000.00.</span>
-    </label>
-
-    @if (montoCtrl.invalid && montoCtrl.touched) {
-      <p class="text-xs text-red-400 mt-1">
-        @if (montoCtrl.hasError('required')) { El campo es obligatorio. }
-        @else if (montoCtrl.hasError('min')) { El monto debe ser mayor a 0. }
-        @else if (montoCtrl.hasError('max')) { El monto no puede superar el total del pedido ({{ montoSeleccionado() }}). }
-      </p>
-    }
-
-    <label class="text-sm text-neutral-300">
-      Metodo <span class="text-red-400">*</span>
-      <select class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
-        [(ngModel)]="form.metodo" name="metodo">
-        <option value="TARJETA">TARJETA</option>
-        <option value="EFECTIVO">EFECTIVO</option>
-        <option value="TRANSFERENCIA">TRANSFERENCIA</option>
-      </select>
-      <span class="block text-xs text-neutral-400 mt-1">Como se pago. Elegi una opcion de la lista.</span>
-    </label>
-
-    <label class="text-sm text-neutral-300">
-      Aprobado por
-      <select class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
-        [(ngModel)]="form.aprobadoPor!.idUsuario" name="aprobadoPor">
-        @for (u of usuarios(); track u.idUsuario) {
-          <option [ngValue]="u.idUsuario">{{ u.nombre }}</option>
+        @if (sel.estado === 'PENDIENTE') {
+          <button type="button" class="admin-btn admin-btn-success text-xs" (click)="aprobarPago(sel)">Aprobar pago</button>
         }
-      </select>
-      <span class="block text-xs text-neutral-400 mt-1">Usuario (admin) que aprobo el pago. Elegilo de la lista. Opcional.</span>
-    </label>
+      </div>
+    </div>
+  }
 
-    <button type="submit" class="bg-blue-600 hover:bg-blue-500 p-2 rounded text-white">Registrar</button>
-  </form>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <form #f="ngForm" class="admin-card p-5 flex flex-col gap-3 h-fit" (ngSubmit)="guardar(f)">
+      <h2 class="font-semibold text-white">Nuevo pago</h2>
+      <p class="text-xs text-slate-400">Los campos con <span class="text-red-400">*</span> son obligatorios.</p>
 
-  <!-- Tabla con la lista de pagos. -->
-  <div class="lg:col-span-2 bg-gray-800 border border-white/10 rounded-xl overflow-hidden">
-    <table class="w-full text-sm text-left">
-      <thead class="bg-gray-900 text-neutral-400">
-        <tr>
-          <th class="px-4 py-3">ID</th>
-          <th class="px-4 py-3">Pedido</th>
-          <th class="px-4 py-3">Monto</th>
-          <th class="px-4 py-3">Metodo</th>
-          <th class="px-4 py-3">Fecha</th>
-          <th class="px-4 py-3 text-right">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (item of items(); track item.idPago) {
-          <tr class="border-t border-white/10 text-neutral-200">
-            <td class="px-4 py-3">{{ item.idPago }}</td>
-            <td class="px-4 py-3">#{{ item.pedido?.idPedido }}</td>
-            <td class="px-4 py-3">$ {{ item.monto | number:'1.2-2' }}</td>
-            <td class="px-4 py-3">{{ item.metodo }}</td>
-            <td class="px-4 py-3 text-neutral-400">{{ item.fechaPago | date:'short' }}</td>
-            <td class="px-4 py-3 text-right">
-              <button (click)="borrar(item.idPago)" class="text-red-400 hover:text-red-300">Borrar</button>
-            </td>
-          </tr>
+      <label class="text-sm text-slate-300">
+        Pedido <span class="text-red-400">*</span>
+        <select class="admin-input mt-1" [(ngModel)]="form.pedido.idPedido" name="pedido" required (ngModelChange)="onPedidoChange($event)">
+          @for (p of pedidos(); track p.idPedido) {
+            <option [ngValue]="p.idPedido">#{{ p.idPedido }} — {{ p.usuario?.nombre }} (saldo: ${{ saldoDePedido(p.idPedido) | number:'1.2-2' }})</option>
+          }
+        </select>
+        @if (form.pedido.idPedido) {
+          <span class="block text-xs text-amber-400 mt-1">Saldo pendiente: ${{ saldoPedidoSeleccionado() | number:'1.2-2' }}</span>
         }
-        @if (items().length === 0) {
-          <tr><td colspan="6" class="px-4 py-4 text-neutral-500">No hay pagos.</td></tr>
-        }
-      </tbody>
-    </table>
+      </label>
+
+      <label class="text-sm text-slate-300">
+        Monto <span class="text-red-400">*</span>
+        <input type="number" class="admin-input mt-1" [(ngModel)]="form.monto" #montoCtrl="ngModel" name="monto" min="1" [max]="montoSeleccionado()" required step="0.01" (keydown)="bloquearCaracteresInvalidos($event)" />
+      </label>
+      @if (montoCtrl.invalid && montoCtrl.touched) {
+        <p class="text-xs text-red-400">Monto inválido (máx. total del pedido).</p>
+      }
+
+      <label class="text-sm text-slate-300">
+        Método <span class="text-red-400">*</span>
+        <select class="admin-input mt-1" [(ngModel)]="form.metodo" name="metodo">
+          <option value="TARJETA">Tarjeta</option>
+          <option value="EFECTIVO">Efectivo</option>
+          <option value="TRANSFERENCIA">Transferencia</option>
+        </select>
+      </label>
+
+      <label class="text-sm text-slate-300">
+        Aprobado por
+        <select class="admin-input mt-1" [(ngModel)]="form.aprobadoPor!.idUsuario" name="aprobadoPor">
+          @for (u of usuarios(); track u.idUsuario) {
+            <option [ngValue]="u.idUsuario">{{ u.nombre }}</option>
+          }
+        </select>
+      </label>
+
+      <button type="submit" class="admin-btn admin-btn-primary">Registrar pago</button>
+    </form>
+
+    <div class="lg:col-span-2 admin-card overflow-hidden">
+      <div class="admin-card-header">Pagos registrados</div>
+      <div class="p-4 border-b border-white/10 flex flex-col sm:flex-row gap-3">
+        <div class="flex-1">
+          <app-admin-search
+            [termino]="busqueda()"
+            (terminoChange)="busqueda.set($event)"
+            [total]="items().length"
+            [filtrados]="itemsFiltrados().length"
+            placeholder="Buscar por ID, pedido, cliente, monto o método…"
+          />
+        </div>
+        <label class="text-sm text-slate-300 shrink-0">
+          Estado
+          <select class="admin-input mt-1" [ngModel]="filtroEstado()" (ngModelChange)="filtroEstado.set($event)">
+            <option value="">Todos</option>
+            <option value="PENDIENTE">Pendiente</option>
+            <option value="APROBADO">Aprobado</option>
+          </select>
+        </label>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Pedido</th>
+              <th>Cliente</th>
+              <th>Monto</th>
+              <th>Método</th>
+              <th>Estado</th>
+              <th>Fecha</th>
+              <th class="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of itemsFiltrados(); track item.idPago) {
+              <tr class="cursor-pointer hover:bg-white/5" (click)="verDetalle(item)">
+                <td>{{ item.idPago }}</td>
+                <td>#{{ item.pedido?.idPedido }}</td>
+                <td class="text-slate-400 text-xs">{{ pedidoDePago(item)?.usuario?.nombre ?? '—' }}</td>
+                <td class="font-semibold">${{ item.monto | number:'1.2-2' }}</td>
+                <td>{{ item.metodo }}</td>
+                <td>
+                  <span [class]="item.estado === 'APROBADO' ? 'admin-badge admin-badge--emitida' : 'admin-badge admin-badge--pendiente'">{{ item.estado ?? '—' }}</span>
+                </td>
+                <td class="text-xs text-slate-400">{{ item.fechaPago | date:'short' }}</td>
+                <td class="text-right" (click)="$event.stopPropagation()">
+                  @if (item.estado === 'PENDIENTE') {
+                    <button type="button" (click)="aprobarPago(item)" class="text-green-400 hover:text-green-300 text-xs mr-2">Aprobar</button>
+                  }
+                  <button type="button" (click)="borrar(item.idPago)" class="text-red-400 hover:text-red-300 text-xs">Borrar</button>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="8" class="text-center text-slate-400 py-8">
+                @if (busqueda() || filtroEstado()) { No hay pagos que coincidan. }
+                @else { No hay pagos registrados. }
+              </td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
+

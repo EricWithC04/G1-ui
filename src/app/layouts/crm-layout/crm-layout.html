@@ -1,0 +1,20 @@
+<div class="crm-shell">
+  <header class="crm-header">
+    <div>
+      <h1 class="crm-title">CRM</h1>
+      <p class="crm-subtitle">Clientes · Bandeja omnicanal</p>
+    </div>
+    <nav class="crm-tabs">
+      @for (tab of tabs; track tab.path) {
+        <a
+          [routerLink]="['/admin/crm', tab.path]"
+          routerLinkActive="crm-tab--active"
+          class="crm-tab"
+        >{{ tab.label }}</a>
+      }
+    </nav>
+  </header>
+  <div class="crm-body">
+    <router-outlet></router-outlet>
+  </div>
+</div>
