@@ -124,6 +124,8 @@ export class CreateProduct implements OnInit {
     const peticion = this.esEdicion
       ? this.productService.actualizar(this.editandoId!, this.product)
       : this.productService.crear(this.product);
+    
+    Object.values(f.controls).forEach(c => c.markAsUntouched());
 
     peticion.subscribe({
       next: () => this.router.navigate(['/admin/productos']),
