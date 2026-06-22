@@ -1,41 +1,142 @@
-<!-- Encabezado de la pagina: titulo + buscador + boton para crear. -->
-<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
-  <h2 class="text-xl font-semibold text-white">
-    {{ products().length }} productos
-  </h2>
-
-  <div class="flex items-center gap-2">
-    <!-- Buscador: al escribir y apretar Enter (o el boton) filtra por nombre.
-         [(ngModel)] conecta el input con la variable "busqueda" del componente. -->
-    <input
-      type="text"
-      [(ngModel)]="busqueda"
-      (keyup.enter)="cargar()"
-      placeholder="Buscar por nombre..."
-      class="bg-gray-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-neutral-500"
-    />
-    <button (click)="cargar()" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm">
-      Buscar
-    </button>
-    <button (click)="nuevo()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm">
-      + Nuevo producto
-    </button>
+<div class="admin-page-header flex flex-wrap justify-between gap-4 items-start">
+  <div>
+    <h1 class="admin-page-title">Inventario de productos</h1>
+    <p class="admin-page-subtitle">Lista con precios, stock y reposición automática por proveedor.</p>
+  </div>
+  <div class="flex gap-2">
+    <button type="button" class="admin-btn admin-btn-ghost" (click)="exportarCsv()">Exportar CSV</button>
+    <button type="button" class="admin-btn admin-btn-primary" (click)="nuevo()">+ Nuevo producto</button>
   </div>
 </div>
 
-<!-- Grilla de tarjetas de producto.
-     Recorremos la lista y por cada producto dibujamos una tarjeta. -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-  @for (product of products(); track product.idProducto) {
-    <app-product-card
-      [product]="product"
-      (editar)="editar($event)"
-      (borrar)="borrar($event)"
-    ></app-product-card>
-  }
+@if (cargando()) { <p class="text-slate-400 text-sm animate-pulse mb-4">Cargando productos…</p> }
+
+@if (ok()) { <p class="admin-alert admin-alert-success">{{ ok() }}</p> }
+@if (error()) { <p class="admin-alert admin-alert-error">{{ error() }}</p> }
+
+@if (conteoStockBajo() > 0) {
+  <div class="prod-alert-banner">
+    <div>
+      <p class="font-semibold text-amber-200">{{ conteoStockBajo() }} producto(s) con stock bajo</p>
+      <p class="text-xs text-amber-200/70 mt-0.5">Generá órdenes de compra agrupadas por proveedor en un click.</p>
+    </div>
+    <button type="button" class="admin-btn admin-btn-success text-sm" [disabled]="procesando()" (click)="generarOcAutomatica()">
+      {{ procesando() ? 'Generando…' : 'Generar OC automática' }}
+    </button>
+  </div>
+}
+
+<div class="admin-card overflow-hidden">
+  <div class="p-4 border-b border-white/10 flex flex-wrap gap-3 items-center justify-between">
+    <div class="flex flex-wrap gap-2">
+      <button type="button" class="admin-btn text-xs" [class.admin-btn-primary]="filtroStock()==='TODOS'" [class.admin-btn-ghost]="filtroStock()!=='TODOS'" (click)="filtroStock.set('TODOS')">Todos</button>
+      <button type="button" class="admin-btn text-xs" [class.admin-btn-primary]="filtroStock()==='BAJO'" [class.admin-btn-ghost]="filtroStock()!=='BAJO'" (click)="filtroStock.set('BAJO')">Stock bajo</button>
+      <button type="button" class="admin-btn text-xs" [class.admin-btn-primary]="filtroStock()==='SIN_STOCK'" [class.admin-btn-ghost]="filtroStock()!=='SIN_STOCK'" (click)="filtroStock.set('SIN_STOCK')">Sin stock</button>
+    </div>
+    <div class="flex flex-wrap gap-2 items-center">
+      @if (seleccionados().size > 0) {
+        <button type="button" class="admin-btn admin-btn-success text-xs" [disabled]="procesando()" (click)="generarOcSeleccionados()">
+          OC seleccionados ({{ seleccionados().size }})
+        </button>
+      }
+      <a routerLink="/admin/ordenes-compra" class="admin-btn admin-btn-ghost text-xs">Ver órdenes de compra</a>
+    </div>
+  </div>
+
+  <div class="p-4 border-b border-white/10">
+    <app-admin-search
+      [termino]="busqueda()"
+      (terminoChange)="busqueda.set($event)"
+      [total]="products().length"
+      [filtrados]="productsFiltrados().length"
+      placeholder="Buscar por nombre, proveedor, categoría…"
+    />
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="admin-table prod-table">
+      <thead>
+        <tr>
+          <th class="w-10"><input type="checkbox" (change)="toggleTodos()" title="Seleccionar visibles" /></th>
+          <th class="w-16">Foto</th>
+          <th>Producto</th>
+          <th>Categoría</th>
+          <th>P. lista</th>
+          <th>P. venta</th>
+          <th>Stock</th>
+          <th>Mín.</th>
+          <th>Estado</th>
+          <th class="text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of productsPaginados(); track p.idProducto) {
+          <tr [class.prod-row--low]="esStockBajo(p)">
+            <td>
+              <input type="checkbox" [checked]="seleccionados().has(p.idProducto!)" (change)="toggleSeleccion(p.idProducto)" />
+            </td>
+            <td>
+              <button type="button" class="prod-thumb" (click)="ampliarImagen(p.imagen)" [title]="p.imagen ? 'Ampliar imagen' : 'Sin imagen'">
+                @if (p.imagen) {
+                  <img [src]="p.imagen" [alt]="p.nombre" />
+                } @else {
+                  <span class="prod-thumb-placeholder">📦</span>
+                }
+              </button>
+            </td>
+            <td>
+              <p class="font-medium text-white">{{ p.nombre }}</p>
+              <p class="text-xs text-slate-400 mt-0.5">{{ descripcionCorta(p.descripcion) }}</p>
+              <p class="text-xs text-slate-500">{{ p.proveedor }}</p>
+            </td>
+            <td class="text-slate-400 text-xs">{{ p.categoria?.nombre ?? '—' }}</td>
+            <td>
+              <span class="text-slate-400 line-through text-sm">${{ precioLista(p) | number:'1.0-0' }}</span>
+            </td>
+            <td>
+              <span class="font-semibold text-emerald-400">${{ p.precio | number:'1.0-0' }}</span>
+              @if (tieneDescuento(p)) {
+                <span class="block text-[10px] text-emerald-500/80">Oferta activa</span>
+              }
+            </td>
+            <td>
+              <span [class.text-rose-400]="esStockBajo(p)" [class.font-bold]="esStockBajo(p)">{{ p.stock | number:'1.0-0' }}</span>
+            </td>
+            <td class="text-slate-500 text-sm">{{ stockMinimo(p) | number:'1.0-0' }}</td>
+            <td><span [class]="badgeStock(p).cls">{{ badgeStock(p).label }}</span></td>
+            <td class="text-right whitespace-nowrap">
+              @if (esStockBajo(p)) {
+                <button type="button" class="admin-btn admin-btn-success text-xs py-1 px-2 mr-1" [disabled]="procesando()" (click)="generarOcProducto(p, $event)">OC</button>
+              }
+              <button type="button" class="admin-btn admin-btn-ghost text-xs py-1 px-2 mr-1" (click)="editar(p.idProducto!)">Editar</button>
+              <button type="button" class="admin-btn admin-btn-danger text-xs py-1 px-2" (click)="borrar(p.idProducto!)">×</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="10" class="text-center text-slate-400 py-10">
+              @if (busqueda() || filtroStock() !== 'TODOS') { No hay productos con ese filtro. }
+              @else { No hay productos cargados. }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <app-admin-pagination
+    [total]="productsFiltrados().length"
+    [pagina]="pagina()"
+    [tamano]="tamanoPagina()"
+    (paginaChange)="pagina.set($event)"
+    (tamanoChange)="tamanoPagina.set($event); pagina.set(1)"
+  />
 </div>
 
-<!-- Mensaje por si no hay productos para mostrar. -->
-@if (products().length === 0) {
-  <p class="text-neutral-400 mt-6">No hay productos para mostrar.</p>
+@if (imagenAmpliada(); as src) {
+  <div class="prod-lightbox" (click)="cerrarImagen()" role="dialog" aria-label="Vista ampliada">
+    <div class="prod-lightbox-inner" (click)="$event.stopPropagation()">
+      <button type="button" class="prod-lightbox-close" (click)="cerrarImagen()">×</button>
+      <img [src]="src" alt="Producto ampliado" />
+    </div>
+  </div>
 }

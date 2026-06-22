@@ -1,0 +1,26 @@
+<app-config-page-shell titulo="Integraciones" subtitulo="WhatsApp, Instagram, Facebook, correo y n8n">
+  @if (mensaje()) { <p class="admin-alert admin-alert-success">{{ mensaje() }}</p> }
+
+  <div class="flex flex-col gap-3 mt-2">
+    @for (f of filas(); track f.meta.tipo) {
+      <article class="admin-card p-4 flex flex-wrap items-start justify-between gap-4">
+        <div class="flex-1 min-w-[200px]">
+          <h3 class="font-semibold text-white">{{ f.meta.nombre }}</h3>
+          <p class="text-xs text-slate-400 mt-1">{{ f.meta.guia }}</p>
+          <span class="admin-badge mt-2" [class]="estadoBadge(f.integracion.estadoConexion)">{{ estadoLabel(f.integracion.estadoConexion) }}</span>
+        </div>
+        <div class="flex flex-col items-end gap-2">
+          <label class="text-sm text-slate-300 flex items-center gap-2">
+            <input type="checkbox" [checked]="f.integracion.activo" (change)="toggleActivo(f.integracion)" /> Activo
+          </label>
+          <button type="button" class="admin-btn admin-btn-ghost text-xs" (click)="conectar(f.integracion)">
+            {{ f.integracion.estadoConexion === 'CONECTADO' ? 'Desconectar' : 'Conectar' }}
+          </button>
+          @if (f.meta.tipo === 'N8N') {
+            <button type="button" class="admin-btn admin-btn-ghost text-xs" (click)="copiarWebhook()">Copiar webhook</button>
+          }
+        </div>
+      </article>
+    }
+  </div>
+</app-config-page-shell>

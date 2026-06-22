@@ -1,0 +1,211 @@
+<div class="bandeja">
+  <aside class="bandeja-lista">
+    <div class="bandeja-toolbar">
+      <input
+        type="search"
+        class="bandeja-search"
+        placeholder="Buscar conversaciones…"
+        [ngModel]="busqueda()"
+        (ngModelChange)="busqueda.set($event)"
+        (keyup.enter)="cargar()"
+      />
+      <div class="bandeja-filtros">
+        <select class="bandeja-select" [ngModel]="filtroCanal()" (ngModelChange)="filtroCanal.set($event); cargar()">
+          <option value="">Todos los canales</option>
+          @for (c of canales.slice(1); track c) {
+            <option [value]="c">{{ c }}</option>
+          }
+        </select>
+        <select class="bandeja-select" [ngModel]="filtroEstado()" (ngModelChange)="filtroEstado.set($event); cargar()">
+          <option value="">Todos</option>
+          @for (e of estados.slice(1); track e) {
+            <option [value]="e">{{ e.replace('_', ' ') }}</option>
+          }
+        </select>
+      </div>
+      <button type="button" class="bandeja-btn-conectar" (click)="conectarCanales()">Conectar canales</button>
+    </div>
+
+    <ul class="bandeja-conversaciones">
+      @for (c of conversaciones(); track c.idConversacion) {
+        <li
+          class="bandeja-item"
+          [class.bandeja-item--active]="sel()?.idConversacion === c.idConversacion"
+          (click)="seleccionar(c)"
+        >
+          <span class="bandeja-item-icon" [attr.data-canal]="c.canal">{{ iconoCanal(c.canal) }}</span>
+          <div class="bandeja-item-body">
+            <div class="bandeja-item-top">
+              <strong>{{ c.contactoNombre }}</strong>
+              @if (c.estado === 'PENDIENTE') {
+                <span class="bandeja-badge bandeja-badge--pendiente">Pendiente</span>
+              }
+            </div>
+            <p class="bandeja-item-preview">{{ c.asunto || c.vistaPrevia }}</p>
+            <p class="bandeja-item-msg line-clamp-1">{{ c.vistaPrevia }}</p>
+          </div>
+        </li>
+      } @empty {
+        <li class="bandeja-empty">No hay conversaciones</li>
+      }
+    </ul>
+  </aside>
+
+  <section class="bandeja-chat">
+    @if (sel(); as c) {
+      <header class="bandeja-chat-header">
+        <div>
+          <h2>{{ c.contactoNombre }}</h2>
+          <p class="bandeja-chat-meta">
+            @if (c.contactoEmail) { {{ c.contactoEmail }} · }
+            {{ labelCanal(c.canal) }}
+          </p>
+        </div>
+        <span class="bandeja-badge bandeja-badge--estado">{{ c.estado?.replace('_', ' ') }}</span>
+        <select
+          class="bandeja-select bandeja-estado-select"
+          [ngModel]="c.estado"
+          (ngModelChange)="cambiarEstado($event)"
+        >
+          @for (e of estados.slice(1); track e) {
+            <option [value]="e">{{ e.replace('_', ' ') }}</option>
+          }
+        </select>
+      </header>
+
+      <div class="bandeja-mensajes">
+        @for (m of mensajes(); track m.idMensaje) {
+          <div class="bandeja-msg" [class.bandeja-msg--out]="m.direccion === 'SALIENTE'">
+            <div class="bandeja-msg-bubble">
+              <span class="bandeja-msg-author">{{ m.remitenteNombre }}</span>
+              <p>{{ m.cuerpo }}</p>
+              <time>{{ m.fecha | date:'dd/MM/yyyy HH:mm' }}</time>
+            </div>
+          </div>
+        }
+      </div>
+
+      <footer class="bandeja-composer">
+        @if (pendienteEnvio()) {
+          <p class="text-xs text-amber-400">{{ pendienteEnvio() }}</p>
+        }
+        <div class="bandeja-composer-row">
+          <textarea
+            rows="2"
+            placeholder="Escribí tu respuesta…"
+            [ngModel]="respuesta()"
+            (ngModelChange)="respuesta.set($event)"
+            (keydown.control.enter)="enviar()"
+            [disabled]="!puedeResponder()"
+          ></textarea>
+          <button type="button" class="bandeja-send" [disabled]="guardando() || !puedeResponder()" (click)="enviar()">➤</button>
+        </div>
+      </footer>
+    } @else {
+      <div class="bandeja-chat-empty">Seleccioná una conversación</div>
+    }
+  </section>
+
+  <aside class="bandeja-panel">
+    @if (sel(); as c) {
+      @if (c.cliente?.idCliente) {
+        <a [routerLink]="['/admin/crm/clientes', c.cliente!.idCliente]" class="bandeja-panel-cliente">
+          {{ c.cliente!.usuario!.nombre }} ›
+        </a>
+      } @else {
+        <p class="bandeja-panel-cliente text-slate-400">Sin cliente vinculado</p>
+      }
+
+      @if (!c.cliente?.idCliente) {
+        <section class="bandeja-panel-block">
+          <h3>Vincular cliente</h3>
+          <select class="bandeja-select bandeja-select--full" (change)="vincularCliente(+$any($event.target).value)">
+            <option value="">Seleccionar existente…</option>
+            @for (cl of clientes(); track cl.idCliente) {
+              <option [value]="cl.idCliente">{{ cl.usuario?.nombre }}</option>
+            }
+          </select>
+          <a routerLink="/admin/crm/nuevo" [queryParams]="{ nombre: c.contactoNombre, email: c.contactoEmail || '' }" class="bandeja-accion mt-2 block text-center">Agregar como cliente</a>
+        </section>
+      }
+
+      <section class="bandeja-panel-block">
+        <h3>Etiquetas</h3>
+        <div class="bandeja-tags">
+          @for (tag of etiquetasDisponibles(); track tag) {
+            <button
+              type="button"
+              class="bandeja-tag"
+              [class.bandeja-tag--on]="etiquetasActivas().includes(tag)"
+              [disabled]="!puedeAsignar()"
+              (click)="toggleEtiqueta(tag)"
+            >{{ tag }}</button>
+          }
+        </div>
+        <p class="bandeja-panel-hint">
+          Activá o desactivá etiquetas en esta conversación.
+          Para crear o editar la lista maestra, andá a
+          <a routerLink="/admin/configuracion/catalogos" [queryParams]="{ tab: 'etiquetas' }">Configuración → Catálogos → Etiquetas CRM</a>.
+        </p>
+      </section>
+
+      <section class="bandeja-panel-block">
+        <h3>Acciones rápidas</h3>
+        <div class="bandeja-acciones">
+          <a
+            [routerLink]="['/admin/pedidos/nuevo']"
+            [queryParams]="crearPedidoQueryParams()"
+            class="bandeja-accion"
+          >Crear pedido</a>
+          <a routerLink="/admin/presupuestos/nuevo" class="bandeja-accion">Presupuesto</a>
+          <button type="button" class="bandeja-accion">Crear OT</button>
+          <button type="button" class="bandeja-accion">Preventivo</button>
+          @if (c.cliente?.idCliente) {
+            <a [routerLink]="['/admin/crm/clientes', c.cliente!.idCliente]" class="bandeja-accion">Ver ficha</a>
+          } @else {
+            <button type="button" class="bandeja-accion">Ver en mapa</button>
+          }
+        </div>
+      </section>
+
+      <section class="bandeja-panel-block">
+        <h3>Asignación</h3>
+        <select
+          class="bandeja-select bandeja-select--full"
+          [ngModel]="c.asignadoA?.idUsuario"
+          (ngModelChange)="cambiarAsignado(+$event)"
+          [disabled]="!puedeAsignar()"
+        >
+          @for (u of usuarios(); track u.idUsuario) {
+            <option [ngValue]="u.idUsuario">{{ u.nombre }}</option>
+          }
+        </select>
+      </section>
+
+      <section class="bandeja-panel-block">
+        <h3>Historial del cliente</h3>
+        @if (historial(); as h) {
+          <ul class="bandeja-historial">
+            @for (p of h.pedidos ?? []; track p.idPedido) {
+              <li>
+                <strong>Pedido #{{ p.idPedido }}</strong>
+                <span>{{ p.fecha | date:'dd/MM/yyyy' }} · {{ p.estado }}</span>
+              </li>
+            }
+            @for (prod of h.productosFacturados ?? []; track prod.descripcion) {
+              <li>
+                <strong>{{ prod.descripcion }}</strong>
+                <span>{{ prod.cantidad }} u. · ${{ prod.monto | number:'1.0-0' }}</span>
+              </li>
+            }
+            @if (!(h.pedidos?.length) && !(h.productosFacturados?.length)) {
+              <li class="bandeja-hist-empty">Sin registros previos</li>
+            }
+          </ul>
+        } @else {
+          <p class="bandeja-hist-empty">Vinculá un cliente para ver historial.</p>
+        }
+      </section>
+    }
+  </aside>
+</div>

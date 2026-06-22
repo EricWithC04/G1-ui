@@ -1,0 +1,93 @@
+<app-config-page-shell titulo="Plantillas de impresión" subtitulo="Factura, presupuesto y remito editables">
+  @if (mensaje()) { <p class="admin-alert admin-alert-success">{{ mensaje() }}</p> }
+
+  <div class="plantillas-layout mt-2">
+    <div class="admin-card overflow-hidden plantillas-table-wrap">
+      <div class="admin-card-header">Plantillas por tipo</div>
+      <table class="admin-table">
+        <thead><tr><th>Tipo</th><th>Nombre</th><th>Default</th><th>Vista previa</th><th></th></tr></thead>
+        <tbody>
+          @for (p of plantillas(); track p.idPlantilla) {
+            <tr>
+              <td><span class="admin-badge">{{ p.tipo }}</span></td>
+              <td>{{ p.nombre }}</td>
+              <td>@if (p.esDefault) { <span class="text-orange-400">★</span> }</td>
+              <td>
+                @if (p.esDefault && p.idPlantilla && previews()[p.idPlantilla]; as prev) {
+                  <button type="button" class="plantilla-thumb" (click)="abrirModal(p)" [title]="'Ampliar ' + p.nombre">
+                    <div class="plantilla-thumb-frame" [innerHTML]="previewHtml(p.idPlantilla)"></div>
+                    <span class="plantilla-thumb-label">Ampliar</span>
+                  </button>
+                } @else if (p.esDefault) {
+                  <span class="text-xs text-slate-500">Cargando…</span>
+                } @else {
+                  <button type="button" class="text-orange-400 text-xs" (click)="abrirModal(p)">Preview</button>
+                }
+              </td>
+              <td class="text-right whitespace-nowrap">
+                <button type="button" class="text-orange-400 text-xs mr-2" (click)="editar(p)">Editar</button>
+                <button type="button" class="text-slate-400 text-xs mr-2" (click)="duplicar(p.idPlantilla)">Duplicar</button>
+                @if (!p.esDefault) {
+                  <button type="button" class="text-slate-400 text-xs" (click)="marcarDefault(p)">Default</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <aside class="plantillas-preview-panel admin-card p-4">
+      <h2 class="text-sm font-semibold text-white mb-3">Vista previa rápida</h2>
+      <p class="text-xs text-slate-500 mb-4">Miniaturas con datos de ejemplo. Clic para ampliar.</p>
+      <div class="plantillas-preview-grid">
+        @for (tipo of ['FACTURA', 'PRESUPUESTO', 'REMITO']; track tipo) {
+          @if (defaultsPorTipo().get(tipo); as def) {
+            <div class="plantilla-preview-card">
+              <div class="flex justify-between items-center mb-2">
+                <span class="admin-badge">{{ tipo }}</span>
+                @if (def.esDefault) { <span class="text-orange-400 text-xs">★ default</span> }
+              </div>
+              @if (def.idPlantilla && previews()[def.idPlantilla]; as prev) {
+                <button type="button" class="plantilla-thumb plantilla-thumb--card w-full" (click)="abrirModal(def)">
+                  <div class="plantilla-thumb-frame plantilla-thumb-frame--tall" [innerHTML]="previewHtml(def.idPlantilla)"></div>
+                </button>
+                <p class="text-xs text-slate-400 mt-2 truncate">{{ def.nombre }}</p>
+              } @else {
+                <div class="plantilla-thumb-skeleton animate-pulse"></div>
+              }
+            </div>
+          }
+        }
+      </div>
+    </aside>
+
+    @if (seleccionada(); as sel) {
+      <form class="admin-card p-5 flex flex-col gap-3 plantillas-editor" (ngSubmit)="guardar()">
+        <h2 class="font-semibold text-white text-sm">Editor — {{ sel.nombre }}</h2>
+        <label class="text-sm text-slate-300">Nombre<input class="admin-input mt-1" [(ngModel)]="sel.nombre" name="nombre" /></label>
+        <label class="text-sm text-slate-300">Contenido JSON (html + css)
+          <textarea class="admin-input mt-1 font-mono text-xs min-h-[240px]" [(ngModel)]="sel.contenidoJson" name="json"></textarea>
+        </label>
+        <p class="text-xs text-slate-500" ngNonBindable>Placeholders: {{empresa_nombre}}, {{factura_numero}}, {{item1_codigo}}, {{total_final}}, etc.</p>
+        <button type="submit" class="admin-btn admin-btn-primary w-fit">Guardar plantilla</button>
+      </form>
+    }
+  </div>
+
+  @if (modalPreview(); as modal) {
+    <div class="plantilla-modal-backdrop" (click)="cerrarModal()" role="presentation">
+      <div class="plantilla-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+        <div class="plantilla-modal-header">
+          <h3 class="text-sm font-semibold text-white">Vista previa — {{ modal.tipo }}</h3>
+          <button type="button" class="admin-btn admin-btn-ghost text-xs" (click)="cerrarModal()">Cerrar</button>
+        </div>
+        <div class="plantilla-modal-body" [innerHTML]="previewCompleto(modal)"></div>
+      </div>
+    </div>
+  }
+
+  @if (cargandoPreview()) {
+    <p class="text-xs text-slate-500 mt-2 animate-pulse">Generando vista previa…</p>
+  }
+</app-config-page-shell>

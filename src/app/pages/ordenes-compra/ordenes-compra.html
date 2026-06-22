@@ -1,0 +1,57 @@
+<div class="admin-page-header flex flex-wrap justify-between gap-3">
+  <div>
+    <h1 class="admin-page-title">Órdenes de compra</h1>
+    <p class="admin-page-subtitle">Reposición a proveedores. Al recibir, el stock se actualiza solo.</p>
+  </div>
+  <a routerLink="/admin/productos" class="admin-btn admin-btn-ghost text-sm">← Volver a productos</a>
+</div>
+
+@if (ok()) { <p class="admin-alert admin-alert-success">{{ ok() }}</p> }
+@if (error()) { <p class="admin-alert admin-alert-error">{{ error() }}</p> }
+
+<div class="space-y-4">
+  @for (o of items(); track o.idOrden) {
+    <div class="admin-card overflow-hidden">
+      <div class="admin-card-header flex flex-wrap justify-between items-center gap-2">
+        <div>
+          <span class="font-mono text-blue-300">OC #{{ o.idOrden }}</span>
+          <span class="text-slate-400 mx-2">·</span>
+          <span>{{ o.proveedor }}</span>
+          <span [class]="badge(o.estado)">{{ o.estado }}</span>
+        </div>
+        <div class="flex gap-2">
+          @if (o.estado === 'BORRADOR') {
+            <button type="button" class="admin-btn admin-btn-primary text-xs py-1 px-2" (click)="enviar(o)">Enviar</button>
+          }
+          @if (o.estado === 'ENVIADA' || o.estado === 'BORRADOR') {
+            <button type="button" class="admin-btn admin-btn-success text-xs py-1 px-2" (click)="recibir(o)">Recibir mercadería</button>
+          }
+          @if (o.estado !== 'RECIBIDA') {
+            <button type="button" class="admin-btn admin-btn-danger text-xs py-1 px-2" (click)="eliminar(o)">Eliminar</button>
+          }
+        </div>
+      </div>
+      <div class="p-4 text-sm text-slate-400">
+        {{ o.fecha | date:'medium' }} · Total estimado: <strong class="text-white">${{ o.total | number:'1.2-2' }}</strong>
+      </div>
+      <table class="admin-table">
+        <thead><tr><th>Producto</th><th>Cantidad</th><th>P. unit.</th><th>Subtotal</th></tr></thead>
+        <tbody>
+          @for (d of o.detalles ?? []; track d.idDetalle) {
+            <tr>
+              <td>{{ d.producto?.nombre }}</td>
+              <td>{{ d.cantidad }}</td>
+              <td>${{ d.precioUnitario | number:'1.2-2' }}</td>
+              <td>${{ d.subtotal | number:'1.2-2' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @empty {
+    <div class="admin-card p-10 text-center text-slate-400">
+      Sin órdenes de compra. Generá una desde
+      <a routerLink="/admin/productos" class="text-blue-400 hover:underline">Productos → Stock bajo</a>.
+    </div>
+  }
+</div>

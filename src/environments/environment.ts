@@ -6,5 +6,5 @@
 // la app funciona igual aunque se acceda por un tunel publico, sin CORS.
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8080',
+  apiUrl: '',
 };

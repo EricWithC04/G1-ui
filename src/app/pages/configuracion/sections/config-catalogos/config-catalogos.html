@@ -1,0 +1,90 @@
+<app-config-page-shell titulo="Catálogos / Maestros" subtitulo="Categorías de tienda, depósitos y condiciones de pago">
+  @if (mensaje()) { <p class="admin-alert admin-alert-success">{{ mensaje() }}</p> }
+  @if (error()) { <p class="admin-alert admin-alert-error">{{ error() }}</p> }
+
+  <div class="config-tabs">
+    <button type="button" class="config-tab" [class.config-tab--active]="tab() === 'categorias'" (click)="tab.set('categorias')">Categorías de tienda</button>
+    <button type="button" class="config-tab" [class.config-tab--active]="tab() === 'depositos'" (click)="tab.set('depositos')">Depósitos</button>
+    <button type="button" class="config-tab" [class.config-tab--active]="tab() === 'condiciones'" (click)="tab.set('condiciones')">Condiciones de pago</button>
+    <button type="button" class="config-tab" [class.config-tab--active]="tab() === 'etiquetas'" (click)="tab.set('etiquetas')">Etiquetas CRM</button>
+  </div>
+
+  @if (tab() === 'etiquetas') {
+    <div class="admin-card p-5 mt-4 max-w-2xl">
+      <h2 class="font-semibold text-white text-sm mb-1">Etiquetas de la bandeja CRM</h2>
+      <p class="text-xs text-slate-400 mb-4">Separadas por coma. Se usan para clasificar conversaciones en la bandeja omnicanal.</p>
+      <label class="text-sm text-slate-300 block">
+        Lista de etiquetas
+        <textarea class="admin-input mt-1 min-h-28 font-mono text-sm" [(ngModel)]="etiquetasCrm" name="etiquetas"></textarea>
+      </label>
+      <p class="text-xs text-slate-500 mt-2">Ejemplo: venta,soporte,reclamo,presupuesto,urgente,preventivo,calibracion,repuesto,visita_tecnica,garantia</p>
+      <button type="button" class="admin-btn admin-btn-primary mt-4" [disabled]="guardando()" (click)="guardarEtiquetasCrm()">Guardar etiquetas</button>
+    </div>
+  } @else if (tab() === 'categorias') {
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
+      <form #catForm="ngForm" class="admin-card p-5 flex flex-col gap-3 h-fit" (ngSubmit)="guardarCategoria(catForm)">
+        <h2 class="font-semibold text-white text-sm">Nueva categoría</h2>
+        <p class="text-xs text-slate-400">Usada en el catálogo público y en productos.</p>
+        <label class="text-sm text-slate-300">Nombre *
+          <input class="admin-input mt-1" [(ngModel)]="formCategoria.nombre" name="nombre" required minlength="2" />
+        </label>
+        <label class="text-sm text-slate-300">Descripción
+          <textarea class="admin-input mt-1 min-h-[80px]" [(ngModel)]="formCategoria.descripcion" name="desc"></textarea>
+        </label>
+        <button type="submit" class="admin-btn admin-btn-primary w-fit" [disabled]="guardando()">Crear categoría</button>
+      </form>
+      <div class="admin-card overflow-hidden lg:col-span-2">
+        <div class="p-4 border-b border-white/10">
+          <app-admin-search
+            [termino]="busquedaCategorias()"
+            (terminoChange)="busquedaCategorias.set($event)"
+            [total]="categoriasTienda().length"
+            [filtrados]="categoriasFiltradas().length"
+            placeholder="Buscar categoría…"
+          />
+        </div>
+        <table class="admin-table">
+          <thead><tr><th>ID</th><th>Nombre</th><th>Descripción</th><th></th></tr></thead>
+          <tbody>
+            @for (c of categoriasFiltradas(); track c.idCategoria) {
+              <tr>
+                <td>{{ c.idCategoria }}</td>
+                <td>{{ c.nombre }}</td>
+                <td class="text-slate-400">{{ c.descripcion }}</td>
+                <td class="text-right">
+                  <button type="button" class="text-red-400 text-xs" (click)="borrarCategoria(c.idCategoria)">Eliminar</button>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="4" class="text-center text-slate-500 py-6">Sin categorías</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  } @else {
+    <div class="admin-card overflow-hidden mt-4">
+      <table class="admin-table">
+        <thead><tr><th>Código</th><th>Nombre</th><th>Estado</th><th></th></tr></thead>
+        <tbody>
+          @for (item of itemsMaestro(); track item.idCatalogo) {
+            <tr>
+              <td>{{ item.codigo }}</td>
+              <td>{{ item.nombre }}</td>
+              <td><span class="admin-badge" [class.admin-badge--emitida]="item.activo">{{ item.activo ? 'Activo' : 'Inactivo' }}</span></td>
+              <td><button type="button" class="text-orange-400 text-xs" (click)="toggleActivo(item)">{{ item.activo ? 'Desactivar' : 'Activar' }}</button></td>
+            </tr>
+          } @empty {
+            <tr><td colspan="4" class="text-center text-slate-500 py-6">Sin registros</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <form class="admin-card p-4 mt-4 flex flex-wrap gap-3 items-end max-w-2xl" (ngSubmit)="crearMaestro()">
+      <label class="text-sm text-slate-300">Código<input class="admin-input mt-1" [(ngModel)]="formNuevo.codigo" name="cod" required /></label>
+      <label class="text-sm text-slate-300">Nombre<input class="admin-input mt-1" [(ngModel)]="formNuevo.nombre" name="nom" required /></label>
+      <button type="submit" class="admin-btn admin-btn-primary">Agregar</button>
+    </form>
+  }
+</app-config-page-shell>

@@ -1,38 +1,258 @@
-<!-- Encabezado de inicio con el logo de NovaTech al costado del titulo. -->
-<div class="flex items-center gap-4 mb-6">
-  <img src="logo.png" alt="NovaTech" class="h-16 w-auto" />
-  <div>
-    <h1 class="text-2xl font-bold text-white mb-1">Bienvenido a Novatech Store</h1>
-    <p class="text-neutral-400">Panel para administrar toda la tienda.</p>
-  </div>
+<div class="admin-content">
+<div class="admin-page-header">
+  <h1 class="admin-page-title">Dashboard ERP</h1>
+  <p class="admin-page-subtitle">
+    Métricas de ventas, facturación, cobranza y CRM en tiempo real.
+  </p>
 </div>
 
-<!-- Fila de tarjetas con numeros rapidos (conteos). -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-  <div class="bg-gray-800 rounded-xl p-4 border border-white/10">
-    <p class="text-3xl font-bold text-blue-400">{{ productos() }}</p>
-    <p class="text-sm text-neutral-400">Productos</p>
-  </div>
-  <div class="bg-gray-800 rounded-xl p-4 border border-white/10">
-    <p class="text-3xl font-bold text-blue-400">{{ usuarios() }}</p>
-    <p class="text-sm text-neutral-400">Usuarios</p>
-  </div>
-  <div class="bg-gray-800 rounded-xl p-4 border border-white/10">
-    <p class="text-3xl font-bold text-blue-400">{{ pedidos() }}</p>
-    <p class="text-sm text-neutral-400">Pedidos</p>
-  </div>
-</div>
+@if (cargando()) {
+  <p class="text-slate-400 text-sm animate-pulse">Cargando indicadores…</p>
+}
+@if (error()) {
+  <p class="admin-alert admin-alert-error mb-4">{{ error() }}</p>
+}
 
-<!-- Tarjetas de acceso rapido: cada una lleva a un modulo. -->
-<h2 class="text-lg font-semibold text-white mb-3">Modulos</h2>
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-  @for (acceso of accesos; track acceso.path) {
-    <a
-      [routerLink]="'/' + acceso.path"
-      class="block bg-gray-800 hover:bg-gray-700 rounded-xl p-5 border border-white/10 transition-colors"
-    >
-      <p class="font-semibold text-white">{{ acceso.titulo }}</p>
-      <p class="text-sm text-neutral-400">{{ acceso.desc }}</p>
+@if (kpis(); as k) {
+
+  <!-- Widgets accionables -->
+  <section class="mb-8">
+    <h2 class="dash-section-title">Acciones pendientes</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">
+      <a routerLink="/admin/pedidos" class="dash-action-card dash-action-card--emerald">
+        <p class="dash-action-value">${{ k.ventasHoy | number:'1.0-0' }}</p>
+        <p class="dash-action-label">Ventas hoy</p>
+        <p class="dash-action-sub">{{ k.pedidosHoy }} pedido(s)</p>
+      </a>
+      <a routerLink="/admin/pedidos" [queryParams]="{ estado: 'PENDIENTE' }" class="dash-action-card dash-action-card--amber">
+        <p class="dash-action-value">{{ k.pedidosPendientes }}</p>
+        <p class="dash-action-label">Pedidos pendientes cobro</p>
+        <p class="dash-action-sub">${{ k.carteraPendiente | number:'1.0-0' }} cartera</p>
+      </a>
+      <a routerLink="/admin/pagos" [queryParams]="{ estado: 'PENDIENTE' }" class="dash-action-card dash-action-card--violet">
+        <p class="dash-action-value">{{ k.pagosPendientesAprobar }}</p>
+        <p class="dash-action-label">Pagos a aprobar</p>
+        <p class="dash-action-sub">Revisar transferencias / QR</p>
+      </a>
+      <a routerLink="/admin/crm/inbox" class="dash-action-card dash-action-card--blue">
+        <p class="dash-action-value">{{ k.crmPendientes }}</p>
+        <p class="dash-action-label">CRM pendientes</p>
+        <p class="dash-action-sub">Conversaciones abiertas</p>
+      </a>
+      <a routerLink="/admin/productos" [queryParams]="{ stock: 'BAJO' }" class="dash-action-card dash-action-card--rose">
+        <p class="dash-action-value">{{ k.productosBajoStock }}</p>
+        <p class="dash-action-label">Stock bajo</p>
+        <p class="dash-action-sub">Productos &lt; umbral</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- KPIs principales -->
+  <section class="mb-8">
+    <h2 class="dash-section-title">Indicadores del mes</h2>
+    <div class="dash-kpi-grid">
+      <div class="dash-kpi-card dash-kpi-card--hero dash-kpi-card--emerald">
+        <p class="dash-kpi-label">Ventas del mes</p>
+        <p class="dash-kpi-value">${{ k.ventasMes | number:'1.0-0' }}</p>
+        <p class="dash-kpi-sub">{{ k.pedidosMes }} pedidos · Ticket ${{ k.ticketPromedio | number:'1.0-0' }}</p>
+      </div>
+      <div class="dash-kpi-card dash-kpi-card--hero dash-kpi-card--blue">
+        <p class="dash-kpi-label">Facturado del mes</p>
+        <p class="dash-kpi-value">${{ k.facturadoMes | number:'1.0-0' }}</p>
+        <p class="dash-kpi-sub">IVA ${{ k.ivaMes | number:'1.0-0' }} · {{ k.facturasEmitidas }} emitidas</p>
+      </div>
+      <div class="dash-kpi-card dash-kpi-card--hero dash-kpi-card--violet">
+        <p class="dash-kpi-label">Cobrado del mes</p>
+        <p class="dash-kpi-value">${{ k.cobradoMes | number:'1.0-0' }}</p>
+        <p class="dash-kpi-sub">{{ k.pagosRegistrados }} pagos registrados</p>
+      </div>
+      <div class="dash-kpi-card dash-kpi-card--hero dash-kpi-card--amber">
+        <p class="dash-kpi-label">Cartera pendiente</p>
+        <p class="dash-kpi-value">${{ k.carteraPendiente | number:'1.0-0' }}</p>
+        <p class="dash-kpi-sub">{{ k.pedidosPendientes }} pedidos sin cerrar</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- KPIs secundarios -->
+  <section class="mb-8">
+    <h2 class="dash-section-title">Resumen acumulado</h2>
+    <div class="admin-stat-grid">
+      <div class="admin-stat admin-stat--emerald">
+        <p class="admin-stat-value">${{ k.ventasTotales | number:'1.0-0' }}</p>
+        <p class="admin-stat-label">Ventas totales</p>
+      </div>
+      <div class="admin-stat admin-stat--blue">
+        <p class="admin-stat-value">${{ k.facturadoTotal | number:'1.0-0' }}</p>
+        <p class="admin-stat-label">Facturado total</p>
+      </div>
+      <div class="admin-stat admin-stat--violet">
+        <p class="admin-stat-value">${{ k.cobradoTotal | number:'1.0-0' }}</p>
+        <p class="admin-stat-label">Cobrado total</p>
+      </div>
+      <div class="admin-stat admin-stat--blue">
+        <p class="admin-stat-value">{{ k.pedidosTotal }}</p>
+        <p class="admin-stat-label">Pedidos totales</p>
+      </div>
+      <div class="admin-stat admin-stat--emerald">
+        <p class="admin-stat-value">{{ k.pedidosPagados }}</p>
+        <p class="admin-stat-label">Pedidos pagados</p>
+      </div>
+      <div class="admin-stat admin-stat--amber">
+        <p class="admin-stat-value">{{ k.clientesActivos }}</p>
+        <p class="admin-stat-label">Clientes activos</p>
+      </div>
+      <div class="admin-stat admin-stat--violet">
+        <p class="admin-stat-value">{{ k.productosTotal }}</p>
+        <p class="admin-stat-label">Productos</p>
+      </div>
+      <div class="admin-stat admin-stat--rose">
+        <p class="admin-stat-value">{{ k.productosBajoStock }}</p>
+        <p class="admin-stat-label">Stock bajo (&lt;5)</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+
+    <!-- Gráfico pedidos por estado -->
+    <div class="admin-card p-5 xl:col-span-1">
+      <h3 class="dash-section-title mb-4">Pedidos por estado</h3>
+      @if (k.pedidosPorEstado.length === 0) {
+        <p class="text-slate-500 text-sm">Sin pedidos registrados.</p>
+      }
+      <ul class="space-y-3">
+        @for (e of k.pedidosPorEstado; track e.estado) {
+          <li>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-slate-300">{{ e.estado }}</span>
+              <span class="text-slate-500">{{ e.cantidad }} ({{ e.porcentaje | number:'1.0-0' }}%)</span>
+            </div>
+            <div class="dash-bar-track">
+              <div class="dash-bar-fill {{ barColor(e.estado) }}" [style.width.%]="e.porcentaje"></div>
+            </div>
+          </li>
+        }
+      </ul>
+    </div>
+
+    <!-- CRM / crédito -->
+    <div class="admin-card p-5 xl:col-span-1">
+      <h3 class="dash-section-title mb-4">CRM y crédito</h3>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="dash-mini-kpi">
+          <p class="dash-mini-value text-emerald-400">{{ k.promocionesActivas }}</p>
+          <p class="dash-mini-label">Promos activas</p>
+        </div>
+        <div class="dash-mini-kpi">
+          <p class="dash-mini-value text-blue-400">{{ k.campanasPendientes }}</p>
+          <p class="dash-mini-label">Campañas pend.</p>
+        </div>
+        <div class="dash-mini-kpi">
+          <p class="dash-mini-value text-rose-400">{{ k.cuotasVencidas }}</p>
+          <p class="dash-mini-label">Cuotas vencidas</p>
+        </div>
+        <div class="dash-mini-kpi">
+          <p class="dash-mini-value text-amber-400">{{ k.cuotasPorVencer }}</p>
+          <p class="dash-mini-label">Cuotas 7 días</p>
+        </div>
+        <div class="dash-mini-kpi col-span-2">
+          <p class="dash-mini-value text-slate-300">{{ k.facturasAnuladas }}</p>
+          <p class="dash-mini-label">Facturas anuladas</p>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-2 mt-4">
+        <a routerLink="/admin/creditos" class="admin-btn admin-btn-ghost text-xs">Ver créditos</a>
+        <a routerLink="/admin/crm" class="admin-btn admin-btn-ghost text-xs">Ir al CRM</a>
+        <a routerLink="/admin/campanas" class="admin-btn admin-btn-ghost text-xs">Campañas</a>
+      </div>
+    </div>
+
+    <!-- Facturación resumen -->
+    <div class="admin-card p-5 xl:col-span-1">
+      <h3 class="dash-section-title mb-4">Facturación</h3>
+      <dl class="space-y-3 text-sm">
+        <div class="flex justify-between">
+          <dt class="text-slate-400">Emitidas</dt>
+          <dd class="font-semibold text-emerald-400">{{ k.facturasEmitidas }}</dd>
+        </div>
+        <div class="flex justify-between">
+          <dt class="text-slate-400">Anuladas</dt>
+          <dd class="font-semibold text-rose-400">{{ k.facturasAnuladas }}</dd>
+        </div>
+        <div class="flex justify-between border-t border-white/10 pt-3">
+          <dt class="text-slate-400">Total facturado</dt>
+          <dd class="font-semibold">${{ k.facturadoTotal | number:'1.2-2' }}</dd>
+        </div>
+        <div class="flex justify-between">
+          <dt class="text-slate-400">Este mes</dt>
+          <dd class="font-semibold text-blue-300">${{ k.facturadoMes | number:'1.2-2' }}</dd>
+        </div>
+        <div class="flex justify-between">
+          <dt class="text-slate-400">IVA del mes</dt>
+          <dd class="font-semibold">${{ k.ivaMes | number:'1.2-2' }}</dd>
+        </div>
+      </dl>
+      <a routerLink="/admin/facturacion" class="admin-btn admin-btn-primary text-xs mt-4 inline-flex">Ir a facturación</a>
+    </div>
+  </div>
+
+  <!-- Tablas recientes -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="admin-card overflow-hidden">
+      <div class="admin-card-header flex justify-between items-center">
+        <span>Últimos pedidos</span>
+        <a routerLink="/admin/pedidos" class="text-xs text-blue-400 hover:underline">Ver todos</a>
+      </div>
+      <table class="admin-table">
+        <thead><tr><th>#</th><th>Cliente</th><th>Total</th><th>Estado</th></tr></thead>
+        <tbody>
+          @for (p of k.ultimosPedidos; track p.idPedido) {
+            <tr>
+              <td><a [routerLink]="['/admin/pedidos']" [queryParams]="{ detalle: p.idPedido }" class="text-blue-400 hover:underline">{{ p.idPedido }}</a></td>
+              <td>{{ p.clienteNombre }}</td>
+              <td>${{ p.total | number:'1.0-0' }}</td>
+              <td><span [class]="badgePedido(p.estado)">{{ p.estado }}</span></td>
+            </tr>
+          } @empty {
+            <tr><td colspan="4" class="text-center text-slate-500 py-4">Sin pedidos.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="admin-card overflow-hidden">
+      <div class="admin-card-header flex justify-between items-center">
+        <span>Últimas facturas</span>
+        <a routerLink="/admin/facturacion" class="text-xs text-blue-400 hover:underline">Ver todas</a>
+      </div>
+      <table class="admin-table">
+        <thead><tr><th>Número</th><th>Cliente</th><th>Total</th><th>Estado</th></tr></thead>
+        <tbody>
+          @for (f of k.ultimasFacturas; track f.idFactura) {
+            <tr>
+              <td class="font-mono text-xs text-blue-300">{{ f.numeroFactura }}</td>
+              <td>{{ f.clienteNombre }}</td>
+              <td>${{ f.total | number:'1.0-0' }}</td>
+              <td><span [class]="badgeFactura(f.estado)">{{ f.estado }}</span></td>
+            </tr>
+          } @empty {
+            <tr><td colspan="4" class="text-center text-slate-500 py-4">Sin facturas.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+
+<h2 class="text-lg font-semibold text-white mb-3">Accesos rápidos</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  @for (m of modulos; track m.path) {
+    <a [routerLink]="'/' + m.path" class="admin-card p-4 block hover:border-blue-500/30 transition-colors group">
+      <span class="text-[10px] uppercase tracking-wider text-slate-500">{{ m.grupo }}</span>
+      <p class="font-semibold text-white mt-1 group-hover:text-blue-300">{{ m.titulo }}</p>
+      <p class="text-sm text-slate-400 mt-1">{{ m.desc }}</p>
     </a>
   }
+</div>
 </div>

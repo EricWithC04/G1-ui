@@ -1,46 +1,68 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ProductService } from '../../services/product';
-import { UsuarioService } from '../../services/usuario.service';
-import { PedidoService } from '../../services/pedido.service';
+import { DecimalPipe } from '@angular/common';
+import { DashboardService } from '../../services/dashboard.service';
+import { DashboardKpi } from '../../models/models';
 
-// Pagina de inicio (dashboard).
-// Muestra unos numeros rapidos (cuantos productos, usuarios, etc.) y
-// tarjetas con accesos directos a cada modulo.
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterLink],
+  imports: [RouterLink, DecimalPipe],
   templateUrl: './dashboard.html',
 })
 export class Dashboard implements OnInit {
 
-  // signals: "cajas" reactivas con los conteos. Cuando cambian, la vista se actualiza sola.
-  productos = signal(0);
-  usuarios = signal(0);
-  pedidos = signal(0);
+  kpis = signal<DashboardKpi | null>(null);
+  cargando = signal(true);
+  error = signal('');
 
-  // Tarjetas de acceso rapido a los modulos (todas dentro de /admin).
-  accesos = [
-    { path: 'admin/productos', titulo: 'Productos', desc: 'Administra el catalogo' },
-    { path: 'admin/categorias', titulo: 'Categorias', desc: 'Organiza los productos' },
-    { path: 'admin/usuarios', titulo: 'Usuarios', desc: 'Clientes y administradores' },
-    { path: 'admin/pedidos', titulo: 'Pedidos', desc: 'Compras de los clientes' },
-    { path: 'admin/pagos', titulo: 'Pagos', desc: 'Cobros de los pedidos' },
-    { path: 'admin/envios', titulo: 'Envios', desc: 'Seguimiento de entregas' },
+  modulos = [
+    { path: 'admin/configuracion', titulo: 'Configuración', desc: 'Usuarios, fiscal, integraciones…', grupo: 'Sistema' },
+    { path: 'admin/crm', titulo: 'CRM', desc: 'Clientes y bandeja omnicanal', grupo: 'Operaciones' },
+    { path: 'admin/pedidos', titulo: 'Pedidos', desc: 'Ventas y órdenes', grupo: 'Operaciones' },
+    { path: 'admin/facturacion', titulo: 'Facturación', desc: 'Comprobantes fiscales', grupo: 'Finanzas' },
+    { path: 'admin/creditos', titulo: 'Créditos', desc: 'Cuotas y morosidad', grupo: 'Finanzas' },
+    { path: 'admin/productos', titulo: 'Productos', desc: 'Catálogo de la tienda', grupo: 'Catálogo' },
+    { path: 'admin/promociones', titulo: 'Promociones', desc: 'Ofertas activas', grupo: 'Marketing' },
+    { path: 'admin/campanas', titulo: 'Campañas', desc: 'Mensajes automáticos', grupo: 'Marketing' },
   ];
 
-  // Angular nos pasa los servicios que pedimos en el constructor (inyeccion de dependencias).
-  constructor(
-    private productService: ProductService,
-    private usuarioService: UsuarioService,
-    private pedidoService: PedidoService,
-  ) {}
+  constructor(private dashboardService: DashboardService) {}
 
-  // ngOnInit se ejecuta una vez cuando la pagina se carga.
-  // Pedimos cada lista y guardamos solo su cantidad (length).
   ngOnInit(): void {
-    this.productService.listar().subscribe(items => this.productos.set(items.length));
-    this.usuarioService.listar().subscribe(items => this.usuarios.set(items.length));
-    this.pedidoService.listar().subscribe(items => this.pedidos.set(items.length));
+    this.dashboardService.kpis().subscribe({
+      next: data => {
+        this.kpis.set(data);
+        this.cargando.set(false);
+        this.error.set('');
+      },
+      error: () => {
+        this.cargando.set(false);
+        this.error.set('No se pudieron cargar los indicadores. Verificá la conexión con el backend.');
+      },
+    });
+  }
+
+  badgePedido(estado?: string): string {
+    if (estado === 'PAGADO') return 'admin-badge admin-badge--activa';
+    if (estado === 'PENDIENTE' || estado === 'PARCIAL') return 'admin-badge admin-badge--pendiente';
+    if (estado === 'CANCELADO') return 'admin-badge admin-badge--vencida';
+    return 'admin-badge admin-badge--borrador';
+  }
+
+  badgeFactura(estado?: string): string {
+    if (estado === 'EMITIDA') return 'admin-badge admin-badge--emitida';
+    if (estado === 'ANULADA') return 'admin-badge admin-badge--vencida';
+    return 'admin-badge admin-badge--borrador';
+  }
+
+  barColor(estado: string): string {
+    const map: Record<string, string> = {
+      PAGADO: 'dash-bar--emerald',
+      PENDIENTE: 'dash-bar--amber',
+      PARCIAL: 'dash-bar--blue',
+      ENVIADO: 'dash-bar--violet',
+      CANCELADO: 'dash-bar--rose',
+    };
+    return map[estado] ?? 'dash-bar--slate';
   }
 }

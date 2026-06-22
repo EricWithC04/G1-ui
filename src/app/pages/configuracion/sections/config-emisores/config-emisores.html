@@ -1,0 +1,68 @@
+<app-config-page-shell titulo="Emisores / AFIP" subtitulo="CUITs, puntos de venta y certificados">
+  @if (mensaje()) { <p class="admin-alert admin-alert-success">{{ mensaje() }}</p> }
+  @if (error()) { <p class="admin-alert admin-alert-error">{{ error() }}</p> }
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-2">
+    <div class="admin-card overflow-hidden">
+      <div class="admin-card-header flex justify-between items-center">
+        <span>Emisores registrados</span>
+        @if (permiso.puede('emisores.create')) {
+          <button type="button" class="admin-btn admin-btn-ghost text-xs" (click)="nuevo()">+ Nuevo</button>
+        }
+      </div>
+      <table class="admin-table">
+        <thead><tr><th>Razón social</th><th>CUIT</th><th>PV</th><th>Ambiente</th><th></th></tr></thead>
+        <tbody>
+          @for (e of emisores(); track e.idEmisor) {
+            <tr>
+              <td>{{ e.razonSocial }} @if (e.esDefault) { <span class="admin-badge admin-badge--emitida ml-1">Default</span> }</td>
+              <td class="text-slate-400">{{ e.cuit }}</td>
+              <td>{{ e.puntoVenta }}</td>
+              <td>{{ e.ambiente }}</td>
+              <td class="text-right whitespace-nowrap">
+                @if (permiso.puede('emisores.update')) {
+                  <button type="button" class="text-orange-400 text-xs mr-2" (click)="editar(e)">Editar</button>
+                }
+                @if (permiso.puede('emisores.delete')) {
+                  <button type="button" class="text-red-400 text-xs" (click)="eliminar(e.idEmisor)">Eliminar</button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="text-center text-slate-500 py-6">Sin emisores</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (permiso.puede('emisores.create') || permiso.puede('emisores.update')) {
+      <form class="admin-card p-5 flex flex-col gap-3" (ngSubmit)="guardar()">
+        <h2 class="font-semibold text-white text-sm">{{ editando() ? 'Editar emisor' : 'Alta de emisor' }}</h2>
+        <label class="text-sm text-slate-300">Razón social<input class="admin-input mt-1" [(ngModel)]="form.razonSocial" name="rs" required /></label>
+        <label class="text-sm text-slate-300">CUIT<input class="admin-input mt-1" [(ngModel)]="form.cuit" name="cuit" required /></label>
+        <label class="text-sm text-slate-300">Condición IVA
+          <select class="admin-input mt-1" [(ngModel)]="form.condicionIva" name="iva">
+            @for (c of condicionesIva; track c.value) {
+              <option [value]="c.value">{{ c.label }}</option>
+            }
+          </select>
+        </label>
+        <label class="text-sm text-slate-300">IIBB<input class="admin-input mt-1" [(ngModel)]="form.iibb" name="iibb" /></label>
+        <label class="text-sm text-slate-300">Domicilio<input class="admin-input mt-1" [(ngModel)]="form.domicilio" name="dom" /></label>
+        <label class="text-sm text-slate-300">Punto de venta<input type="number" class="admin-input mt-1" [(ngModel)]="form.puntoVenta" name="pv" /></label>
+        <label class="text-sm text-slate-300">Ambiente
+          <select class="admin-input mt-1" [(ngModel)]="form.ambiente" name="amb">
+            <option value="HOMOLOGACION">Homologación</option>
+            <option value="PRODUCCION">Producción</option>
+          </select>
+        </label>
+        <label class="text-sm text-slate-300 flex items-center gap-2">
+          <input type="checkbox" [(ngModel)]="form.esDefault" name="def" /> Predeterminado
+        </label>
+        <label class="text-sm text-slate-300">Certificado (.crt)<input type="file" class="admin-input mt-1" accept=".crt,.pem" /></label>
+        <label class="text-sm text-slate-300">Clave privada (.key)<input type="file" class="admin-input mt-1" accept=".key" /></label>
+        <button type="submit" class="admin-btn admin-btn-primary w-fit">Guardar emisor</button>
+      </form>
+    }
+  </div>
+</app-config-page-shell>

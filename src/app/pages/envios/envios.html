@@ -1,90 +1,245 @@
-<h1 class="text-2xl font-bold text-white mb-6">Envios</h1>
+<div class="admin-content">
+  <div class="admin-page-header flex flex-wrap justify-between gap-3">
+    <div>
+      <h1 class="admin-page-title">Envíos</h1>
+      <p class="admin-page-subtitle">Seguimiento de entregas y logística vinculada a pedidos.</p>
+    </div>
+  </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  @if (cargando()) { <p class="text-slate-400 text-sm animate-pulse mb-4">Cargando envíos…</p> }
 
-  <!-- Formulario para crear un envio. -->
-  <form #f="ngForm" class="bg-gray-800 border border-white/10 p-5 rounded-xl flex flex-col gap-3 h-fit" (ngSubmit)="guardar(f)">
-    <h2 class="font-semibold text-white">Nuevo envio</h2>
+  @if (detalle(); as d) {
+    <div class="admin-card p-5 mb-6 border-blue-500/30">
+      <div class="flex flex-wrap justify-between items-start gap-3 mb-4">
+        <div>
+          <h2 class="text-lg font-semibold text-white">Envío #{{ d.envio.idEnvio }}</h2>
+          <p class="text-xs text-slate-400 mt-1">
+            Pedido #{{ d.pedido?.idPedido ?? '—' }}
+            @if (d.clienteNombre) { · {{ d.clienteNombre }} }
+            @if (d.clienteEmail) { · {{ d.clienteEmail }} }
+          </p>
+        </div>
+        <button type="button" class="admin-btn admin-btn-ghost text-xs" (click)="cerrarDetalle()">Cerrar</button>
+      </div>
 
-    <p class="text-xs text-neutral-400">
-      Los campos con <span class="text-red-400">*</span> son obligatorios. El ID del envio lo genera el sistema.
-    </p>
+      @if (cargandoDetalle()) {
+        <p class="text-slate-400 text-sm animate-pulse">Cargando detalle…</p>
+      } @else {
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <section class="lg:col-span-1 space-y-4">
+            <h3 class="text-sm font-semibold text-white">Datos del envío</h3>
+            <dl class="grid grid-cols-1 gap-3 text-sm">
+              <div><dt class="text-slate-500">Estado</dt><dd><span [class]="badgeEnvio(d.envio.estadoEnvio)">{{ d.envio.estadoEnvio }}</span></dd></div>
+              <div><dt class="text-slate-500">Dirección</dt><dd>{{ d.envio.direccionEnvio }}</dd></div>
+              <div><dt class="text-slate-500">Empresa logística</dt><dd>{{ d.envio.empresaLogistica || '—' }}</dd></div>
+              <div><dt class="text-slate-500">Despacho</dt><dd>{{ formatFecha(d.envio.fechaDespacho) }}</dd></div>
+            </dl>
 
-    <label class="text-sm text-neutral-300">
-      Pedido <span class="text-red-400">*</span>
-      <select class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
-        [(ngModel)]="form.pedido.idPedido" name="pedido" required>
-        @for (p of pedidos(); track p.idPedido) {
-          <option [ngValue]="p.idPedido">#{{ p.idPedido }} - {{ p.usuario?.nombre }}</option>
-        }
-      </select>
-      <span class="block text-xs text-neutral-400 mt-1">Pedido que se va a enviar. Elegilo de la lista. Obligatorio.</span>
-    </label>
+            <div class="space-y-2 pt-2 border-t border-white/10">
+              <label class="text-sm text-slate-300 block">
+                Nº de tracking
+                <input class="admin-input mt-1" [ngModel]="editTracking()" (ngModelChange)="editTracking.set($event)" name="tracking" placeholder="Ej: AND123456789" />
+              </label>
+              <label class="text-sm text-slate-300 block">
+                Costo de envío
+                <input type="number" class="admin-input mt-1" [ngModel]="editCosto()" (ngModelChange)="editCosto.set($event)" name="costo" min="0" step="0.01" />
+              </label>
+              <button type="button" class="admin-btn admin-btn-ghost text-xs" (click)="guardarLogistica()">Guardar tracking / costo</button>
+            </div>
 
-    <label class="text-sm text-neutral-300">
-      Direccion de envio <span class="text-red-400">*</span>
-      <input class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
-        [(ngModel)]="form.direccionEnvio" #direccionCtrl="ngModel" name="direccion" required placeholder="Ej: Av. Siempre Viva 742">
-      <span class="block text-xs text-neutral-400 mt-1">A donde se manda el pedido. Texto libre. Obligatorio.</span>
-    </label>
+            <div class="flex flex-wrap gap-2 pt-2">
+              @if (d.envio.estadoEnvio === 'PREPARANDO') {
+                <button type="button" class="admin-btn admin-btn-primary text-xs" (click)="actualizarEstado(d.envio, 'EN_CAMINO')">Marcar en camino</button>
+              }
+              @if (d.envio.estadoEnvio === 'EN_CAMINO') {
+                <button type="button" class="admin-btn admin-btn-success text-xs" (click)="actualizarEstado(d.envio, 'ENTREGADO')">Marcar entregado</button>
+              }
+              <select class="admin-input text-xs py-1.5 w-auto" [ngModel]="d.envio.estadoEnvio" (ngModelChange)="actualizarEstado(d.envio, $event)" name="estadoDetalle">
+                <option value="PREPARANDO">Preparando</option>
+                <option value="EN_CAMINO">En camino</option>
+                <option value="ENTREGADO">Entregado</option>
+              </select>
+            </div>
+          </section>
 
-    @if (direccionCtrl.invalid && direccionCtrl.touched) {
-      <p class="text-xs text-red-400 mt-1">
-        @if (direccionCtrl.hasError('required')) { El campo es obligatorio. }
-      </p>
-    }
+          <section class="lg:col-span-1 space-y-4">
+            <h3 class="text-sm font-semibold text-white">Pedido y cliente</h3>
+            @if (d.pedido) {
+              <dl class="grid grid-cols-1 gap-3 text-sm">
+                <div><dt class="text-slate-500">Nº pedido</dt><dd class="font-mono">#{{ d.pedido.idPedido }}</dd></div>
+                <div><dt class="text-slate-500">Estado pedido</dt><dd>{{ d.pedido.estado ?? '—' }}</dd></div>
+                <div><dt class="text-slate-500">Canal</dt><dd>{{ d.pedido.canalOrigen ?? '—' }}</dd></div>
+                <div><dt class="text-slate-500">Entrega</dt><dd>{{ d.pedido.tipoEntrega ?? '—' }}</dd></div>
+                <div><dt class="text-slate-500">Fecha</dt><dd>{{ formatFecha(d.pedido.fecha) }}</dd></div>
+                <div><dt class="text-slate-500">Total</dt><dd class="font-semibold text-white">{{ formatMoney(d.pedido.total) }}</dd></div>
+                <div><dt class="text-slate-500">Saldo pendiente</dt><dd>{{ formatMoney(d.saldoPendiente) }}</dd></div>
+              </dl>
+              <a [routerLink]="['/admin/pedidos']" [queryParams]="{ detalle: d.pedido.idPedido }" class="admin-btn admin-btn-ghost text-xs inline-flex">Ver pedido completo →</a>
+            } @else {
+              <p class="text-sm text-slate-400">Sin pedido vinculado.</p>
+            }
+          </section>
 
-    <label class="text-sm text-neutral-300">
-      Empresa logistica
-      <input class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
-        [(ngModel)]="form.empresaLogistica" name="empresa" placeholder="Ej: Andreani">
-      <span class="block text-xs text-neutral-400 mt-1">Quien hace el envio. Ej: Andreani, Correo Argentino. Opcional.</span>
-    </label>
+          <section class="lg:col-span-1 space-y-4">
+            <h3 class="text-sm font-semibold text-white">Factura y pagos</h3>
+            @if (d.factura) {
+              <dl class="grid grid-cols-1 gap-3 text-sm mb-3">
+                <div><dt class="text-slate-500">Factura</dt><dd class="font-mono">{{ d.factura.numeroFactura ?? ('#' + d.factura.idFactura) }}</dd></div>
+                <div><dt class="text-slate-500">Estado</dt><dd>{{ d.factura.estado ?? '—' }}</dd></div>
+                <div><dt class="text-slate-500">Total facturado</dt><dd>{{ formatMoney(d.factura.total) }}</dd></div>
+                @if (d.factura.cae) {
+                  <div><dt class="text-slate-500">CAE</dt><dd class="font-mono text-xs">{{ d.factura.cae }}</dd></div>
+                }
+              </dl>
+              <a [routerLink]="['/admin/facturacion']" [queryParams]="{ factura: d.factura.idFactura }" class="admin-btn admin-btn-primary text-xs inline-flex">Ver factura →</a>
+            } @else if (d.pedido?.idPedido) {
+              <p class="text-sm text-slate-400 mb-2">Este pedido aún no tiene factura emitida.</p>
+              <a [routerLink]="['/admin/facturacion']" [queryParams]="{ pedido: d.pedido!.idPedido }" class="admin-btn admin-btn-ghost text-xs inline-flex">Generar factura →</a>
+            }
 
-    <label class="text-sm text-neutral-300">
-      Estado <span class="text-red-400">*</span>
-      <select class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
-        [(ngModel)]="form.estadoEnvio" name="estado">
-        <option value="PREPARANDO">PREPARANDO</option>
-        <option value="EN_CAMINO">EN_CAMINO</option>
-        <option value="ENTREGADO">ENTREGADO</option>
-      </select>
-      <span class="block text-xs text-neutral-400 mt-1">En que etapa esta el envio. Elegi una de la lista.</span>
-    </label>
+            @if (d.pagos?.length) {
+              <div class="mt-4">
+                <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Pagos</h4>
+                <ul class="space-y-2 text-sm">
+                  @for (p of d.pagos; track p.idPago) {
+                    <li class="flex justify-between gap-2 border border-white/10 rounded-lg px-3 py-2">
+                      <span>{{ p.metodo ?? 'Pago' }} · {{ p.estado }}</span>
+                      <span class="font-mono">{{ formatMoney(p.monto) }}</span>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
 
-    <button type="submit" class="bg-blue-600 hover:bg-blue-500 p-2 rounded text-white">Crear</button>
-  </form>
+            @if (d.lineas?.length) {
+              <div class="mt-4">
+                <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Productos</h4>
+                <ul class="space-y-2 text-sm max-h-40 overflow-y-auto">
+                  @for (l of d.lineas; track l.idDetalle) {
+                    <li class="flex justify-between gap-2 text-slate-300">
+                      <span class="truncate">{{ l.producto?.nombre ?? 'Producto' }} × {{ l.cantidad }}</span>
+                      <span class="font-mono shrink-0">{{ formatMoney(l.precioUnitario) }}</span>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+          </section>
+        </div>
+      }
+    </div>
+  }
 
-  <!-- Tabla con la lista de envios. -->
-  <div class="lg:col-span-2 bg-gray-800 border border-white/10 rounded-xl overflow-hidden">
-    <table class="w-full text-sm text-left">
-      <thead class="bg-gray-900 text-neutral-400">
-        <tr>
-          <th class="px-4 py-3">ID</th>
-          <th class="px-4 py-3">Pedido</th>
-          <th class="px-4 py-3">Direccion</th>
-          <th class="px-4 py-3">Empresa</th>
-          <th class="px-4 py-3">Estado</th>
-          <th class="px-4 py-3 text-right">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (item of items(); track item.idEnvio) {
-          <tr class="border-t border-white/10 text-neutral-200">
-            <td class="px-4 py-3">{{ item.idEnvio }}</td>
-            <td class="px-4 py-3">#{{ item.pedido?.idPedido }}</td>
-            <td class="px-4 py-3 text-neutral-400">{{ item.direccionEnvio }}</td>
-            <td class="px-4 py-3">{{ item.empresaLogistica }}</td>
-            <td class="px-4 py-3">{{ item.estadoEnvio }}</td>
-            <td class="px-4 py-3 text-right">
-              <button (click)="borrar(item.idEnvio)" class="text-red-400 hover:text-red-300">Borrar</button>
-            </td>
-          </tr>
-        }
-        @if (items().length === 0) {
-          <tr><td colspan="6" class="px-4 py-4 text-neutral-500">No hay envios.</td></tr>
-        }
-      </tbody>
-    </table>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <form #f="ngForm" class="admin-card p-5 flex flex-col gap-3 h-fit" (ngSubmit)="guardar(f)">
+      <h2 class="font-semibold text-white">Nuevo envío</h2>
+      <p class="text-xs text-slate-400">Los campos con <span class="text-red-400">*</span> son obligatorios.</p>
+
+      <label class="text-sm text-slate-300">
+        Pedido <span class="text-red-400">*</span>
+        <select class="admin-input mt-1" [(ngModel)]="form.pedido.idPedido" name="pedido" required>
+          @for (p of pedidos(); track p.idPedido) {
+            <option [ngValue]="p.idPedido">#{{ p.idPedido }} — {{ p.usuario?.nombre }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="text-sm text-slate-300">
+        Dirección de envío <span class="text-red-400">*</span>
+        <input class="admin-input mt-1" [(ngModel)]="form.direccionEnvio" #direccionCtrl="ngModel" name="direccion" required placeholder="Ej: Av. Siempre Viva 742" />
+      </label>
+      @if (direccionCtrl.invalid && direccionCtrl.touched) {
+        <p class="text-xs text-red-400">La dirección es obligatoria.</p>
+      }
+
+      <label class="text-sm text-slate-300">
+        Empresa logística
+        <input class="admin-input mt-1" [(ngModel)]="form.empresaLogistica" name="empresa" placeholder="Ej: Andreani" />
+      </label>
+
+      <label class="text-sm text-slate-300">
+        Estado <span class="text-red-400">*</span>
+        <select class="admin-input mt-1" [(ngModel)]="form.estadoEnvio" name="estado">
+          <option value="PREPARANDO">Preparando</option>
+          <option value="EN_CAMINO">En camino</option>
+          <option value="ENTREGADO">Entregado</option>
+        </select>
+      </label>
+
+      <button type="submit" class="admin-btn admin-btn-primary">Crear envío</button>
+    </form>
+
+    <div class="lg:col-span-2 admin-card overflow-hidden">
+      <div class="admin-card-header">Envíos registrados</div>
+      <div class="p-4 border-b border-white/10 flex flex-col sm:flex-row gap-3">
+        <div class="flex-1">
+          <app-admin-search
+            [termino]="busqueda()"
+            (terminoChange)="busqueda.set($event)"
+            [total]="items().length"
+            [filtrados]="itemsFiltrados().length"
+            placeholder="Buscar por pedido, cliente, tracking, dirección…"
+          />
+        </div>
+        <label class="text-sm text-slate-300 shrink-0">
+          Estado
+          <select class="admin-input mt-1" [ngModel]="filtroEstado()" (ngModelChange)="filtroEstado.set($event)">
+            <option value="">Todos</option>
+            <option value="PREPARANDO">Preparando</option>
+            <option value="EN_CAMINO">En camino</option>
+            <option value="ENTREGADO">Entregado</option>
+          </select>
+        </label>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Envío</th>
+              <th>Pedido</th>
+              <th>Cliente</th>
+              <th>Tracking</th>
+              <th>Total</th>
+              <th>Estado</th>
+              <th class="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of itemsFiltrados(); track item.idEnvio) {
+              <tr class="cursor-pointer hover:bg-white/5" (click)="verDetalle(item)">
+                <td class="font-mono">#{{ item.idEnvio }}</td>
+                <td>
+                  <span class="font-mono text-blue-400">#{{ item.pedido?.idPedido ?? '—' }}</span>
+                </td>
+                <td>
+                  <div class="text-sm">{{ nombreCliente(item) }}</div>
+                  @if (emailCliente(item)) {
+                    <div class="text-xs text-slate-500 truncate max-w-[140px]">{{ emailCliente(item) }}</div>
+                  }
+                </td>
+                <td class="text-xs font-mono text-slate-400">{{ item.numeroTracking || '—' }}</td>
+                <td class="text-sm">{{ formatMoney(item.pedido?.total) }}</td>
+                <td (click)="$event.stopPropagation()">
+                  <select class="admin-input text-xs py-1 w-full min-w-[7rem]" [ngModel]="item.estadoEnvio" (ngModelChange)="actualizarEstado(item, $event)" [name]="'estado-' + item.idEnvio">
+                    <option value="PREPARANDO">Preparando</option>
+                    <option value="EN_CAMINO">En camino</option>
+                    <option value="ENTREGADO">Entregado</option>
+                  </select>
+                </td>
+                <td class="text-right whitespace-nowrap" (click)="$event.stopPropagation()">
+                  <button type="button" (click)="verDetalle(item)" class="text-blue-400 hover:text-blue-300 text-xs mr-3">Ver</button>
+                  <button type="button" (click)="borrar(item.idEnvio)" class="text-red-400 hover:text-red-300 text-xs">Borrar</button>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="7" class="text-center text-slate-400 py-8">
+                @if (busqueda() || filtroEstado()) { No hay envíos que coincidan. }
+                @else { No hay envíos registrados. }
+              </td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>

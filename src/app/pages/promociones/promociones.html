@@ -1,0 +1,108 @@
+<div class="admin-page-header">
+  <h1 class="admin-page-title">Promociones</h1>
+  <p class="admin-page-subtitle">
+    Creá ofertas y descuentos antes de comunicarlas. Activá la promoción y luego usá
+    <a routerLink="/admin/campanas" class="text-blue-400 hover:underline">Campañas</a> para enviarla a tus clientes.
+  </p>
+</div>
+
+@if (ok()) { <p class="admin-alert admin-alert-success">{{ ok() }}</p> }
+@if (error()) { <p class="admin-alert admin-alert-error">{{ error() }}</p> }
+
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+  <form class="admin-card p-5 flex flex-col gap-3 h-fit" (ngSubmit)="guardar()">
+    <h2 class="font-semibold text-white">Nueva promoción</h2>
+
+    <label class="text-sm text-slate-300">
+      Título *
+      <input class="admin-input" [(ngModel)]="form.titulo" name="titulo" required placeholder="Hot Sale Notebooks">
+    </label>
+
+    <label class="text-sm text-slate-300">
+      Descripción
+      <textarea class="admin-input min-h-20" [(ngModel)]="form.descripcion" name="descripcion"
+        placeholder="Detalle de la promo para el cliente"></textarea>
+    </label>
+
+    <div class="grid grid-cols-2 gap-3">
+      <label class="text-sm text-slate-300">
+        Descuento %
+        <input class="admin-input" type="number" [(ngModel)]="form.porcentajeDescuento" name="desc" min="1" max="90">
+      </label>
+      <label class="text-sm text-slate-300">
+        Código cupón
+        <input class="admin-input" [(ngModel)]="form.codigo" name="codigo" placeholder="HOT2026">
+      </label>
+    </div>
+
+    <label class="text-sm text-slate-300">
+      Segmento objetivo
+      <select class="admin-input" [(ngModel)]="form.segmentoObjetivo" name="segmento">
+        @for (s of segmentos; track s) { <option [value]="s">{{ s }}</option> }
+      </select>
+    </label>
+
+    <label class="text-sm text-slate-300">
+      Estado inicial
+      <select class="admin-input" [(ngModel)]="form.estado" name="estado">
+        @for (e of estados; track e) { <option [value]="e">{{ e }}</option> }
+      </select>
+    </label>
+
+    <button type="submit" class="admin-btn admin-btn-primary mt-1" [disabled]="guardando()">
+      {{ guardando() ? 'Guardando…' : 'Crear promoción' }}
+    </button>
+  </form>
+
+  <div class="xl:col-span-2 admin-card overflow-hidden">
+    <div class="admin-card-header">Promociones registradas</div>
+    <div class="p-4 border-b border-white/10">
+      <app-admin-search
+        [termino]="busqueda()"
+        (terminoChange)="busqueda.set($event)"
+        [total]="items().length"
+        [filtrados]="itemsFiltrados().length"
+        placeholder="Buscar por título, código, segmento o estado…"
+      />
+    </div>
+    <div class="overflow-x-auto">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Promoción</th>
+            <th>Desc.</th>
+            <th>Código</th>
+            <th>Segmento</th>
+            <th>Estado</th>
+            <th class="text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of itemsFiltrados(); track item.idPromocion) {
+            <tr>
+              <td>
+                <p class="font-medium text-white">{{ item.titulo }}</p>
+                <p class="text-xs text-slate-400 line-clamp-1">{{ item.descripcion }}</p>
+              </td>
+              <td>{{ item.porcentajeDescuento }}%</td>
+              <td>{{ item.codigo || '—' }}</td>
+              <td>{{ item.segmentoObjetivo }}</td>
+              <td><span [class]="badgeClass(item.estado)">{{ item.estado }}</span></td>
+              <td class="text-right space-x-2">
+                @if (item.estado !== 'ACTIVA') {
+                  <button type="button" class="admin-btn admin-btn-success text-xs py-1 px-2" (click)="activar(item)">Activar</button>
+                }
+                <button type="button" class="admin-btn admin-btn-danger text-xs py-1 px-2" (click)="eliminar(item)">Eliminar</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="6" class="text-center text-slate-400 py-8">
+              @if (busqueda()) { No hay promociones que coincidan con la búsqueda. }
+              @else { Sin promociones. Creá la primera arriba. }
+            </td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
