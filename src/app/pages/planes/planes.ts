@@ -1,5 +1,5 @@
-import { Component, OnInit, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit, signal, computed } from '@angular/core';
+import { FormsModule, NgForm } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
 import { PlanCuotasService } from '../../services/plan-cuotas.service';
 import { PerfilService } from '../../services/perfil.service';
@@ -18,6 +18,9 @@ export class Planes implements OnInit {
   clientes = signal<PerfilCliente[]>([]); // perfiles de cliente para el desplegable
   pedidos = signal<Pedido[]>([]);
 
+  // Nuevo: rastrea qué cliente está seleccionado en el form
+  clienteSeleccionado = signal<number | undefined>(undefined)
+
   // Formulario. El estado por defecto es ACTIVO.
   form: PlanCuotas = {
     cliente: { idCliente: undefined } as PerfilCliente,
@@ -26,6 +29,13 @@ export class Planes implements OnInit {
     interes: 0,
     estado: 'ACTIVO',
   };
+
+  // Signal computado: se recalcula solo cuando cambian "pedidos" o "clienteSeleccionado"
+  pedidosFiltrados = computed(() => {
+    const idCliente = this.clienteSeleccionado();
+    if (!idCliente) return [];
+    return this.pedidos().filter(p => p.usuario?.idUsuario === idCliente);
+  });
 
   constructor(
     private service: PlanCuotasService,
@@ -39,11 +49,28 @@ export class Planes implements OnInit {
     this.pedidoService.listar().subscribe(data => this.pedidos.set(data));
   }
 
+  // Para que no se puedan colocar caracteres raros en los inputs de numeros
+  bloquearCaracteresInvalidos(event: KeyboardEvent): void {
+    if (['e', 'E', '+', '-'].includes(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  // Se ejecuta cada vez que el usuario cambia el select de cliente
+  onClienteChange(idCliente: number | undefined): void {
+    this.clienteSeleccionado.set(idCliente);
+    this.form.pedido.idPedido = undefined; // resetea el pedido elegido, porque la lista cambió
+  }
+
   cargar(): void {
     this.service.listar().subscribe(data => this.items.set(data));
   }
 
-  guardar(): void {
+  guardar(f: NgForm): void {
+    if (f.invalid) {
+      Object.values(f.controls).forEach(c => c.markAsTouched());
+      return;
+    }
     this.service.crear(this.form).subscribe({
       next: () => {
         this.form = {

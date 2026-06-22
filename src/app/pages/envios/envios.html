@@ -3,7 +3,7 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
   <!-- Formulario para crear un envio. -->
-  <form class="bg-gray-800 border border-white/10 p-5 rounded-xl flex flex-col gap-3 h-fit" (ngSubmit)="guardar()">
+  <form #f="ngForm" class="bg-gray-800 border border-white/10 p-5 rounded-xl flex flex-col gap-3 h-fit" (ngSubmit)="guardar(f)">
     <h2 class="font-semibold text-white">Nuevo envio</h2>
 
     <p class="text-xs text-neutral-400">
@@ -24,9 +24,15 @@
     <label class="text-sm text-neutral-300">
       Direccion de envio <span class="text-red-400">*</span>
       <input class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
-        [(ngModel)]="form.direccionEnvio" name="direccion" required placeholder="Ej: Av. Siempre Viva 742">
+        [(ngModel)]="form.direccionEnvio" #direccionCtrl="ngModel" name="direccion" required placeholder="Ej: Av. Siempre Viva 742">
       <span class="block text-xs text-neutral-400 mt-1">A donde se manda el pedido. Texto libre. Obligatorio.</span>
     </label>
+
+    @if (direccionCtrl.invalid && direccionCtrl.touched) {
+      <p class="text-xs text-red-400 mt-1">
+        @if (direccionCtrl.hasError('required')) { El campo es obligatorio. }
+      </p>
+    }
 
     <label class="text-sm text-neutral-300">
       Empresa logistica

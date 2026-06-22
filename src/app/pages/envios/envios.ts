@@ -1,5 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { EnvioService } from '../../services/envio.service';
 import { PedidoService } from '../../services/pedido.service';
 import { Envio, Pedido } from '../../models/models';
@@ -37,7 +37,11 @@ export class Envios implements OnInit {
     this.service.listar().subscribe(data => this.items.set(data));
   }
 
-  guardar(): void {
+  guardar(f: NgForm): void {
+    if (f.invalid) {
+      Object.values(f.controls).forEach(c => c.markAsTouched());
+      return;
+    }
     this.service.crear(this.form).subscribe({
       next: () => {
         this.form = {
