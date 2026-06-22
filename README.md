@@ -12,6 +12,21 @@ hizo para que cualquiera del equipo pueda **entenderlo, levantarlo y defenderlo*
 
 ---
 
+## Repositorios del proyecto
+
+| Parte | Repositorio | Rama habitual | URL |
+|-------|-------------|---------------|-----|
+| **Frontend (este repo)** | `EricWithC04/G1-ui` | `banners` (banners y landings) | https://github.com/EricWithC04/G1-ui |
+| **Backend (API REST)** | `LeanMongelos/G1-ms` | `main` | https://github.com/LeanMongelos/G1-ms |
+
+El frontend **no incluye** el backend. Para desarrollo local hay que clonar ambos repos y levantar el backend en `localhost:8080` antes de `npm start`.
+
+**Rama `banners`:** incluye páginas de landing por categoría y promos (`/notebooks`, `/hot-sale`, `/cyber-week`, etc.), logo recortado, separación visual body/footer en la tienda y validación de nombres de categoría en el panel admin.
+
+Más contexto para agentes y colaboradores: ver [`AGENTS.md`](./AGENTS.md) en la raíz del repo.
+
+---
+
 ## 1. Índice
 
 1. Índice

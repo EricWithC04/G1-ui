@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { ProductService } from '../../services/product';
 import { CategoriaService } from '../../services/categoria.service';
@@ -29,22 +29,39 @@ export class Catalogo implements OnInit {
     // Mensajito de "agregado al carrito" para dar feedback.
     agregado = signal<string | null>(null);
 
+    // Datos para la tira de beneficios (banner 06 del diseño)
+    beneficios = [
+        { icon: '🚚', title: 'Envío gratis',    sub: 'en compras +$80.000',    bg: 'rgba(34,211,238,0.14)', border: 'rgba(34,211,238,0.35)' },
+        { icon: '💳', title: '12 cuotas',        sub: 'sin interés',            bg: 'rgba(59,130,246,0.14)', border: 'rgba(59,130,246,0.35)' },
+        { icon: '🛡️', title: 'Garantía oficial', sub: 'en todos los productos', bg: 'rgba(34,197,94,0.14)',  border: 'rgba(34,197,94,0.35)'  },
+        { icon: '⚡',  title: 'Envío 24/72hs',   sub: 'a todo el país',         bg: 'rgba(249,115,22,0.14)', border: 'rgba(249,115,22,0.35)' },
+    ];
+
+    // Items del banner de periféricos (banner 05 del diseño)
+    perifericos = [
+        { icon: '⌨️', label: 'Teclado mecánico', accent: false },
+        { icon: '🖱️', label: 'Mouse 16K DPI',     accent: false },
+        { icon: '🎧', label: 'Headset 7.1',        accent: false },
+        { icon: '',   label: '',                    accent: true  },
+    ];
+
     constructor(
+        private route: ActivatedRoute,
         private productService: ProductService,
         private categoriaService: CategoriaService,
         private cart: CartService,
     ) { }
 
     ngOnInit(): void {
-        // Traemos las categorias una vez (para el filtro).
         this.categoriaService.listar().subscribe(cats => this.categorias.set(cats));
-        // Y la primera carga de productos (todos).
+        // Leer búsqueda desde queryParam (viene del buscador del header).
+        const q = this.route.snapshot.queryParamMap.get('q');
+        if (q) {
+            this.busqueda = q;
+        }
         this.cargar();
     }
 
-    // Pide los productos al backend aplicando el filtro actual.
-    // El backend acepta UN filtro a la vez: si hay texto, busca por nombre;
-    // si no, y hay categoria elegida, filtra por categoria.
     cargar(): void {
         let filtros: { nombre?: string; categoriaId?: number } | undefined;
         if (this.busqueda.trim()) {
@@ -55,17 +72,25 @@ export class Catalogo implements OnInit {
         this.productService.listarConFiltros(filtros).subscribe(items => this.productos.set(items));
     }
 
-    // Cuando cambian el desplegable de categoria, limpiamos la busqueda y recargamos.
+    filtrarCategoria(id: number): void {
+        this.categoriaId = id;
+        this.busqueda = '';
+        this.cargar();
+        setTimeout(() => document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' }), 80);
+    }
+
     cambiarCategoria(): void {
         this.busqueda = '';
         this.cargar();
     }
 
-    // Agrega un producto al carrito y muestra un aviso corto.
+    scrollToProductos(): void {
+        document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' });
+    }
+
     agregarAlCarrito(producto: Product): void {
         this.cart.agregar(producto, 1);
         this.agregado.set(producto.nombre);
-        // Borramos el aviso despues de 2 segundos.
         setTimeout(() => this.agregado.set(null), 2000);
     }
 }
