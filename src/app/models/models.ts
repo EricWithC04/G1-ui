@@ -271,7 +271,11 @@ export interface Cuota {
     monto?: number;
     fechaVencimiento?: string;
     fechaPago?: string;
-    estado?: string;             // PENDIENTE, PAGADA, VENCIDA
+    estado?: string;
+    idPlan?: number;
+    idPedido?: number;
+    clienteNombre?: string;
+    clienteEmail?: string;
 }
 
 export interface Factura {

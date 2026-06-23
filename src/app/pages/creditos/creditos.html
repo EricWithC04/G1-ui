@@ -55,8 +55,8 @@
         @for (c of listaVisible(); track c.idCuota) {
           <tr>
             <td>{{ nombreCliente(c) }}</td>
-            <td>#{{ c.plan?.idPlan }} / Ped. {{ c.plan?.pedido?.idPedido }}</td>
-            <td>{{ c.numeroCuota }} / {{ c.plan?.cantidadCuotas }}</td>
+            <td>#{{ c.idPlan ?? c.plan?.idPlan }} / Ped. {{ c.idPedido ?? c.plan?.pedido?.idPedido }}</td>
+            <td>{{ c.numeroCuota }}@if (c.plan?.cantidadCuotas) { / {{ c.plan?.cantidadCuotas }} }</td>
             <td>${{ c.monto | number:'1.2-2' }}</td>
             <td>{{ c.fechaVencimiento | date:'dd/MM/yyyy' }}</td>
             <td><span [class]="badgeEstado(c.estado)">{{ c.estado }}</span></td>
