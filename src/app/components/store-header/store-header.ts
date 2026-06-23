@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { LucideShoppingCart, LucideUser, LucideSearch } from '@lucide/angular';
@@ -13,11 +13,15 @@ import { CartService } from '../../services/cart.service';
   imports: [RouterLink, RouterLinkActive, FormsModule, LucideShoppingCart, LucideUser, LucideSearch],
   templateUrl: './store-header.html',
 })
-export class StoreHeader {
+export class StoreHeader implements OnInit {
 
   busquedaHeader = '';
 
   constructor(public auth: AuthService, public cart: CartService, private router: Router) {}
+
+  ngOnInit() {
+    // console.log(this.auth.usuarioActual());
+  }
 
   buscar(): void {
     const q = this.busquedaHeader.trim();
