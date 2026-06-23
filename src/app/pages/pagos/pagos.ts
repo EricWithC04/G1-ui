@@ -157,6 +157,7 @@ export class Pagos implements OnInit {
       },
       error: err => console.error('Error al crear pago', err),
     });
+    Object.values(f.controls).forEach(c => c.markAsUntouched());
   }
 
   borrar(id?: number): void {

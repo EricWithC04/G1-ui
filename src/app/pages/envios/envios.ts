@@ -85,6 +85,7 @@ export class Envios implements OnInit {
       },
       error: err => console.error('Error al crear envio', err),
     });
+    Object.values(f.controls).forEach(c => c.markAsUntouched());
   }
 
   borrar(id?: number): void {

@@ -50,8 +50,11 @@ export class Planes implements OnInit {
   // Signal computado: se recalcula solo cuando cambian "pedidos" o "clienteSeleccionado"
   pedidosFiltrados = computed(() => {
     const idCliente = this.clienteSeleccionado();
+    console.log(this.clientes());
+    
     if (!idCliente) return [];
-    return this.pedidos().filter(p => p.usuario?.idUsuario === idCliente);
+    const idUsuario = this.clientes().find(c => c.idCliente === idCliente)?.usuario?.idUsuario;
+    return this.pedidos().filter(p => p.usuario?.idUsuario === idUsuario);
   });
 
   constructor(
@@ -99,6 +102,7 @@ export class Planes implements OnInit {
       },
       error: err => console.error('Error al crear plan', err),
     });
+    Object.values(f.controls).forEach(c => c.markAsUntouched());
   }
 
   borrar(id?: number): void {

@@ -106,6 +106,7 @@ export class Pedidos implements OnInit {
         this.detalleSeleccionado.set(null);
       },
     });
+    Object.values(f.controls).forEach(c => c.markAsUntouched());
   }
 
   cerrarDetalle(): void {
