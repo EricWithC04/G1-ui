@@ -170,7 +170,13 @@
     "changeOrigin": true,
     "logLevel": "debug"
   },
-  "/admin": {
+  "/admin/buscar": {
+    "target": "http://localhost:8080",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/admin/notificaciones": {
     "target": "http://localhost:8080",
     "secure": false,
     "changeOrigin": true,

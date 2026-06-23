@@ -32,7 +32,6 @@ export class Sidebar {
       links: [
         { path: 'admin/crm/bandeja', label: 'Bandeja omnicanal' },
         { path: 'admin/crm/clientes', label: 'Clientes CRM' },
-        { path: 'admin/crm/embudo', label: 'Embudo de ventas' },
         { path: 'admin/promociones', label: 'Promociones' },
         { path: 'admin/campanas', label: 'Campañas y mensajes' },
       ],
