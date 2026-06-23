@@ -26,8 +26,6 @@ import { Catalogo } from './pages/catalogo/catalogo';
 import { ProductoDetalle } from './pages/producto-detalle/producto-detalle';
 import { CarritoCompra } from './pages/carrito-compra/carrito-compra';
 import { Checkout } from './pages/checkout/checkout';
-import { MisPedidos } from './pages/mis-pedidos/mis-pedidos';
-import { PerfilCliente } from './pages/perfil-cliente/perfil-cliente';
 import { SeguimientoEnvio } from './pages/seguimiento-envio/seguimiento-envio';
 import { CategoriaLanding } from './pages/categoria-landing/categoria-landing';
 import { PromoLanding } from './pages/promo-landing/promo-landing';
@@ -94,8 +92,8 @@ export const routes: Routes = [
             { path: 'seguimiento-envio/:id', component: SeguimientoEnvio, canActivate: [authGuard] },
             { path: 'carrito', component: CarritoCompra, canActivate: [authGuard] },
             { path: 'checkout', component: Checkout, canActivate: [authGuard] },
-            { path: 'mis-pedidos', component: MisPedidos, canActivate: [authGuard] },
-            { path: 'perfil', component: PerfilCliente, canActivate: [authGuard] },
+            { path: 'mis-pedidos', component: PanelCliente, canActivate: [authGuard], data: { seccion: 'pedidos' } },
+            { path: 'perfil', component: PanelCliente, canActivate: [authGuard], data: { seccion: 'perfil' } },
         ],
     },
     

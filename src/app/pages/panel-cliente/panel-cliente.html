@@ -40,9 +40,7 @@
     <!-- Main content -->
     <main class="pc-main">
 
-      <!-- ═══════════════════════════════════════════════════════════
-           PERFIL
-      ══════════════════════════════════════════════════════════════ -->
+      <!-- PERFIL -->
       @if (seccionActiva() === 'perfil') {
         <div class="pc-section">
           <div class="pc-section-header">
@@ -116,9 +114,9 @@
               <div class="pc-profile-info">
                 <p class="pc-profile-name">{{ usuario()?.nombre ?? '—' }}</p>
                 <p class="pc-profile-meta">{{ usuario()?.email ?? '—' }}</p>
-                <!-- @if (usuario()?.telefono) { -->
-                  <p class="pc-profile-meta">{{ '' }}</p>
-                <!-- } -->
+                @if (perfilCliente()?.telefono) {
+                  <p class="pc-profile-meta">{{ perfilCliente()!.telefono }}</p>
+                }
                 <span class="pc-badge pc-badge--confirmed" style="margin-top: .5rem; display: inline-block">
                   {{ usuario()?.rol ?? 'CLIENTE' }}
                 </span>
@@ -135,8 +133,8 @@
                 <p class="pc-info-label">En curso</p>
               </div>
               <div class="pc-info-tile">
-                <p class="pc-info-value">{{ direcciones().length }}</p>
-                <p class="pc-info-label">Direcciones</p>
+                <p class="pc-info-value">{{ tieneDireccion() ? 1 : 0 }}</p>
+                <p class="pc-info-label">Dirección</p>
               </div>
               <div class="pc-info-tile">
                 <p class="pc-info-value">{{ facturas().length }}</p>
@@ -147,34 +145,30 @@
         </div>
       }
 
-      <!-- ═══════════════════════════════════════════════════════════
-           PEDIDOS
-      ══════════════════════════════════════════════════════════════ -->
+      <!-- PEDIDOS -->
       @if (seccionActiva() === 'pedidos') {
 
-        <!-- Vista de detalle -->
         @if (pedidoDetalle(); as p) {
           <div class="pc-section">
             <div class="pc-section-header">
               <button type="button" class="pc-back-btn" (click)="cerrarDetalle()">
                 ← Volver
               </button>
-              <span class="pc-badge" [ngClass]="estadoBadgeClass('p.estado')">{{ estadoLabel('p.estado') }}</span>
+              <span class="pc-badge" [ngClass]="estadoBadgeClass(p)">{{ estadoLabel(estadoPedido(p)) }}</span>
             </div>
 
             <h2 class="pc-section-title" style="margin-top:.5rem">Pedido #{{ p.idPedido }}</h2>
-            <p class="pc-text-muted">{{ 'p.fechaCreacion' | date:'dd/MM/yyyy HH:mm' }} · {{ 'p.metodoPago' }}</p>
+            <p class="pc-text-muted">{{ p.fecha | date:'dd/MM/yyyy HH:mm' }} · {{ metodoPagoPedido(p.idPedido) }}</p>
 
-            <!-- Tracking -->
             @if (p.estado !== 'CANCELADO') {
               <div class="pc-tracking">
                 @for (paso of [
-                  { label: 'Confirmado',     n: 2 },
-                  { label: 'En preparación', n: 3 },
-                  { label: 'En camino',      n: 4 },
-                  { label: 'Entregado',      n: 5 }
+                  { label: 'Confirmado',     n: 1 },
+                  { label: 'En preparación', n: 2 },
+                  { label: 'En camino',      n: 3 },
+                  { label: 'Entregado',      n: 4 }
                 ]; track paso.n) {
-                  <div class="pc-tracking-step" [class.pc-tracking-step--done]="pasoTracking('PENDIENTE') >= paso.n">
+                  <div class="pc-tracking-step" [class.pc-tracking-step--done]="pasoTracking(p) >= paso.n">
                     <div class="pc-tracking-dot"></div>
                     <p class="pc-tracking-label">{{ paso.label }}</p>
                   </div>
@@ -182,53 +176,62 @@
               </div>
             }
 
-            <!-- Líneas del pedido -->
             <div class="pc-order-lines">
               <p class="pos-section-label">Productos</p>
-              <!-- @for (l of p.lineas; track l.idProducto) {
+              @for (l of detalleDePedido(p.idPedido)?.detalles ?? []; track l.idDetalle) {
                 <div class="pc-order-line">
                   <div class="pc-order-line-thumb">
-                    @if (l.imagen) {
-                      <img [src]="l.imagen" [alt]="l.nombre" />
+                    @if (l.producto?.imagen) {
+                      <img [src]="l.producto!.imagen" [alt]="l.producto!.nombre" />
                     } @else {
                       📦
                     }
                   </div>
                   <div class="pc-order-line-body">
-                    <p class="pc-order-line-name">{{ l.nombre }}</p>
+                    <p class="pc-order-line-name">{{ l.producto?.nombre ?? 'Producto' }}</p>
                     <p class="pc-text-muted">{{ l.cantidad }} × $ {{ l.precioUnitario | number:'1.2-2' }}</p>
                   </div>
                   <span class="pc-order-line-subtotal">$ {{ (l.cantidad * l.precioUnitario) | number:'1.2-2' }}</span>
                 </div>
-              } -->
+              }
             </div>
 
-            <!-- Totales -->
             <div class="pos-totals">
               <div class="pos-total-row">
                 <span>Envío</span>
-                <!-- p.costoEnvio > 0 ? ('$ ' + (p.costoEnvio | number:'1.2-2')) : -->
-                <span>{{  'Gratis' }}</span>
+                @if ((envioDePedido(p.idPedido)?.costoEnvio ?? 0) > 0) {
+                  <span>$ {{ envioDePedido(p.idPedido)!.costoEnvio | number:'1.2-2' }}</span>
+                } @else {
+                  <span>Gratis</span>
+                }
               </div>
               <div class="pos-total-row pos-total-row--grand">
                 <span>Total</span>
                 <span>$ {{ p.total | number:'1.2-2' }}</span>
               </div>
             </div>
-            
-            <!-- Dirección de entrega -->
-            <!-- p.direccionEntrega -->
-            @if (true) {
+
+            @if (envioDePedido(p.idPedido)?.direccionEnvio) {
               <div class="pc-order-address">
                 <p class="pos-section-label">Dirección de entrega</p>
-                <p>{{ 'p.direccionEntrega.calle' }}, {{ 'p.direccionEntrega.ciudad' }}</p>
-                <p class="pc-text-muted">{{ 'p.direccionEntrega.provincia' }}, {{ 'p.direccionEntrega.pais' }}</p>
+                <p>{{ envioDePedido(p.idPedido)!.direccionEnvio }}</p>
+                @if (envioDePedido(p.idPedido)?.numeroTracking) {
+                  <p class="pc-text-muted">Tracking: {{ envioDePedido(p.idPedido)!.numeroTracking }}</p>
+                }
+                @if (p.idPedido != null) {
+                  <a
+                    [routerLink]="['/seguimiento-envio', p.idPedido]"
+                    class="pc-btn pc-btn--outline pc-btn--sm"
+                    style="margin-top: .75rem; display: inline-flex"
+                  >
+                    Ver seguimiento
+                  </a>
+                }
               </div>
             }
           </div>
 
         } @else {
-          <!-- Lista de pedidos -->
           <div class="pc-section">
             <div class="pc-section-header">
               <h2 class="pc-section-title">Mis pedidos</h2>
@@ -244,7 +247,7 @@
                 <p class="pos-empty-icon">📦</p>
                 <p class="pos-empty-title">Todavía no tenés pedidos</p>
                 <p class="pos-empty-desc">Cuando realices una compra, aparecerá aquí.</p>
-                <a routerLink="/tienda" class="pos-chip pos-chip--active" style="margin-top:1rem">
+                <a routerLink="/" class="pos-chip pos-chip--active" style="margin-top:1rem">
                   Ir a la tienda
                 </a>
               </div>
@@ -252,15 +255,15 @@
               @if (pedidosActivos().length > 0) {
                 <p class="pos-section-label">En curso</p>
                 <div class="pc-orders-list">
-                  @for (p of pedidosActivos(); track 'p.idPedido') {
+                  @for (p of pedidosActivos(); track p.idPedido) {
                     <button type="button" class="pc-order-card" (click)="verDetallePedido(p)">
                       <div class="pc-order-card-top">
-                        <span class="pc-order-id">#{{ 'p.idPedido' }}</span>
-                        <span class="pc-badge" [ngClass]="estadoBadgeClass('p.estado')">{{ estadoLabel('p.estado') }}</span>
+                        <span class="pc-order-id">#{{ p.idPedido }}</span>
+                        <span class="pc-badge" [ngClass]="estadoBadgeClass(p)">{{ estadoLabel(estadoPedido(p)) }}</span>
                       </div>
-                      <p class="pc-text-muted">{{ 'p.fechaCreacion' | date:'dd/MM/yyyy' }}</p>
+                      <p class="pc-text-muted">{{ p.fecha | date:'dd/MM/yyyy' }}</p>
                       <div class="pc-order-card-bottom">
-                        <span>{{ 'p.lineas?.length ?? 0' }} producto(s)</span>
+                        <span>{{ cantidadProductos(p.idPedido) }} producto(s)</span>
                         <span class="pc-order-total">$ {{ p.total | number:'1.2-2' }}</span>
                       </div>
                     </button>
@@ -275,11 +278,11 @@
                     <button type="button" class="pc-order-card pc-order-card--muted" (click)="verDetallePedido(p)">
                       <div class="pc-order-card-top">
                         <span class="pc-order-id">#{{ p.idPedido }}</span>
-                        <span class="pc-badge" [ngClass]="estadoBadgeClass('p.estado')">{{ estadoLabel('p.estado') }}</span>
+                        <span class="pc-badge" [ngClass]="estadoBadgeClass(p)">{{ estadoLabel(estadoPedido(p)) }}</span>
                       </div>
-                      <p class="pc-text-muted">{{ "p.fechaCreacion" | date:'dd/MM/yyyy' }}</p>
+                      <p class="pc-text-muted">{{ p.fecha | date:'dd/MM/yyyy' }}</p>
                       <div class="pc-order-card-bottom">
-                        <span>{{ "p.lineas?.length ?? 0" }} producto(s)</span>
+                        <span>{{ cantidadProductos(p.idPedido) }} producto(s)</span>
                         <span class="pc-order-total">$ {{ p.total | number:'1.2-2' }}</span>
                       </div>
                     </button>
@@ -291,119 +294,82 @@
         }
       }
 
-      <!-- ═══════════════════════════════════════════════════════════
-           DIRECCIONES
-      ══════════════════════════════════════════════════════════════ -->
+      <!-- DIRECCIONES (única dirección en PerfilCliente) -->
       @if (seccionActiva() === 'direcciones') {
         <div class="pc-section">
           <div class="pc-section-header">
-            <h2 class="pc-section-title">Direcciones</h2>
-            @if (!agregarDireccion()) {
-              <button type="button" class="pc-btn pc-btn--outline" (click)="iniciarNuevaDireccion()">
-                + Nueva dirección
+            <h2 class="pc-section-title">Dirección de entrega</h2>
+            @if (!direccionEditando()) {
+              <button type="button" class="pc-btn pc-btn--outline" (click)="iniciarEdicionDireccion()">
+                {{ tieneDireccion() ? 'Editar' : 'Agregar dirección' }}
               </button>
             }
           </div>
 
-          <!-- Formulario nueva dirección -->
-          @if (agregarDireccion()) {
+          @if (direccionEditando()) {
             <div class="pc-form pc-form--card">
-              <p class="pos-section-label">Nueva dirección</p>
-              <div class="pc-field-row">
-                <div class="pc-field">
-                  <label class="pos-field-label" for="dCalle">Calle y número</label>
-                  <input id="dCalle" type="text" class="pc-input" placeholder="Av. Corrientes 1234"
-                    [ngModel]="nuevaDireccionCalle()" (ngModelChange)="nuevaDireccionCalle.set($event)" />
-                </div>
-                <div class="pc-field">
-                  <label class="pos-field-label" for="dCiudad">Ciudad</label>
-                  <input id="dCiudad" type="text" class="pc-input" placeholder="Buenos Aires"
-                    [ngModel]="nuevaDireccionCiudad()" (ngModelChange)="nuevaDireccionCiudad.set($event)" />
-                </div>
-              </div>
-              <div class="pc-field-row">
-                <div class="pc-field">
-                  <label class="pos-field-label" for="dProv">Provincia</label>
-                  <input id="dProv" type="text" class="pc-input" placeholder="Buenos Aires"
-                    [ngModel]="nuevaDireccionProvincia()" (ngModelChange)="nuevaDireccionProvincia.set($event)" />
-                </div>
-                <div class="pc-field">
-                  <label class="pos-field-label" for="dCp">Código postal</label>
-                  <input id="dCp" type="text" class="pc-input" placeholder="1043"
-                    [ngModel]="nuevaDireccionCodPostal()" (ngModelChange)="nuevaDireccionCodPostal.set($event)" />
-                </div>
+              <p class="pos-section-label">{{ tieneDireccion() ? 'Editar dirección' : 'Nueva dirección' }}</p>
+              <div class="pc-field">
+                <label class="pos-field-label" for="dCalle">Calle y número</label>
+                <input id="dCalle" type="text" class="pc-input" placeholder="Av. Corrientes 1234"
+                  [ngModel]="direccionCalle()" (ngModelChange)="direccionCalle.set($event)" />
               </div>
               <div class="pc-field">
-                <label class="pos-field-label" for="dPais">País</label>
-                <input id="dPais" type="text" class="pc-input"
-                  [ngModel]="nuevaDireccionPais()" (ngModelChange)="nuevaDireccionPais.set($event)" />
+                <label class="pos-field-label" for="dCiudad">Ciudad</label>
+                <input id="dCiudad" type="text" class="pc-input" placeholder="Buenos Aires"
+                  [ngModel]="direccionCiudad()" (ngModelChange)="direccionCiudad.set($event)" />
               </div>
-              <label class="pc-checkbox-label">
-                <input type="checkbox"
-                  [ngModel]="nuevaDireccionEsPrincipal()"
-                  (ngModelChange)="nuevaDireccionEsPrincipal.set($event)" />
-                Establecer como dirección principal
-              </label>
+              <div class="pc-field">
+                <label class="pos-field-label" for="dTel">Teléfono de contacto</label>
+                <input id="dTel" type="tel" class="pc-input" placeholder="+54 11 0000-0000"
+                  [ngModel]="perfilTelefono()" (ngModelChange)="perfilTelefono.set($event)" />
+              </div>
               <div class="pc-form-actions">
                 <button type="button" class="pc-btn pc-btn--primary"
                   [disabled]="guardando()" (click)="guardarDireccion()">
                   {{ guardando() ? 'Guardando…' : 'Guardar dirección' }}
                 </button>
-                <button type="button" class="pc-btn pc-btn--ghost" (click)="cancelarNuevaDireccion()">
+                <button type="button" class="pc-btn pc-btn--ghost" (click)="cancelarEdicionDireccion()">
                   Cancelar
                 </button>
               </div>
             </div>
-          }
-
-          <!-- Lista de direcciones -->
-          @if (direcciones().length === 0 && !agregarDireccion()) {
+          } @else if (!tieneDireccion()) {
             <div class="pos-empty">
               <p class="pos-empty-icon">📍</p>
-              <p class="pos-empty-title">Sin direcciones guardadas</p>
-              <p class="pos-empty-desc">Agregá una para agilizar tus compras.</p>
+              <p class="pos-empty-title">Sin dirección guardada</p>
+              <p class="pos-empty-desc">Agregá tu dirección para agilizar tus compras.</p>
             </div>
           } @else {
             <div class="pc-address-list">
-              @for (d of direcciones(); track d.idDireccion) {
-                <div class="pc-address-card" [class.pc-address-card--principal]="d.esPrincipal">
-                  <div class="pc-address-info">
-                    <p class="pc-address-line">{{ d.calle }}</p>
-                    <p class="pc-text-muted">{{ d.ciudad }}, {{ d.provincia }} {{ d.codigoPostal }}</p>
-                    <p class="pc-text-muted">{{ d.pais }}</p>
-                    @if (d.esPrincipal) {
-                      <span class="pc-badge pc-badge--confirmed" style="margin-top:.4rem; display:inline-block">Principal</span>
-                    }
-                  </div>
-                  <div class="pc-address-actions">
-                    @if (!d.esPrincipal) {
-                      <button type="button" class="pc-btn pc-btn--ghost pc-btn--sm"
-                        (click)="marcarPrincipal(d.idDireccion!)">
-                        Marcar principal
-                      </button>
-                    }
-                    <button type="button" class="pc-btn pc-btn--danger pc-btn--sm"
-                      (click)="eliminarDireccion(d.idDireccion!)">
-                      Eliminar
-                    </button>
-                  </div>
+              <div class="pc-address-card pc-address-card--principal">
+                <div class="pc-address-info">
+                  <p class="pc-address-line">{{ perfilCliente()!.direccion }}</p>
+                  <p class="pc-text-muted">{{ perfilCliente()!.ciudad }}</p>
+                  @if (perfilCliente()?.telefono) {
+                    <p class="pc-text-muted">Tel: {{ perfilCliente()!.telefono }}</p>
+                  }
+                  <span class="pc-badge pc-badge--confirmed" style="margin-top:.4rem; display:inline-block">Principal</span>
                 </div>
-              }
+              </div>
             </div>
           }
         </div>
       }
 
-      <!-- ═══════════════════════════════════════════════════════════
-           FACTURAS
-      ══════════════════════════════════════════════════════════════ -->
+      <!-- FACTURAS -->
       @if (seccionActiva() === 'facturas') {
         <div class="pc-section">
           <div class="pc-section-header">
             <h2 class="pc-section-title">Facturas</h2>
           </div>
 
-          @if (facturas().length === 0) {
+          @if (cargando()) {
+            <div class="pos-empty">
+              <div class="pos-spinner"></div>
+              <p class="pos-empty-title">Cargando facturas…</p>
+            </div>
+          } @else if (facturas().length === 0) {
             <div class="pos-empty">
               <p class="pos-empty-icon">🧾</p>
               <p class="pos-empty-title">Sin facturas disponibles</p>
@@ -415,8 +381,10 @@
                 <div class="pc-invoice-row">
                   <div class="pc-invoice-icon">🧾</div>
                   <div class="pc-invoice-info">
-                    <p class="pc-invoice-num">Factura {{ 1 }}</p>
-                    <p class="pc-text-muted">{{ "21/02/24" | date:'dd/MM/yyyy' }} · Pedido #{{ "0001" }}</p>
+                    <p class="pc-invoice-num">Factura {{ f.numeroFactura ?? f.idFactura }}</p>
+                    <p class="pc-text-muted">
+                      {{ f.fechaEmision | date:'dd/MM/yyyy' }} · Pedido #{{ f.pedido?.idPedido ?? '—' }}
+                    </p>
                   </div>
                   <span class="pc-invoice-amount">$ {{ f.total | number:'1.2-2' }}</span>
                   <button
@@ -438,9 +406,7 @@
         </div>
       }
 
-      <!-- ═══════════════════════════════════════════════════════════
-           SEGURIDAD
-      ══════════════════════════════════════════════════════════════ -->
+      <!-- SEGURIDAD -->
       @if (seccionActiva() === 'seguridad') {
         <div class="pc-section">
           <div class="pc-section-header">
@@ -497,7 +463,6 @@
               />
             </div>
 
-            <!-- Indicador de fortaleza -->
             @if (passNueva().length > 0) {
               <div class="pc-pass-strength">
                 <div
