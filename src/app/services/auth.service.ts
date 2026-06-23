@@ -1,109 +1,108 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, Injector, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, catchError, firstValueFrom, of, tap } from 'rxjs';
 import { API_URL } from './api-base';
+import { PermisoService } from './permiso.service';
+import { esRolPanelAdmin } from '../config/config-rbac';
 
-// ============================================================
-//  Forma de los datos que usamos para la autenticacion.
-// ============================================================
-
-// Lo que devuelve el backend al hacer login o registrarse.
-// Es el usuario SIN la contrasena (el backend nunca la manda).
 export interface UsuarioSesion {
     idUsuario: number;
     nombre: string;
     email: string;
-    rol: string; // "ADMIN" o "CLIENTE"
+    rol: string;
 }
 
-// Lo que mandamos al registrarnos (POST /auth/register).
 export interface RegistroData {
     nombre: string;
     email: string;
     contrasena: string;
 }
 
-// Lo que mandamos al iniciar sesion (POST /auth/login).
 export interface LoginData {
     email: string;
     contrasena: string;
 }
 
-// Clave con la que guardamos al usuario logueado en el localStorage del navegador.
-// localStorage es una "cajita" del navegador que recuerda datos aunque cerremos la pestania.
-const CLAVE_STORAGE = 'novatech_usuario';
-
-// ============================================================
-//  AuthService: maneja TODO lo de login/registro/sesion.
-//  providedIn: 'root' => hay una sola instancia para toda la app.
-// ============================================================
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-    // signal con el usuario actual (o null si nadie inicio sesion).
-    // Es reactivo: cuando cambia, las pantallas que lo usan se actualizan solas.
-    // Lo inicializamos leyendo lo que haya guardado en localStorage.
-    usuarioActual = signal<UsuarioSesion | null>(this.leerDeStorage());
+    /** Sesión solo en memoria — el JWT vive en cookie HttpOnly (no visible en F12 → Application). */
+    usuarioActual = signal<UsuarioSesion | null>(null);
+
+    private injector = inject(Injector);
 
     constructor(private http: HttpClient) { }
 
-    // Registra un cliente nuevo en el backend.
-    // No inicia sesion solo: el componente decide si despues llama a login.
-    register(datos: RegistroData): Observable<UsuarioSesion> {
-        return this.http.post<UsuarioSesion>(`${API_URL}/auth/register`, datos);
+    private permisos(): PermisoService {
+        return this.injector.get(PermisoService);
     }
 
-    // Inicia sesion contra el backend. Si sale bien, guarda el usuario.
-    // tap() es un "espia": deja pasar la respuesta pero aprovecha para guardarla.
-    login(datos: LoginData): Observable<UsuarioSesion> {
-        return this.http.post<UsuarioSesion>(`${API_URL}/auth/login`, datos).pipe(
-            tap(usuario => this.guardarSesion(usuario))
+    register(datos: RegistroData): Observable<UsuarioSesion> {
+        return this.http.post<UsuarioSesion>(`${API_URL}/auth/register`, datos).pipe(
+            tap(usuario => {
+                this.usuarioActual.set(usuario);
+                this.permisos().recargarMatriz();
+            }),
         );
     }
 
-    // Guarda el usuario en memoria (signal) y en localStorage.
-    guardarSesion(usuario: UsuarioSesion): void {
-        this.usuarioActual.set(usuario);
-        localStorage.setItem(CLAVE_STORAGE, JSON.stringify(usuario));
+    login(datos: LoginData): Observable<UsuarioSesion> {
+        return this.http.post<UsuarioSesion>(`${API_URL}/auth/login`, datos).pipe(
+            tap(usuario => {
+                this.usuarioActual.set(usuario);
+                this.permisos().recargarMatriz();
+            }),
+        );
     }
 
-    // Cierra la sesion: borra el usuario de la memoria y del localStorage.
+    /** Restaura sesión desde cookie HttpOnly vía GET /auth/me */
+    restaurarSesion(): Promise<void> {
+        localStorage.removeItem('novatech_usuario');
+        return firstValueFrom(
+            this.http.get<UsuarioSesion>(`${API_URL}/auth/me`).pipe(
+                tap(u => {
+                    this.usuarioActual.set(u);
+                    this.permisos().recargarMatriz();
+                }),
+                catchError(() => {
+                    this.usuarioActual.set(null);
+                    return of(null);
+                }),
+            ),
+        ).then(() => undefined);
+    }
+
     logout(): void {
-        this.usuarioActual.set(null);
-        localStorage.removeItem(CLAVE_STORAGE);
+        this.http.post(`${API_URL}/auth/logout`, {}).subscribe({
+            next: () => this.usuarioActual.set(null),
+            error: () => this.usuarioActual.set(null),
+        });
     }
 
-    // true si hay alguien logueado.
     isLoggedIn(): boolean {
         return this.usuarioActual() !== null;
     }
 
-    // Devuelve el rol del usuario logueado ("ADMIN" / "CLIENTE") o null si no hay nadie.
     getRol(): string | null {
         return this.usuarioActual()?.rol ?? null;
     }
 
-    // true si el usuario logueado es administrador.
     esAdmin(): boolean {
-        return this.getRol() === 'ADMIN';
+        return esRolPanelAdmin(this.getRol());
     }
 
-    // Devuelve el usuario logueado completo (o null).
+    esSuperAdmin(): boolean {
+        const rol = this.getRol();
+        return rol === 'SUPERADMIN' || rol === 'ADMIN';
+    }
+
     getUsuario(): UsuarioSesion | null {
         return this.usuarioActual();
     }
 
-    // Lee el usuario guardado en localStorage al arrancar la app.
-    // Si no hay nada o esta roto, devuelve null.
-    private leerDeStorage(): UsuarioSesion | null {
-        const texto = localStorage.getItem(CLAVE_STORAGE);
-        if (!texto) {
-            return null;
-        }
-        try {
-            return JSON.parse(texto) as UsuarioSesion;
-        } catch {
-            return null;
-        }
+    actualizarPerfil(datos: { nombre: string; email: string; contrasena?: string }): Observable<UsuarioSesion> {
+        return this.http.put<UsuarioSesion>(`${API_URL}/auth/me`, datos).pipe(
+            tap(u => this.usuarioActual.set(u)),
+        );
     }
 }

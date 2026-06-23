@@ -1,0 +1,134 @@
+.plantillas-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .plantillas-layout {
+    grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+    align-items: start;
+  }
+
+  .plantillas-editor {
+    grid-column: 1 / -1;
+  }
+}
+
+.plantillas-preview-panel {
+  min-height: 320px;
+}
+
+.plantillas-preview-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.plantilla-preview-card {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.plantilla-thumb {
+  display: block;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #fff;
+  cursor: pointer;
+  padding: 0;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.plantilla-thumb:hover {
+  border-color: rgba(251, 146, 60, 0.6);
+  box-shadow: 0 0 0 1px rgba(251, 146, 60, 0.25);
+}
+
+.plantilla-thumb-frame {
+  overflow: hidden;
+  pointer-events: none;
+  transform-origin: top left;
+  transform: scale(0.22);
+  width: 324px;
+  height: 436px;
+  margin: -170px -126px;
+}
+
+.plantilla-thumb-frame--tall {
+  transform: scale(0.28);
+  margin: -156px -117px;
+}
+
+.plantilla-thumb--card {
+  width: 100%;
+}
+
+.plantilla-thumb--card .plantilla-thumb-frame {
+  width: 280px;
+  height: 380px;
+  transform: scale(0.35);
+  transform-origin: top center;
+  margin: -124px auto -124px;
+}
+
+.plantilla-thumb-label {
+  display: block;
+  font-size: 10px;
+  color: #94a3b8;
+  text-align: center;
+  padding: 2px 4px 4px;
+  background: rgba(15, 23, 42, 0.85);
+}
+
+.plantilla-thumb-skeleton {
+  height: 140px;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.plantilla-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.plantilla-modal {
+  width: min(210mm, 100%);
+  max-height: 90vh;
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.plantilla-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.plantilla-modal-body {
+  overflow: auto;
+  padding: 1rem;
+  background: #fff;
+  color: #111;
+}
+
+.plantilla-modal-body :deep(.doc) {
+  max-width: 190mm;
+  margin: 0 auto;
+}

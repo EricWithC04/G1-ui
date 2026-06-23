@@ -6,12 +6,13 @@
   </nav>
 
   <!-- Hero promo -->
-  <section class="relative overflow-hidden rounded-2xl mb-8 border border-white/8"
+  <section class="store-hero store-hero--landing store-hero--animated-bg relative overflow-hidden rounded-2xl mb-8 border border-white/8"
     [style]="cfg.theme === 'orange'
       ? 'background: radial-gradient(110% 130% at 82% 85%, rgba(249,115,22,0.42), transparent 55%), linear-gradient(135deg,#160a0a,#08060a);'
       : 'background: radial-gradient(100% 200% at 50% 50%, rgba(37,99,235,0.45), transparent 60%), linear-gradient(135deg,#0b1430,#070a18);'">
+    <div class="store-particles" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
     <div class="relative flex flex-col sm:flex-row items-center gap-6 px-8 sm:px-12 py-10">
-      <div class="flex-1">
+      <div class="store-hero__content flex-1">
         <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase"
           [style]="cfg.theme === 'orange'
             ? 'background: rgba(249,115,22,0.16); border: 1px solid rgba(249,115,22,0.45); color: #fdba74;'
@@ -24,7 +25,7 @@
         <p class="mt-4 text-base sm:text-lg font-semibold max-w-lg leading-snug text-neutral-200">{{ cfg.subtitulo }}</p>
         <div class="flex gap-2 mt-6">
           @for (item of [{ v:'02', l:'DÍAS' },{ v:'12', l:'HS' },{ v:'45', l:'MIN' }]; track item.l) {
-            <div class="text-center rounded-xl px-3 py-2 bg-white/6 border border-white/10">
+            <div class="store-countdown-digit text-center rounded-xl px-3 py-2 bg-white/6 border border-white/10">
               <div class="font-black text-white text-xl">{{ item.v }}</div>
               <div class="text-[9px] tracking-widest text-neutral-500">{{ item.l }}</div>
             </div>
@@ -32,7 +33,7 @@
         </div>
       </div>
       @if (cfg.imagen) {
-        <div class="shrink-0 w-full sm:w-72 h-48 sm:h-56 rounded-2xl overflow-hidden">
+        <div class="store-hero__media shrink-0 w-full sm:w-72 h-48 sm:h-56 rounded-2xl overflow-hidden">
           <img [src]="cfg.imagen" alt="Promoción" class="w-full h-full object-cover">
         </div>
       }
@@ -56,16 +57,16 @@
   } @else if (productos().length === 0) {
     <p class="text-neutral-400 text-center py-12">No hay productos disponibles en esta promoción.</p>
   } @else {
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+    <div class="store-product-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
       @for (p of productos(); track p.idProducto) {
-        <div class="group flex flex-col bg-gray-800 border border-white/8 rounded-2xl overflow-hidden hover:border-blue-500/30 transition-all">
-          <a [routerLink]="['/producto', p.idProducto]" class="relative block aspect-square bg-slate-900 overflow-hidden">
+        <div class="store-product-card group flex flex-col bg-gray-800 border border-white/8 rounded-2xl overflow-hidden hover:border-blue-500/30">
+          <a [routerLink]="['/producto', p.idProducto]" class="store-product-card__image relative block aspect-square bg-slate-900 overflow-hidden">
             @if (p.imagen) {
-              <img [src]="p.imagen" [alt]="p.nombre" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+              <img [src]="p.imagen" [alt]="p.nombre" class="w-full h-full object-cover">
             } @else {
               <div class="w-full h-full bg-gradient-to-br from-slate-700 to-slate-900"></div>
             }
-            <span class="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full"
+            <span class="store-offer-badge absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full"
               [class]="cfg.theme === 'orange' ? 'bg-orange-600/90 text-white' : 'bg-blue-600/90 text-white'">
               OFERTA
             </span>

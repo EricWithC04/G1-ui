@@ -1,0 +1,131 @@
+/* Print-only invoice layout (browser → Save as PDF) */
+.factura-print {
+  display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .factura-print,
+  .factura-print * {
+    visibility: visible;
+  }
+
+  .factura-print {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 12mm 15mm;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #111;
+    background: #fff;
+  }
+
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+}
+
+.factura-print-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid #111;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.factura-print-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.factura-print-meta {
+  text-align: right;
+  font-size: 11px;
+}
+
+.factura-print-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.factura-print-grid dt {
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #555;
+  margin-bottom: 2px;
+}
+
+.factura-print-grid dd {
+  margin: 0 0 8px;
+}
+
+.factura-print-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  font-size: 11px;
+}
+
+.factura-print-table th,
+.factura-print-table td {
+  border: 1px solid #ccc;
+  padding: 6px 8px;
+}
+
+.factura-print-table th {
+  background: #f3f4f6;
+  text-align: left;
+  font-weight: 600;
+}
+
+.factura-print-table .num {
+  text-align: right;
+}
+
+.factura-print-totals {
+  margin-left: auto;
+  width: 240px;
+  font-size: 12px;
+}
+
+.factura-print-totals div {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.factura-print-totals .total {
+  font-weight: 700;
+  font-size: 14px;
+  border-top: 2px solid #111;
+  margin-top: 4px;
+  padding-top: 8px;
+}
+
+.factura-print-cae {
+  margin-top: 20px;
+  padding: 10px;
+  border: 1px dashed #999;
+  font-size: 11px;
+}
+
+.factura-print-footer {
+  margin-top: 24px;
+  font-size: 10px;
+  color: #666;
+  text-align: center;
+}

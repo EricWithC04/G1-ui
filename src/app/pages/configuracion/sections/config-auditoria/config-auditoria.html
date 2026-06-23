@@ -1,0 +1,59 @@
+<app-config-page-shell titulo="Auditoría" subtitulo="Registro de cambios del sistema">
+  <div class="flex flex-wrap gap-2 mt-2 mb-4">
+    <input class="admin-input w-48" placeholder="Buscar…" [ngModel]="q()" (ngModelChange)="q.set($event)" name="q" />
+    <input class="admin-input w-40" placeholder="Entidad" [ngModel]="entidad()" (ngModelChange)="entidad.set($event)" name="ent" />
+    <input class="admin-input w-40" placeholder="Usuario" [ngModel]="usuario()" (ngModelChange)="usuario.set($event)" name="usr" />
+    <button type="button" class="admin-btn admin-btn-primary" (click)="buscar()">Filtrar</button>
+  </div>
+
+  <div class="admin-card overflow-hidden">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Usuario</th>
+          <th>Acción</th>
+          <th>Entidad</th>
+          <th>Detalle</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of registros(); track r.idRegistro) {
+          <tr>
+            <td class="text-slate-400 whitespace-nowrap text-xs">{{ r.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ r.usuarioNombre }}</td>
+            <td>{{ r.accion }}</td>
+            <td class="text-slate-400">{{ r.entidad ?? r.modulo }}</td>
+            <td class="text-slate-300 max-w-xs truncate">{{ r.detalle }}</td>
+            <td>
+              @if (r.datosAntes || r.datosDespues) {
+                <button type="button" class="text-orange-400 text-xs" (click)="toggleExpand(r.idRegistro)">
+                  {{ expandido() === r.idRegistro ? 'Ocultar' : 'Ver JSON' }}
+                </button>
+              }
+            </td>
+          </tr>
+          @if (expandido() === r.idRegistro) {
+            <tr>
+              <td colspan="6" class="bg-slate-900/50 p-4">
+                <div class="grid md:grid-cols-2 gap-4 text-xs font-mono">
+                  <div>
+                    <p class="text-slate-500 mb-1">Antes</p>
+                    <pre class="text-slate-300 whitespace-pre-wrap">{{ parseJson(r.datosAntes) | json }}</pre>
+                  </div>
+                  <div>
+                    <p class="text-slate-500 mb-1">Después</p>
+                    <pre class="text-slate-300 whitespace-pre-wrap">{{ parseJson(r.datosDespues) | json }}</pre>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          }
+        } @empty {
+          <tr><td colspan="6" class="text-center text-slate-500 py-6">Sin registros</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</app-config-page-shell>

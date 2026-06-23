@@ -1,0 +1,58 @@
+<div class="config-hub-header">
+  <div class="admin-page-header" style="margin-bottom: 0">
+    <h1 class="admin-page-title">Configuración</h1>
+    <p class="admin-page-subtitle">Ajustes del sistema</p>
+  </div>
+  <app-admin-search
+    [termino]="busqueda()"
+    (terminoChange)="busqueda.set($event)"
+    [total]="items.length"
+    [filtrados]="cardsVisibles().length"
+    [mostrarContador]="true"
+    placeholder="Buscar módulo…"
+  />
+</div>
+
+<div class="config-hub-grid">
+  @for (card of cardsVisibles(); track card.path) {
+    @if (card.disponible) {
+      <a [routerLink]="['/admin/configuracion', card.path]" class="config-hub-card">
+        <span class="config-hub-card-icon">
+          @switch (card.icon) {
+            @case ('users') { <svg lucideUsers [size]="20"></svg> }
+            @case ('settings') { <svg lucideSettings [size]="20"></svg> }
+            @case ('building') { <svg lucideBuilding2 [size]="20"></svg> }
+            @case ('file') { <svg lucideFileText [size]="20"></svg> }
+            @case ('plug') { <svg lucidePlug [size]="20"></svg> }
+            @case ('boxes') { <svg lucideBoxes [size]="20"></svg> }
+            @case ('bell') { <svg lucideBell [size]="20"></svg> }
+            @case ('shield') { <svg lucideShield [size]="20"></svg> }
+            @case ('history') { <svg lucideHistory [size]="20"></svg> }
+            @case ('terminal') { <svg lucideTerminal [size]="20"></svg> }
+          }
+        </span>
+        <div class="config-hub-card-body">
+          <h2 class="config-hub-card-title">{{ card.titulo }}</h2>
+          <p class="config-hub-card-desc">{{ card.desc }}</p>
+        </div>
+        <span class="config-hub-card-arrow">›</span>
+      </a>
+    } @else {
+      <article class="config-hub-card config-hub-card--disabled">
+        <span class="config-hub-card-icon">
+          @switch (card.icon) {
+            @case ('users') { <svg lucideUsers [size]="20"></svg> }
+            @default { <svg lucideSettings [size]="20"></svg> }
+          }
+        </span>
+        <div class="config-hub-card-body">
+          <h2 class="config-hub-card-title">{{ card.titulo }}</h2>
+          <p class="config-hub-card-desc">{{ card.desc }}</p>
+        </div>
+        <span class="config-badge-pronto">PRONTO</span>
+      </article>
+    }
+  } @empty {
+    <p class="text-slate-400 text-sm col-span-full">No tenés permiso para ver módulos o ninguno coincide con la búsqueda.</p>
+  }
+</div>

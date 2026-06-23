@@ -9,6 +9,7 @@ hizo para que cualquiera del equipo pueda **entenderlo, levantarlo y defenderlo*
 - **Íconos:** `@lucide/angular`
 - **Conexión al backend:** `HttpClient` con **rutas relativas** + proxy del dev server
 - **Estado de sesión y carrito:** `signals` + `localStorage`
+- **Documentación ERP:** [../docs/README.md](../docs/README.md)
 
 ---
 

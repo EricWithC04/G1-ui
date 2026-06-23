@@ -1,0 +1,77 @@
+<div class="admin-content">
+<div class="admin-page-header">
+  <h1 class="admin-page-title">Remitos</h1>
+  <p class="admin-page-subtitle">Notas de entrega independientes de la facturación. Puede existir remito sin factura.</p>
+</div>
+
+@if (ok()) { <p class="admin-alert admin-alert-success">{{ ok() }}</p> }
+@if (error()) { <p class="admin-alert admin-alert-error">{{ error() }}</p> }
+
+<div class="admin-card p-5 mb-6 flex flex-col gap-4">
+  <h2 class="text-sm font-semibold text-slate-300">Generar remito</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <label class="text-sm text-slate-300">
+      Desde pedido
+      <select class="admin-input" [ngModel]="pedidoId()" (ngModelChange)="pedidoId.set($event)">
+        <option [ngValue]="null">— Pedido —</option>
+        @for (p of pedidos(); track p.idPedido) {
+          <option [ngValue]="p.idPedido">#{{ p.idPedido }} — {{ p.usuario?.nombre }}</option>
+        }
+      </select>
+    </label>
+    <label class="text-sm text-slate-300">
+      Desde presupuesto
+      <select class="admin-input" [ngModel]="presupuestoId()" (ngModelChange)="presupuestoId.set($event)">
+        <option [ngValue]="null">— Presupuesto —</option>
+        @for (p of presupuestos(); track p.idPresupuesto) {
+          <option [ngValue]="p.idPresupuesto">{{ p.numeroPresupuesto ?? ('#' + p.idPresupuesto) }}</option>
+        }
+      </select>
+    </label>
+  </div>
+  <label class="text-sm text-slate-300">
+    Dirección de entrega (opcional)
+    <input class="admin-input" [ngModel]="direccionEntrega()" (ngModelChange)="direccionEntrega.set($event)" />
+  </label>
+  <div class="flex gap-2">
+    <button type="button" class="admin-btn admin-btn-primary text-sm" [disabled]="generando() || !pedidoId()"
+      (click)="generarDesdePedido()">Desde pedido</button>
+    <button type="button" class="admin-btn admin-btn-ghost text-sm" [disabled]="generando() || !presupuestoId()"
+      (click)="generarDesdePresupuesto()">Desde presupuesto</button>
+  </div>
+</div>
+
+<div class="admin-card overflow-hidden">
+  <div class="admin-card-header">Remitos emitidos</div>
+  <div class="p-4 border-b border-white/10">
+    <app-admin-search
+      [termino]="busqueda()"
+      (terminoChange)="busqueda.set($event)"
+      [total]="items().length"
+      [filtrados]="itemsFiltrados().length"
+      placeholder="Buscar por número, cliente o dirección…"
+    />
+  </div>
+  <table class="admin-table">
+    <thead>
+      <tr><th>Número</th><th>Cliente</th><th>Fecha</th><th>Estado</th><th>Destino</th><th></th></tr>
+    </thead>
+    <tbody>
+      @for (r of itemsFiltrados(); track r.idRemito) {
+        <tr>
+          <td class="font-mono text-blue-300">{{ r.numeroRemito ?? ('#' + r.idRemito) }}</td>
+          <td>{{ r.cliente?.usuario?.nombre }}</td>
+          <td class="text-xs text-slate-400">{{ r.fecha | date:'short' }}</td>
+          <td><span [class]="badgeEstado(r.estado)">{{ r.estado }}</span></td>
+          <td class="text-xs text-slate-400 max-w-xs truncate">{{ r.direccionEntrega ?? '—' }}</td>
+          <td class="text-right">
+            <a [routerLink]="['/admin/remitos', r.idRemito]" class="admin-btn admin-btn-ghost text-xs py-1 px-2">Ver / imprimir</a>
+          </td>
+        </tr>
+      } @empty {
+        <tr><td colspan="6" class="text-center text-slate-400 py-8">Sin remitos.</td></tr>
+      }
+    </tbody>
+  </table>
+</div>
+</div>

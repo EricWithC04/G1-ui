@@ -1,0 +1,76 @@
+<div class="admin-content">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-white">{{ editId() ? 'Editar presupuesto' : 'Nuevo presupuesto' }}</h1>
+      <p class="text-sm text-neutral-400 mt-1">IVA según condición del cliente · validez configurable</p>
+    </div>
+    <a routerLink="/admin/presupuestos" class="text-sm text-neutral-400 hover:text-white">← Volver</a>
+  </div>
+
+  @if (error()) { <p class="admin-alert admin-alert-error mb-4">{{ error() }}</p> }
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 space-y-6">
+      <section class="admin-card p-5">
+        <h2 class="font-semibold text-white mb-4">Buscar productos</h2>
+        <input type="search" class="admin-input mb-3" placeholder="Nombre o ID…"
+          [ngModel]="busquedaProducto()" (ngModelChange)="busquedaProducto.set($event)" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto">
+          @for (p of productosFiltrados(); track p.idProducto) {
+            <button type="button" class="text-left bg-gray-900 hover:bg-gray-700 border border-white/5 rounded-lg p-3"
+              (click)="agregarProducto(p)">
+              <p class="text-white text-sm font-medium">{{ p.nombre }}</p>
+              <p class="text-sm text-blue-400 mt-1">$ {{ p.precio | number:'1.2-2' }}</p>
+            </button>
+          }
+        </div>
+      </section>
+
+      <section class="admin-card p-5">
+        <h2 class="font-semibold text-white mb-4">Líneas</h2>
+        @for (l of lineas(); track l.producto.idProducto) {
+          <div class="flex flex-wrap items-center gap-3 py-2 border-b border-white/5">
+            <div class="flex-1 min-w-[10rem]">
+              <p class="text-white text-sm">{{ l.producto.nombre }}</p>
+            </div>
+            <input type="number" min="1" class="admin-input w-16 text-sm" [ngModel]="l.cantidad"
+              (ngModelChange)="l.cantidad = +$event" />
+            <input type="number" min="0" step="0.01" class="admin-input w-24 text-sm" [ngModel]="l.precioUnitario"
+              (ngModelChange)="l.precioUnitario = +$event" />
+            <input type="number" min="0" max="100" class="admin-input w-16 text-sm" [ngModel]="l.descuentoPorcentaje"
+              (ngModelChange)="l.descuentoPorcentaje = +$event" title="Descuento %" />
+            <button type="button" class="text-red-400 text-xs" (click)="quitarLinea(l.producto.idProducto)">Quitar</button>
+          </div>
+        } @empty {
+          <p class="text-neutral-500 text-sm">Sin líneas.</p>
+        }
+        <p class="text-right text-white font-semibold mt-4">Subtotal neto: $ {{ subtotal() | number:'1.2-2' }}</p>
+      </section>
+    </div>
+
+    <aside class="space-y-4">
+      <section class="admin-card p-5 space-y-4">
+        <label class="text-sm text-slate-300 block">
+          Cliente
+          <select class="admin-input" [ngModel]="idCliente()" (ngModelChange)="idCliente.set($event ? +$event : null)">
+            <option [ngValue]="null">— Seleccionar —</option>
+            @for (c of clientes(); track c.idCliente) {
+              <option [ngValue]="c.idCliente">{{ c.usuario?.nombre }} ({{ c.condicionIva ?? 'CF' }})</option>
+            }
+          </select>
+        </label>
+        <label class="text-sm text-slate-300 block">
+          Validez hasta
+          <input type="date" class="admin-input" [ngModel]="validezHasta()" (ngModelChange)="validezHasta.set($event)" />
+        </label>
+        <label class="text-sm text-slate-300 block">
+          Notas
+          <textarea class="admin-input" rows="3" [ngModel]="notas()" (ngModelChange)="notas.set($event)"></textarea>
+        </label>
+        <button type="button" class="admin-btn admin-btn-primary w-full" [disabled]="procesando()" (click)="guardar()">
+          {{ procesando() ? 'Guardando…' : (editId() ? 'Actualizar' : 'Crear presupuesto') }}
+        </button>
+      </section>
+    </aside>
+  </div>
+</div>

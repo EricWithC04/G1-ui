@@ -1,0 +1,79 @@
+<div class="admin-content">
+<div class="admin-page-header flex flex-wrap justify-between gap-4 items-start">
+  <div>
+    <h1 class="admin-page-title">Créditos y cuotas</h1>
+    <p class="admin-page-subtitle">
+      Gestión de crédito personal: cuotas generadas automáticamente al crear un plan, vencimientos y cobranzas.
+    </p>
+  </div>
+  <div class="flex gap-2">
+    <button type="button" class="admin-btn admin-btn-success" (click)="enviarRecordatorioVencidas()">
+      Recordatorio morosos
+    </button>
+    <a routerLink="/admin/planes" class="admin-btn admin-btn-ghost">Planes</a>
+  </div>
+</div>
+
+@if (ok()) { <p class="admin-alert admin-alert-success">{{ ok() }}</p> }
+
+<div class="admin-stat-grid">
+  <div class="admin-stat admin-stat--rose"><p class="admin-stat-value">{{ vencidas().length }}</p><p class="admin-stat-label">Vencidas</p></div>
+  <div class="admin-stat admin-stat--amber"><p class="admin-stat-value">{{ porVencer().length }}</p><p class="admin-stat-label">Por vencer (7 días)</p></div>
+  <div class="admin-stat admin-stat--blue"><p class="admin-stat-value">{{ todas().length }}</p><p class="admin-stat-label">Total cuotas</p></div>
+</div>
+
+<div class="flex gap-2 mb-4">
+  <button type="button" class="admin-btn text-xs" [class.admin-btn-primary]="filtro()==='TODAS'" [class.admin-btn-ghost]="filtro()!=='TODAS'" (click)="filtro.set('TODAS')">Todas</button>
+  <button type="button" class="admin-btn text-xs" [class.admin-btn-primary]="filtro()==='VENCIDAS'" [class.admin-btn-ghost]="filtro()!=='VENCIDAS'" (click)="filtro.set('VENCIDAS')">Vencidas</button>
+  <button type="button" class="admin-btn text-xs" [class.admin-btn-primary]="filtro()==='PROXIMAS'" [class.admin-btn-ghost]="filtro()!=='PROXIMAS'" (click)="filtro.set('PROXIMAS')">Próximas</button>
+</div>
+
+<div class="admin-card overflow-hidden">
+  <div class="p-4 border-b border-white/10">
+    <app-admin-search
+      [termino]="busqueda()"
+      (terminoChange)="busqueda.set($event)"
+      [total]="totalEnFiltro()"
+      [filtrados]="listaVisible().length"
+      placeholder="Buscar por cliente, plan, pedido, monto o estado…"
+    />
+  </div>
+  <div class="overflow-x-auto">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Plan / Pedido</th>
+          <th>Cuota</th>
+          <th>Monto</th>
+          <th>Vencimiento</th>
+          <th>Estado</th>
+          <th class="text-right">Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of listaVisible(); track c.idCuota) {
+          <tr>
+            <td>{{ nombreCliente(c) }}</td>
+            <td>#{{ c.plan?.idPlan }} / Ped. {{ c.plan?.pedido?.idPedido }}</td>
+            <td>{{ c.numeroCuota }} / {{ c.plan?.cantidadCuotas }}</td>
+            <td>${{ c.monto | number:'1.2-2' }}</td>
+            <td>{{ c.fechaVencimiento | date:'dd/MM/yyyy' }}</td>
+            <td><span [class]="badgeEstado(c.estado)">{{ c.estado }}</span></td>
+            <td class="text-right">
+              @if (c.estado !== 'PAGADA') {
+                <button type="button" class="admin-btn admin-btn-success text-xs py-1 px-2" (click)="pagar(c)">Registrar pago</button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="7" class="text-center text-slate-400 py-8">
+            @if (busqueda()) { No hay cuotas que coincidan con la búsqueda. }
+            @else { No hay cuotas en este filtro. Creá un plan en <a routerLink="/admin/planes" class="text-blue-400">Planes de cuotas</a>. }
+          </td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>

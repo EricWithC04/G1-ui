@@ -1,0 +1,553 @@
+<div class="admin-content">
+
+  <div class="admin-page-header flex flex-wrap justify-between gap-3">
+
+    <div>
+
+      <h1 class="admin-page-title">Facturación</h1>
+
+      <p class="admin-page-subtitle">
+
+        Emisión de comprobantes vinculados a pedidos, presupuestos o manual. IVA 21% · numeración NV-AAAA-XXXXXX.
+
+      </p>
+
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+
+      <a routerLink="/admin/facturacion/nueva" class="admin-btn admin-btn-primary text-sm">Nueva factura</a>
+
+      <button type="button" class="admin-btn admin-btn-ghost text-sm" (click)="exportarCsv()">Exportar CSV</button>
+
+    </div>
+
+  </div>
+
+
+
+  @if (ok()) { <p class="admin-alert admin-alert-success">{{ ok() }}</p> }
+
+  @if (error()) { <p class="admin-alert admin-alert-error">{{ error() }}</p> }
+
+  @if (cargando()) { <p class="text-slate-400 text-sm animate-pulse mb-4">Cargando facturas…</p> }
+
+
+
+  @if (facturaSeleccionada(); as sel) {
+
+    <div class="admin-card p-5 mb-6 border-blue-500/30 print:hidden">
+
+      <div class="flex justify-between items-start mb-4">
+
+        <div>
+
+          <h2 class="text-lg font-semibold text-white">{{ sel.numeroFactura }}</h2>
+
+          <p class="text-xs text-slate-400 mt-1">
+
+            {{ nombreCliente(sel) }}
+
+            · {{ sel.fechaEmision | date:'short' }}
+
+          </p>
+
+        </div>
+
+        <div class="flex gap-2">
+
+          <button type="button" class="admin-btn admin-btn-primary text-xs" (click)="imprimirPdf(sel)">Imprimir PDF</button>
+
+          <button type="button" class="admin-btn admin-btn-ghost text-xs" (click)="cerrarDetalle()">Cerrar</button>
+
+        </div>
+
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm mb-4">
+
+        <div class="bg-gray-900/60 rounded-lg p-3"><p class="text-slate-500 text-xs">Estado</p><p><span [class]="badgeEstado(sel.estado)">{{ sel.estado }}</span></p></div>
+
+        <div class="bg-gray-900/60 rounded-lg p-3"><p class="text-slate-500 text-xs">Tipo</p><p>{{ labelTipoComprobante(sel.tipoComprobante) }}</p></div>
+
+        <div class="bg-gray-900/60 rounded-lg p-3"><p class="text-slate-500 text-xs">Origen</p><p>{{ labelOrigen(sel) }}</p></div>
+
+        <div class="bg-gray-900/60 rounded-lg p-3"><p class="text-slate-500 text-xs">Total</p><p class="font-semibold">${{ sel.total | number:'1.2-2' }}</p></div>
+
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm mb-4">
+
+        <div class="bg-gray-900/60 rounded-lg p-3"><p class="text-slate-500 text-xs">CUIT</p><p>{{ cuitCliente(sel) }}</p></div>
+
+        <div class="bg-gray-900/60 rounded-lg p-3"><p class="text-slate-500 text-xs">Condición IVA</p><p>{{ condicionIvaCliente(sel) }}</p></div>
+
+        @if (sel.cae) {
+
+          <div class="bg-gray-900/60 rounded-lg p-3"><p class="text-slate-500 text-xs">CAE</p><p class="font-mono text-xs">{{ sel.cae }}</p></div>
+
+        }
+
+      </div>
+
+      @if (sel.lineas?.length) {
+
+        <table class="admin-table mb-3">
+
+          <thead><tr><th>Producto</th><th>Cant.</th><th>P. unit.</th><th>Subtotal</th></tr></thead>
+
+          <tbody>
+
+            @for (l of sel.lineas; track l.idDetalle) {
+
+              <tr>
+
+                <td>{{ l.producto?.nombre ?? l.descripcion }}</td>
+
+                <td>{{ l.cantidad }}</td>
+
+                <td>${{ l.precioUnitario | number:'1.2-2' }}</td>
+
+                <td>${{ l.subtotal | number:'1.2-2' }}</td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      }
+
+      <div class="flex gap-2">
+
+        @if (sel.presupuesto?.idPresupuesto) {
+
+          <a [routerLink]="['/admin/presupuestos', sel.presupuesto!.idPresupuesto]" class="admin-btn admin-btn-ghost text-xs">Ver presupuesto</a>
+
+        }
+
+        @if (sel.pedido?.idPedido) {
+
+          <a [routerLink]="['/admin/pedidos']" [queryParams]="{ detalle: sel.pedido!.idPedido }" class="admin-btn admin-btn-ghost text-xs">Ver pedido</a>
+
+        }
+
+        @if (sel.estado === 'EMITIDA') {
+
+          <button type="button" class="admin-btn admin-btn-danger text-xs" (click)="anular(sel)">Anular</button>
+
+        }
+
+      </div>
+
+    </div>
+
+
+
+    <div class="factura-print" aria-hidden="true">
+
+      <header class="factura-print-header">
+
+        <div>
+
+          <p class="text-sm font-semibold">NovaTech ERP</p>
+
+          <h1 class="factura-print-title">{{ labelTipoComprobante(sel.tipoComprobante) }}</h1>
+
+        </div>
+
+        <div class="factura-print-meta">
+
+          <p><strong>Nº</strong> {{ sel.numeroFactura }}</p>
+
+          <p><strong>Fecha:</strong> {{ sel.fechaEmision | date:'mediumDate' }}</p>
+
+          @if (sel.puntoVenta) { <p><strong>Pto. venta:</strong> {{ sel.puntoVenta | number:'4.0-0' }}</p> }
+
+          <p><strong>Estado:</strong> {{ sel.estado }}</p>
+
+        </div>
+
+      </header>
+
+
+
+      <dl class="factura-print-grid">
+
+        <div>
+
+          <dt>Cliente</dt>
+
+          <dd>{{ nombreCliente(sel) }}</dd>
+
+          <dt>CUIT</dt>
+
+          <dd>{{ cuitCliente(sel) }}</dd>
+
+        </div>
+
+        <div>
+
+          <dt>Condición IVA</dt>
+
+          <dd>{{ condicionIvaCliente(sel) }}</dd>
+
+          <dt>Forma de cobro</dt>
+
+          <dd>{{ labelFormaCobro(sel) }}</dd>
+
+        </div>
+
+      </dl>
+
+
+
+      <table class="factura-print-table">
+
+        <thead>
+
+          <tr>
+
+            <th>Descripción</th>
+
+            <th class="num">Cant.</th>
+
+            <th class="num">P. unit.</th>
+
+            <th class="num">Subtotal</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          @for (l of sel.lineas ?? []; track l.idDetalle) {
+
+            <tr>
+
+              <td>{{ l.producto?.nombre ?? l.descripcion }}</td>
+
+              <td class="num">{{ l.cantidad }}</td>
+
+              <td class="num">${{ l.precioUnitario | number:'1.2-2' }}</td>
+
+              <td class="num">${{ l.subtotal | number:'1.2-2' }}</td>
+
+            </tr>
+
+          } @empty {
+
+            <tr><td colspan="4">Sin ítems detallados</td></tr>
+
+          }
+
+        </tbody>
+
+      </table>
+
+
+
+      <div class="factura-print-totals">
+
+        <div><span>Subtotal</span><span>${{ sel.subtotal | number:'1.2-2' }}</span></div>
+
+        <div><span>IVA</span><span>${{ sel.iva | number:'1.2-2' }}</span></div>
+
+        <div class="total"><span>Total</span><span>${{ sel.total | number:'1.2-2' }}</span></div>
+
+      </div>
+
+
+
+      @if (sel.cae) {
+
+        <div class="factura-print-cae">
+
+          <p><strong>CAE:</strong> {{ sel.cae }}</p>
+
+          @if (sel.caeVencimiento) {
+
+            <p><strong>Vencimiento CAE:</strong> {{ sel.caeVencimiento | date:'mediumDate' }}</p>
+
+          }
+
+        </div>
+
+      }
+
+
+
+      @if (sel.notas) {
+
+        <p class="text-xs mt-4"><strong>Observaciones:</strong> {{ sel.notas }}</p>
+
+      }
+
+
+
+      <footer class="factura-print-footer">
+
+        Comprobante generado por NovaTech ERP · {{ sel.numeroFactura }}
+
+      </footer>
+
+    </div>
+
+  }
+
+
+
+  <div class="admin-card p-5 mb-6 flex flex-col gap-4">
+
+    <h2 class="text-sm font-semibold text-slate-300">Emisión rápida desde pedido</h2>
+
+    <div class="flex flex-wrap gap-3 items-end">
+
+      <label class="text-sm text-slate-300 flex-1 min-w-[14rem]">
+
+        Pedido
+
+        <select class="admin-input mt-1" [ngModel]="pedidoId()" (ngModelChange)="pedidoId.set($event)" name="pedido">
+
+          <option [ngValue]="null">— Seleccionar pedido —</option>
+
+          @for (p of pedidos(); track p.idPedido) {
+
+            <option [ngValue]="p.idPedido">#{{ p.idPedido }} — {{ p.usuario?.nombre }} — ${{ p.total | number:'1.2-2' }} ({{ p.estado }})</option>
+
+          }
+
+        </select>
+
+      </label>
+
+      <a [routerLink]="['/admin/facturacion/nueva']" [queryParams]="pedidoId() ? { pedidoId: pedidoId() } : {}"
+
+        class="admin-btn admin-btn-ghost text-sm">Abrir en pantalla completa</a>
+
+      <button type="button" class="admin-btn admin-btn-primary" [disabled]="generando() || !pedidoId()" (click)="generar()">
+
+        {{ generando() ? 'Generando…' : 'Emitir factura' }}
+
+      </button>
+
+    </div>
+
+    <label class="text-sm text-slate-300 flex items-center gap-2 cursor-pointer">
+
+      <input type="checkbox" [ngModel]="prestamoPersonal()" (ngModelChange)="prestamoPersonal.set($event)" name="prestamo" />
+
+      Financiar con préstamo personal (cuotas · vencimiento día 10)
+
+    </label>
+
+    @if (prestamoPersonal()) {
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg">
+
+        <label class="text-sm text-slate-300">
+
+          Cantidad de cuotas (1–24)
+
+          <select class="admin-input mt-1" [ngModel]="cantidadCuotas()" (ngModelChange)="cantidadCuotas.set(+$event)" name="cuotas">
+
+            @for (n of cuotasDisponibles; track n) {
+
+              <option [ngValue]="n">{{ n }} cuota{{ n > 1 ? 's' : '' }}</option>
+
+            }
+
+          </select>
+
+        </label>
+
+        <label class="text-sm text-slate-300">
+
+          Interés (%)
+
+          <input type="number" class="admin-input mt-1" [ngModel]="interesPrestamo()" (ngModelChange)="interesPrestamo.set(+$event)" name="interes" min="0" max="100" step="0.1" />
+
+        </label>
+
+      </div>
+
+    }
+
+  </div>
+
+
+
+  <div class="admin-card overflow-hidden">
+
+    <div class="admin-card-header flex flex-wrap justify-between items-center gap-3">
+
+      <span>Comprobantes emitidos</span>
+
+      <span class="text-xs text-slate-500 font-normal">{{ facturasFiltradas().length }} de {{ facturas().length }}</span>
+
+    </div>
+
+    <div class="p-4 border-b border-white/10 flex flex-col sm:flex-row gap-3">
+
+      <div class="flex-1">
+
+        <app-admin-search
+
+          [termino]="busqueda()"
+
+          (terminoChange)="busqueda.set($event); pagina.set(1)"
+
+          [total]="facturas().length"
+
+          [filtrados]="facturasFiltradas().length"
+
+          placeholder="Buscar por número, pedido, cliente, estado o total…"
+
+        />
+
+      </div>
+
+      <label class="text-sm text-slate-300 shrink-0">
+
+        Estado
+
+        <select class="admin-input mt-1" [ngModel]="filtroEstado()" (ngModelChange)="filtroEstado.set($event); pagina.set(1)">
+
+          <option value="">Todos</option>
+
+          <option value="EMITIDA">Emitida</option>
+
+          <option value="ANULADA">Anulada</option>
+
+          <option value="BORRADOR">Borrador</option>
+
+        </select>
+
+      </label>
+
+    </div>
+
+    <div class="overflow-x-auto">
+
+      <table class="admin-table">
+
+        <thead>
+
+          <tr>
+
+            <th>Número</th>
+
+            <th>Origen</th>
+
+            <th>Cliente</th>
+
+            <th>Subtotal</th>
+
+            <th>IVA</th>
+
+            <th>Total</th>
+
+            <th>Cobro</th>
+
+            <th>Fecha</th>
+
+            <th>Estado</th>
+
+            <th class="text-right">Acción</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          @for (f of facturasPaginadas(); track f.idFactura) {
+
+            <tr [class.bg-blue-500/10]="filaDestacada(f.idFactura)" class="cursor-pointer hover:bg-white/5" (click)="verDetalle(f)">
+
+              <td class="font-mono text-blue-300">{{ f.numeroFactura }}</td>
+
+              <td class="text-xs">
+
+                @if (f.presupuesto) {
+
+                  <a [routerLink]="['/admin/presupuestos', f.presupuesto.idPresupuesto]" class="text-blue-400 hover:underline" (click)="$event.stopPropagation()">Pres. {{ f.presupuesto.numeroPresupuesto ?? f.presupuesto.idPresupuesto }}</a>
+
+                } @else if (f.pedido) {
+
+                  <a [routerLink]="['/admin/pedidos']" [queryParams]="{ detalle: f.pedido.idPedido }" class="text-blue-400 hover:underline" (click)="$event.stopPropagation()">Ped. #{{ f.pedido.idPedido }}</a>
+
+                } @else {
+
+                  <span class="text-slate-400">Manual</span>
+
+                }
+
+              </td>
+
+              <td>{{ f.pedido?.usuario?.nombre ?? f.presupuesto?.cliente?.usuario?.nombre ?? '—' }}</td>
+
+              <td>${{ f.subtotal | number:'1.2-2' }}</td>
+
+              <td>${{ f.iva | number:'1.2-2' }}</td>
+
+              <td class="font-semibold">${{ f.total | number:'1.2-2' }}</td>
+
+              <td class="text-xs text-slate-300">{{ labelFormaCobro(f) }}</td>
+
+              <td class="text-xs text-slate-400">{{ f.fechaEmision | date:'short' }}</td>
+
+              <td><span [class]="badgeEstado(f.estado)">{{ f.estado }}</span></td>
+
+              <td class="text-right" (click)="$event.stopPropagation()">
+
+                @if (f.estado === 'EMITIDA') {
+
+                  <button type="button" class="admin-btn admin-btn-danger text-xs py-1 px-2" (click)="anular(f)">Anular</button>
+
+                }
+
+              </td>
+
+            </tr>
+
+          } @empty {
+
+            <tr><td colspan="10" class="text-center text-slate-400 py-8">
+
+              @if (busqueda() || filtroEstado()) { No hay facturas que coincidan con los filtros. }
+
+              @else { Sin facturas. <a routerLink="/admin/facturacion/nueva" class="text-blue-400 hover:underline">Crear la primera</a>. }
+
+            </td></tr>
+
+          }
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+    <app-admin-pagination
+
+      [total]="facturasFiltradas().length"
+
+      [pagina]="pagina()"
+
+      [tamano]="tamanoPagina()"
+
+      (paginaChange)="pagina.set($event)"
+
+      (tamanoChange)="tamanoPagina.set($event); pagina.set(1)"
+
+    />
+
+  </div>
+
+</div>
+
+

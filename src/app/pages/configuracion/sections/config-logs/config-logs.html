@@ -1,0 +1,69 @@
+<app-config-page-shell titulo="Logs del sistema" subtitulo="Errores técnicos (15 días de retención)">
+  <div class="flex flex-wrap gap-2 mt-2 mb-3">
+    @for (d of dias; track d) {
+      <button
+        type="button"
+        class="config-pill"
+        [class.config-pill--active]="diaSeleccionado() === d"
+        (click)="diaSeleccionado.set(diaSeleccionado() === d ? null : d)"
+      >{{ etiquetaDia(d) }}</button>
+    }
+  </div>
+
+  <div class="flex flex-wrap gap-2 mb-4">
+    <select class="admin-input w-32" [ngModel]="nivel()" (ngModelChange)="nivel.set($event); buscar()" name="nivel">
+      <option value="">Todos</option>
+      <option value="ERROR">ERROR</option>
+      <option value="WARN">WARN</option>
+      <option value="INFO">INFO</option>
+    </select>
+    <input class="admin-input w-40" placeholder="Origen" [ngModel]="origen()" (ngModelChange)="origen.set($event); buscar()" name="origen" />
+    <input class="admin-input flex-1 min-w-[160px]" placeholder="Buscar en mensaje…" [ngModel]="q()" (ngModelChange)="q.set($event)" name="q" (keyup.enter)="buscar()" />
+    <button type="button" class="admin-btn admin-btn-primary" (click)="buscar()">Filtrar</button>
+  </div>
+
+  <div class="admin-card overflow-hidden">
+    <table class="admin-table">
+      <thead><tr><th>Fecha</th><th>Nivel</th><th>Origen</th><th>Mensaje</th><th></th></tr></thead>
+      <tbody>
+        @for (l of registrosFiltrados(); track l.idLog) {
+          <tr>
+            <td class="text-slate-400 whitespace-nowrap text-xs">{{ l.fecha | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+            <td>
+              <span class="admin-badge"
+                [class.admin-badge--vencida]="l.nivel === 'ERROR'"
+                [class.admin-badge--pendiente]="l.nivel === 'WARN'"
+                [class.admin-badge--enviada]="l.nivel === 'INFO'"
+              >{{ l.nivel }}</span>
+            </td>
+            <td class="text-slate-300">{{ l.origen }}</td>
+            <td>{{ l.mensaje }}</td>
+            <td>
+              @if (l.stackTrace || l.metadataJson) {
+                <button type="button" class="text-orange-400 text-xs" (click)="toggleExpand(l.idLog)">
+                  {{ expandido() === l.idLog ? 'Ocultar' : 'Expandir' }}
+                </button>
+              }
+            </td>
+          </tr>
+          @if (expandido() === l.idLog) {
+            <tr>
+              <td colspan="5" class="bg-slate-900/50 p-4 text-xs font-mono">
+                @if (l.stackTrace) {
+                  <p class="text-slate-500 mb-1">Stack trace</p>
+                  <pre class="text-red-300 whitespace-pre-wrap mb-3">{{ l.stackTrace }}</pre>
+                }
+                @if (l.metadataJson) {
+                  <p class="text-slate-500 mb-1">Metadata</p>
+                  <pre class="text-slate-300 whitespace-pre-wrap">{{ parseJson(l.metadataJson) | json }}</pre>
+                }
+              </td>
+            </tr>
+          }
+        } @empty {
+          <tr><td colspan="5" class="text-center text-slate-500 py-6">Sin logs en el período</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</app-config-page-shell>

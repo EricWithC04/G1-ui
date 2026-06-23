@@ -69,7 +69,16 @@ export class Catalogo implements OnInit {
         } else if (this.categoriaId) {
             filtros = { categoriaId: this.categoriaId };
         }
-        this.productService.listarConFiltros(filtros).subscribe(items => this.productos.set(items));
+        this.productService.listarConFiltros({ ...filtros, canal: 'WEB' }).subscribe(items =>
+            this.productos.set(items.map(p => this.normalizarPrecioCanal(p))),
+        );
+    }
+
+    private normalizarPrecioCanal(p: Product): Product {
+        if (p.precioCanal != null) {
+            return { ...p, precio: p.precioCanal };
+        }
+        return p;
     }
 
     filtrarCategoria(id: number): void {

@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProductService } from '../../services/product';
 import { CategoriaService } from '../../services/categoria.service';
 import { Product, Categoria } from '../../models/models';
+import { aEntero, esEnteroNoNegativo, mensajeEntero } from '../../utils/validadores-admin';
 
 // Pagina con el formulario de producto.
 // Sirve para DOS cosas segun la URL:
@@ -22,7 +23,9 @@ export class CreateProduct implements OnInit {
     nombre: '',
     descripcion: '',
     precio: 0,
+    precioLista: 0,
     stock: 0,
+    stockMinimo: 5,
     proveedor: '',
     categoria: { idCategoria: 1 },
   };
@@ -101,33 +104,49 @@ export class CreateProduct implements OnInit {
     lector.readAsDataURL(archivo);
   }
 
-  // Para que no se puedan colocar caracteres raros en los inputs de numeros
-  bloquearCaracteresInvalidos(event: KeyboardEvent): void {
-  if (['e', 'E', '+', '-'].includes(event.key)) {
-    event.preventDefault();
-  }
-}
+  errorGuardado = signal('');
 
-  // Saca la foto cargada (vuelve a dejar el producto sin imagen).
+  bloquearCaracteresInvalidos(event: KeyboardEvent): void {
+    if (['e', 'E', '+', '-'].includes(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  bloquearDecimalesStock(event: KeyboardEvent): void {
+    if (['e', 'E', '+', '-', '.', ','].includes(event.key)) {
+      event.preventDefault();
+    }
+  }
+
   quitarImagen(): void {
     this.product.imagen = undefined;
     this.errorImagen.set('');
   }
 
-  // Se llama al enviar el formulario.
-  // Si estamos editando, manda PUT; si no, manda POST. Despues vuelve a la lista.
   guardarProducto(f: NgForm): void {
     if (f.invalid) {
       Object.values(f.controls).forEach(c => c.markAsTouched());
       return;
     }
+    if (!esEnteroNoNegativo(this.product.stock)) {
+      this.errorGuardado.set(mensajeEntero('Stock'));
+      return;
+    }
+    if (this.product.stockMinimo != null && !esEnteroNoNegativo(this.product.stockMinimo)) {
+      this.errorGuardado.set(mensajeEntero('Stock mínimo'));
+      return;
+    }
+    this.errorGuardado.set('');
+    this.product.stock = aEntero(this.product.stock);
+    this.product.stockMinimo = aEntero(this.product.stockMinimo ?? 0);
+
     const peticion = this.esEdicion
       ? this.productService.actualizar(this.editandoId!, this.product)
       : this.productService.crear(this.product);
 
     peticion.subscribe({
       next: () => this.router.navigate(['/admin/productos']),
-      error: err => console.error('Error al guardar producto', err),
+      error: err => this.errorGuardado.set(err.error?.message ?? 'Error al guardar producto'),
     });
   }
 }

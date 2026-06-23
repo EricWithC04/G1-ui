@@ -55,20 +55,39 @@
 
     <div class="grid grid-cols-2 gap-4">
       <label class="text-sm text-neutral-300">
-        Precio <span class="text-red-400">*</span>
+        Precio de venta <span class="text-red-400">*</span>
         <input class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white" type="number"
           [(ngModel)]="product.precio" #precioCtrl="ngModel" name="precio" required step="0.01" placeholder="Ej: 45000.00"
           (keydown)="bloquearCaracteresInvalidos($event)"
         >
-        <span class="block text-xs text-neutral-400 mt-1">Numero con hasta 2 decimales. Ej: 45000.00.</span>
+        <span class="block text-xs text-neutral-400 mt-1">Precio final en la tienda.</span>
       </label>
+      <label class="text-sm text-neutral-300">
+        Precio de lista
+        <input class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white" type="number"
+          [(ngModel)]="product.precioLista" name="precioLista" step="0.01" placeholder="Ej: 52000.00"
+          (keydown)="bloquearCaracteresInvalidos($event)"
+        >
+        <span class="block text-xs text-neutral-400 mt-1">PVP de referencia (tachado si hay descuento).</span>
+      </label>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
       <label class="text-sm text-neutral-300">
         Stock <span class="text-red-400">*</span>
         <input class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white" type="number"
-          [(ngModel)]="product.stock" #stockCtrl="ngModel" name="stock" required placeholder="Ej: 12"
-          (keydown)="bloquearCaracteresInvalidos($event)"
+          [(ngModel)]="product.stock" #stockCtrl="ngModel" name="stock" required min="0" step="1" placeholder="Ej: 12"
+          (keydown)="bloquearDecimalesStock($event)"
         >
-        <span class="block text-xs text-neutral-400 mt-1">Cantidad entera de unidades disponibles. Ej: 12.</span>
+        <span class="block text-xs text-neutral-400 mt-1">Unidades disponibles.</span>
+      </label>
+      <label class="text-sm text-neutral-300">
+        Stock mínimo
+        <input class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white" type="number"
+          [(ngModel)]="product.stockMinimo" name="stockMinimo" min="0" step="1" placeholder="Ej: 5"
+          (keydown)="bloquearDecimalesStock($event)"
+        >
+        <span class="block text-xs text-neutral-400 mt-1">Alerta y reposición automática por debajo de este valor.</span>
       </label>
     </div>
 
@@ -82,6 +101,10 @@
       <p class="text-xs text-red-400 mt-1">
         @if (stockCtrl.hasError('required')) { El campo es obligatorio. }
       </p>
+    }
+
+    @if (errorGuardado()) {
+      <p class="text-xs text-red-400">{{ errorGuardado() }}</p>
     }
 
     <!-- Desplegable de categorias. Recorremos la lista que vino del backend. -->

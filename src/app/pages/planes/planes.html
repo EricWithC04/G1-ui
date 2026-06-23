@@ -1,4 +1,6 @@
-<h1 class="text-2xl font-bold text-white mb-6">Planes de cuotas</h1>
+<div class="admin-content">
+<h1 class="admin-page-title mb-2">Planes de cuotas</h1>
+<p class="admin-page-subtitle mb-6">Financiación de pedidos en cuotas con interés configurable.</p>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -44,15 +46,15 @@
       <label class="text-sm text-neutral-300">
         Cuotas <span class="text-red-400">*</span>
         <input type="number" #cuotasCtrl="ngModel" class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
-          [(ngModel)]="form.cantidadCuotas" name="cuotas" required min="1" placeholder="Ej: 3"
+          [(ngModel)]="form.cantidadCuotas" name="cuotas" required min="1" max="24" step="1" placeholder="Ej: 6"
           (keydown)="bloquearCaracteresInvalidos($event)"
         >
-        <span class="block text-xs text-neutral-400 mt-1">Cantidad entera de cuotas. Ej: 3.</span>
+        <span class="block text-xs text-neutral-400 mt-1">Entre 1 y 24 cuotas.</span>
       </label>
       <label class="text-sm text-neutral-300">
         Interes % <span class="text-red-400">*</span>
         <input type="number" #interesCtrl="ngModel" class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
-          [(ngModel)]="form.interes" name="interes" required min="0" step="0.01" placeholder="Ej: 15.00"
+          [(ngModel)]="form.interes" name="interes" required min="0" max="100" step="0.01" placeholder="Ej: 15.00"
           (keydown)="bloquearCaracteresInvalidos($event)"
         >
         <span class="block text-xs text-neutral-400 mt-1">Porcentaje de interes. Numero con decimales. Ej: 15.00.</span>
@@ -84,11 +86,21 @@
 
   <!-- Tabla con la lista de planes. -->
   <div class="lg:col-span-2 bg-gray-800 border border-white/10 rounded-xl overflow-hidden">
+    <div class="p-4 border-b border-white/10">
+      <app-admin-search
+        [termino]="busqueda()"
+        (terminoChange)="busqueda.set($event)"
+        [total]="items().length"
+        [filtrados]="itemsFiltrados().length"
+        placeholder="Buscar por plan, pedido, cliente o estado…"
+      />
+    </div>
     <table class="w-full text-sm text-left">
       <thead class="bg-gray-900 text-neutral-400">
         <tr>
           <th class="px-4 py-3">ID</th>
           <th class="px-4 py-3">Pedido</th>
+          <th class="px-4 py-3">Cliente</th>
           <th class="px-4 py-3">Cuotas</th>
           <th class="px-4 py-3">Interes</th>
           <th class="px-4 py-3">Estado</th>
@@ -96,10 +108,11 @@
         </tr>
       </thead>
       <tbody>
-        @for (item of items(); track item.idPlan) {
+        @for (item of itemsFiltrados(); track item.idPlan) {
           <tr class="border-t border-white/10 text-neutral-200">
             <td class="px-4 py-3">{{ item.idPlan }}</td>
             <td class="px-4 py-3">#{{ item.pedido?.idPedido }}</td>
+            <td class="px-4 py-3 text-neutral-400 text-xs">{{ item.cliente?.usuario?.nombre }}</td>
             <td class="px-4 py-3">{{ item.cantidadCuotas }}</td>
             <td class="px-4 py-3">{{ item.interes | number:'1.2-2' }} %</td>
             <td class="px-4 py-3">{{ item.estado }}</td>
@@ -108,10 +121,14 @@
             </td>
           </tr>
         }
-        @if (items().length === 0) {
-          <tr><td colspan="6" class="px-4 py-4 text-neutral-500">No hay planes.</td></tr>
+        @if (itemsFiltrados().length === 0) {
+          <tr><td colspan="7" class="px-4 py-4 text-neutral-500">
+            @if (busqueda()) { No hay planes que coincidan con la búsqueda. }
+            @else { No hay planes. }
+          </td></tr>
         }
       </tbody>
     </table>
   </div>
+</div>
 </div>

@@ -1,0 +1,184 @@
+<app-config-page-shell titulo="Usuarios y Roles" subtitulo="Altas, roles y permisos del equipo">
+  @if (mensaje()) { <p class="admin-alert admin-alert-success">{{ mensaje() }}</p> }
+  @if (error()) {
+    <div class="admin-alert admin-alert-error flex flex-wrap items-center justify-between gap-2">
+      <span>{{ error() }}</span>
+      <button type="button" class="admin-btn admin-btn-ghost text-xs" (click)="cargarRbac()">Reintentar</button>
+    </div>
+  }
+
+  <div class="config-tabs">
+    <button type="button" class="config-tab" [class.config-tab--active]="tab() === 'usuarios'" (click)="tab.set('usuarios')">Usuarios</button>
+    <button type="button" class="config-tab" [class.config-tab--active]="tab() === 'roles'" (click)="tab.set('roles')">Roles y permisos</button>
+  </div>
+
+  @if (tab() === 'usuarios') {
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
+      @if (permiso.puede('usuarios.create')) {
+        <form #f="ngForm" class="admin-card p-5 flex flex-col gap-3 h-fit" (ngSubmit)="guardarUsuario(f)">
+          <h2 class="font-semibold text-white text-sm">Nuevo usuario</h2>
+          <label class="text-sm text-slate-300">Nombre *
+            <input class="admin-input mt-1" [(ngModel)]="form.nombre" name="nombre" required />
+          </label>
+          <label class="text-sm text-slate-300">Email *
+            <input type="email" class="admin-input mt-1" [(ngModel)]="form.email" name="email" required />
+          </label>
+          <label class="text-sm text-slate-300">Contraseña *
+            <input type="password" class="admin-input mt-1" [(ngModel)]="form.contrasena" name="contrasena" required minlength="6" />
+          </label>
+          <label class="text-sm text-slate-300">Rol
+            <select class="admin-input mt-1" [(ngModel)]="form.rol" name="rol">
+              @for (r of rolesAsignables(); track r.clave) {
+                <option [value]="r.clave">{{ r.nombre }} ({{ r.clave }})</option>
+              }
+            </select>
+          </label>
+          <button type="submit" class="admin-btn admin-btn-primary w-fit">Crear usuario</button>
+        </form>
+      }
+      <div class="admin-card overflow-hidden" [class.lg:col-span-2]="permiso.puede('usuarios.create')" [class.lg:col-span-3]="!permiso.puede('usuarios.create')">
+        <div class="p-4 border-b border-white/10">
+          <app-admin-search [termino]="busqueda()" (terminoChange)="busqueda.set($event)" [total]="usuarios().length" [filtrados]="usuariosFiltrados().length" placeholder="Buscar usuario…" />
+        </div>
+        <table class="admin-table">
+          <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Registro</th><th></th></tr></thead>
+          <tbody>
+            @for (u of usuariosFiltrados(); track u.idUsuario) {
+              <tr>
+                <td>{{ u.nombre }}</td>
+                <td class="text-slate-400">{{ u.email }}</td>
+                <td><span class="admin-badge">{{ u.rol }}</span></td>
+                <td class="text-slate-400 text-xs">{{ u.fechaRegistro | date:'dd/MM/yyyy' }}</td>
+                <td class="text-right">
+                  @if (permiso.puede('usuarios.deactivate')) {
+                    <button type="button" class="text-red-400 text-xs" (click)="borrarUsuario(u.idUsuario)">Eliminar</button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="5" class="text-center text-slate-500 py-6">Sin usuarios</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 mt-4">
+      <!-- Lista de roles + alta -->
+      <div class="xl:col-span-4 flex flex-col gap-4">
+        @if (permiso.puedeGestionarRoles()) {
+          <form #rolForm="ngForm" class="admin-card p-4 flex flex-col gap-3" (ngSubmit)="crearRol(rolForm)">
+            <h2 class="font-semibold text-white text-sm">Nuevo rol</h2>
+            <label class="text-sm text-slate-300">Clave *
+              <input class="admin-input mt-1 uppercase" [(ngModel)]="formRol.clave" name="clave" required pattern="[A-Za-z0-9_]+" placeholder="EJ: CONTADOR" />
+              <span class="text-xs text-slate-500">Solo letras, números y guión bajo</span>
+            </label>
+            <label class="text-sm text-slate-300">Nombre *
+              <input class="admin-input mt-1" [(ngModel)]="formRol.nombre" name="nombreRol" required placeholder="Ej: Contador" />
+            </label>
+            <label class="text-sm text-slate-300">Descripción
+              <textarea class="admin-input mt-1 min-h-[60px]" [(ngModel)]="formRol.descripcion" name="descRol"></textarea>
+            </label>
+            <button type="submit" class="admin-btn admin-btn-primary w-fit" [disabled]="guardando()">Crear rol</button>
+          </form>
+        }
+
+        <div class="admin-card overflow-hidden">
+          <div class="admin-card-header">Roles del sistema</div>
+          <ul class="divide-y divide-white/5">
+            @for (r of rolesPanel(); track r.clave) {
+              <li>
+                <button
+                  type="button"
+                  class="w-full text-left px-4 py-3 hover:bg-white/5 transition-colors"
+                  [class.bg-orange-500/10]="rolSeleccionado()?.clave === r.clave"
+                  (click)="seleccionarRol(r)"
+                >
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="font-semibold text-white text-sm">{{ r.nombre }}</span>
+                    @if (r.accesoTotal) {
+                      <span class="admin-badge admin-badge--emitida text-[10px]">TOTAL</span>
+                    } @else if (r.esSistema) {
+                      <span class="admin-badge admin-badge--borrador text-[10px]">SISTEMA</span>
+                    }
+                  </div>
+                  <p class="text-xs text-slate-500 mt-0.5">{{ r.clave }} · {{ contarUsuariosRol(r.clave) }} usuario(s)</p>
+                  @if (r.descripcion) {
+                    <p class="text-xs text-slate-400 mt-1">{{ r.descripcion }}</p>
+                  }
+                </button>
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+
+      <!-- Matriz de permisos -->
+      <div class="xl:col-span-8 admin-card p-4">
+        @if (rolSeleccionado(); as rol) {
+          <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+            <div>
+              <h2 class="font-semibold text-white">{{ rol.nombre }}</h2>
+              <p class="text-sm text-slate-400">{{ rol.descripcion || 'Sin descripción' }}</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              @if (!rol.accesoTotal && permiso.puedeGestionarRoles()) {
+                <button type="button" class="admin-btn admin-btn-primary text-xs" [disabled]="guardando()" (click)="guardarPermisosRol()">
+                  Guardar permisos
+                </button>
+              }
+              @if (!rol.esSistema && !rol.accesoTotal && permiso.puedeGestionarRoles()) {
+                <button type="button" class="admin-btn admin-btn-ghost text-xs text-red-400" (click)="eliminarRol()">Eliminar rol</button>
+              }
+            </div>
+          </div>
+
+          @if (rol.accesoTotal) {
+            <p class="text-sm text-orange-300 bg-orange-500/10 border border-orange-500/20 rounded-lg p-4">
+              Este rol tiene <strong>acceso total</strong> a todos los permisos del sistema. No se puede editar la matriz.
+            </p>
+          } @else {
+            <input
+              class="admin-input mb-4 max-w-md"
+              placeholder="Buscar permiso…"
+              [ngModel]="busquedaPermisos()"
+              (ngModelChange)="busquedaPermisos.set($event)"
+              name="qPerm"
+            />
+            @for (grupo of permisosPorModulo(); track grupo[0]) {
+              <div class="mb-4">
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">{{ grupo[0] }}</h3>
+                  @if (permiso.puedeGestionarRoles()) {
+                    <button type="button" class="text-xs text-orange-400" (click)="toggleModulo(grupo[0])">Alternar módulo</button>
+                  }
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  @for (p of grupo[1]; track p.clave) {
+                    <label class="flex items-start gap-2 text-sm text-slate-300 bg-slate-900/40 rounded-lg p-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        class="mt-0.5"
+                        [checked]="tienePermisoEdit(p.clave!)"
+                        [disabled]="!permiso.puedeGestionarRoles()"
+                        (change)="togglePermiso(p.clave!)"
+                      />
+                      <span>
+                        <span class="font-mono text-xs text-orange-300/90">{{ p.clave }}</span>
+                        <span class="block text-xs text-slate-500">{{ p.descripcion }}</span>
+                      </span>
+                    </label>
+                  }
+                </div>
+              </div>
+            } @empty {
+              <p class="text-slate-500 text-sm">Ningún permiso coincide con la búsqueda.</p>
+            }
+          }
+        } @else {
+          <p class="text-slate-500 text-sm py-8 text-center">Seleccioná un rol de la lista.</p>
+        }
+      </div>
+    </div>
+  }
+</app-config-page-shell>

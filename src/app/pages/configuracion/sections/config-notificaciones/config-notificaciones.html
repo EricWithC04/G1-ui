@@ -1,0 +1,21 @@
+<app-config-page-shell titulo="Notificaciones" subtitulo="Plantillas y reglas de aviso">
+  @if (mensaje()) { <p class="admin-alert admin-alert-success">{{ mensaje() }}</p> }
+  @if (error()) { <p class="admin-alert admin-alert-error">{{ error() }}</p> }
+
+  <form class="admin-card p-5 flex flex-col gap-4 max-w-xl mt-2" (ngSubmit)="guardar()">
+    @for (c of campos(); track c.clave) {
+      <label class="text-sm text-slate-300">
+        {{ c.label }}
+        @if (c.tipo === 'checkbox') {
+          <div class="mt-1">
+            <input type="checkbox" [checked]="c.valor === 'true'" (change)="setCheckbox(c, $any($event.target).checked)" />
+            <span class="text-slate-400 text-xs ml-2">{{ c.valor === 'true' ? 'Activado' : 'Desactivado' }}</span>
+          </div>
+        } @else {
+          <input class="admin-input mt-1" [type]="c.tipo === 'integer' ? 'number' : 'text'" [(ngModel)]="c.valor" [name]="c.clave" />
+        }
+      </label>
+    }
+    <button type="submit" class="admin-btn admin-btn-primary w-fit" [disabled]="guardando()">Guardar cambios</button>
+  </form>
+</app-config-page-shell>

@@ -1,0 +1,140 @@
+.embudo-toolbar {
+  padding: 0.75rem 1rem 0;
+}
+
+.embudo-nueva {
+  padding: 0.5rem 1rem;
+  background: #ea580c;
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.embudo-form {
+  margin: 0.75rem 1rem;
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.65rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr 160px;
+  gap: 0.65rem;
+  align-items: start;
+}
+
+.embudo-form input,
+.embudo-form select,
+.embudo-form textarea {
+  padding: 0.5rem 0.65rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.embudo-form textarea {
+  grid-column: 1 / -1;
+}
+
+.embudo-form button {
+  grid-column: 1 / -1;
+  justify-self: start;
+  padding: 0.45rem 1rem;
+  background: #0f172a;
+  color: #fff;
+  border: none;
+  border-radius: 0.4rem;
+  cursor: pointer;
+}
+
+.embudo {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem;
+  overflow-x: auto;
+  flex: 1;
+  min-height: calc(100vh - 10rem);
+  align-items: flex-start;
+}
+
+.embudo-col {
+  flex: 0 0 220px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.65rem;
+  min-height: 200px;
+}
+
+.embudo-col-header {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.embudo-col-header h3 {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.embudo-col-header span {
+  font-size: 0.75rem;
+  background: #f1f5f9;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  color: #64748b;
+}
+
+.embudo-cards {
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.embudo-card {
+  background: #fafafa;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 0.65rem;
+  font-size: 0.8rem;
+}
+
+.embudo-card h4 {
+  margin: 0 0 0.35rem;
+  font-size: 0.85rem;
+}
+
+.embudo-cliente {
+  margin: 0;
+  color: #ea580c;
+  font-size: 0.75rem;
+}
+
+.embudo-monto {
+  margin: 0.25rem 0 0;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.embudo-notas {
+  margin: 0.35rem 0 0;
+  color: #64748b;
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.embudo-mover {
+  margin-top: 0.5rem;
+  width: 100%;
+  font-size: 0.7rem;
+  padding: 0.25rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.35rem;
+  background: #fff;
+}

@@ -1,0 +1,166 @@
+<div class="admin-page-header">
+  <h1 class="admin-page-title">Campañas y mensajería</h1>
+  <p class="admin-page-subtitle">
+    Automatizá comunicaciones: promos, recordatorios de pago, cuotas vencidas y novedades por email o SMS (simulado en el sistema).
+  </p>
+</div>
+
+@if (ok()) { <p class="admin-alert admin-alert-success">{{ ok() }}</p> }
+@if (error()) { <p class="admin-alert admin-alert-error">{{ error() }}</p> }
+
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+  <form class="admin-card p-5 flex flex-col gap-3 h-fit" (ngSubmit)="guardar()">
+    <h2 class="font-semibold text-white">Nueva campaña</h2>
+
+    <label class="text-sm text-slate-300">
+      Nombre interno *
+      <input class="admin-input" [(ngModel)]="form.nombre" name="nombre" placeholder="Hot Sale — clientes activos">
+    </label>
+
+    <label class="text-sm text-slate-300">
+      Tipo de mensaje
+      <select class="admin-input" [(ngModel)]="form.tipo" name="tipo" (change)="onTipoChange()">
+        @for (t of tipos; track t.value) {
+          <option [value]="t.value">{{ t.label }}</option>
+        }
+      </select>
+    </label>
+
+    @if (form.tipo === 'PROMOCION') {
+      <label class="text-sm text-slate-300">
+        Vincular promoción (opcional)
+        <select class="admin-input" [(ngModel)]="form.promocion" name="promo">
+          <option [ngValue]="undefined">— Sin promoción —</option>
+          @for (p of promociones(); track p.idPromocion) {
+            <option [ngValue]="p">{{ p.titulo }} ({{ p.porcentajeDescuento }}%)</option>
+          }
+        </select>
+      </label>
+    }
+
+    <label class="text-sm text-slate-300">
+      Asunto
+      <input class="admin-input" [(ngModel)]="form.asunto" name="asunto" placeholder="NovaTech — Oferta especial">
+    </label>
+
+    <label class="text-sm text-slate-300">
+      Mensaje *
+      <textarea class="admin-input min-h-28" [(ngModel)]="form.cuerpoMensaje" name="cuerpo" required></textarea>
+    </label>
+
+    <div class="grid grid-cols-2 gap-3">
+      <label class="text-sm text-slate-300">
+        Canal
+        <select class="admin-input" [(ngModel)]="form.canal" name="canal">
+          @for (c of canales; track c) { <option [value]="c">{{ c }}</option> }
+        </select>
+      </label>
+      <label class="text-sm text-slate-300">
+        Segmento
+        <select class="admin-input" [(ngModel)]="form.segmento" name="segmento">
+          @for (s of segmentos; track s) { <option [value]="s">{{ s }}</option> }
+        </select>
+      </label>
+    </div>
+
+    <label class="text-sm text-slate-300">
+      Estado
+      <select class="admin-input" [(ngModel)]="form.estado" name="estado">
+        @for (e of estados; track e) { <option [value]="e">{{ e }}</option> }
+      </select>
+    </label>
+
+    <label class="text-sm text-slate-300">
+      Programar envío (opcional)
+      <input class="admin-input" type="datetime-local" [(ngModel)]="form.fechaProgramada" name="fechaProg">
+    </label>
+
+    <button type="submit" class="admin-btn admin-btn-primary" [disabled]="guardando()">
+      {{ guardando() ? 'Guardando…' : 'Guardar campaña' }}
+    </button>
+  </form>
+
+  <div class="xl:col-span-2 space-y-6">
+    <div class="admin-card overflow-hidden">
+      <div class="admin-card-header">Campañas</div>
+      <div class="p-4 border-b border-white/10">
+        <app-admin-search
+          [termino]="busqueda()"
+          (terminoChange)="busqueda.set($event)"
+          [total]="items().length"
+          [filtrados]="itemsFiltrados().length"
+          placeholder="Buscar por nombre, tipo, segmento o estado…"
+        />
+      </div>
+      <div class="overflow-x-auto">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Campaña</th>
+              <th>Tipo</th>
+              <th>Segmento</th>
+              <th>Canal</th>
+              <th>Estado</th>
+              <th>Enviados</th>
+              <th class="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of itemsFiltrados(); track item.idCampana) {
+              <tr>
+                <td>
+                  <p class="font-medium">{{ item.nombre }}</p>
+                  <p class="text-xs text-slate-400">{{ item.asunto }}</p>
+                </td>
+                <td>{{ item.tipo }}</td>
+                <td>{{ item.segmento }}</td>
+                <td>{{ item.canal }}</td>
+                <td><span [class]="badgeEstado(item.estado)">{{ item.estado }}</span></td>
+                <td>{{ item.cantidadEnviados ?? 0 }}</td>
+                <td class="text-right whitespace-nowrap space-x-1">
+                  @if (item.estado !== 'ENVIADA') {
+                    <button type="button" class="admin-btn admin-btn-success text-xs py-1 px-2" [disabled]="enviando()" (click)="enviar(item)">Enviar</button>
+                  }
+                  <button type="button" class="admin-btn admin-btn-ghost text-xs py-1 px-2" (click)="verMensajes(item)">Log</button>
+                  @if (item.estado !== 'ENVIADA') {
+                    <button type="button" class="admin-btn admin-btn-danger text-xs py-1 px-2" (click)="eliminar(item)">×</button>
+                  }
+                </td>
+              </tr>
+          } @empty {
+            <tr><td colspan="7" class="text-center text-slate-400 py-8">
+              @if (busqueda()) { No hay campañas que coincidan con la búsqueda. }
+              @else { Sin campañas. }
+            </td></tr>
+          }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    @if (campanaSeleccionada()) {
+      <div class="admin-card overflow-hidden">
+        <div class="admin-card-header">Log de envíos — campaña #{{ campanaSeleccionada() }}</div>
+        <div class="overflow-x-auto max-h-64">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Cliente</th><th>Email</th><th>Estado</th><th>Fecha</th></tr>
+            </thead>
+            <tbody>
+              @for (m of mensajes(); track m.idMensaje) {
+                <tr>
+                  <td>{{ m.usuario?.nombre }}</td>
+                  <td>{{ m.emailDestino }}</td>
+                  <td>{{ m.estado }}</td>
+                  <td class="text-xs text-slate-400">{{ m.fechaEnvio | date:'short' }}</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="4" class="text-center text-slate-400 py-4">Sin mensajes aún.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  </div>
+</div>
