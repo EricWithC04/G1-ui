@@ -16,6 +16,10 @@ export class PermisoService {
     });
   }
 
+  limpiarMatriz(): void {
+    this.matriz.set(null);
+  }
+
   esSuperAdmin(): boolean {
     return esRolConAccesoTotal(this.auth.getRol());
   }

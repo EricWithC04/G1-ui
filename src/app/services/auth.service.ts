@@ -1,4 +1,4 @@
-import { Injectable, Injector, inject, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, firstValueFrom, of, tap } from 'rxjs';
 import { API_URL } from './api-base';
@@ -29,19 +29,32 @@ export class AuthService {
     /** Sesión solo en memoria — el JWT vive en cookie HttpOnly (no visible en F12 → Application). */
     usuarioActual = signal<UsuarioSesion | null>(null);
 
-    private injector = inject(Injector);
+    private permisos = inject(PermisoService);
 
     constructor(private http: HttpClient) { }
 
-    private permisos(): PermisoService {
-        return this.injector.get(PermisoService);
+    logout(): Promise<void> {
+        return firstValueFrom(
+            this.http.post(`${API_URL}/auth/logout`, {}).pipe(
+                tap(() => this.limpiarSesionLocal()),
+                catchError(() => {
+                    this.limpiarSesionLocal();
+                    return of(null);
+                }),
+            ),
+        ).then(() => undefined);
+    }
+
+    private limpiarSesionLocal(): void {
+        this.usuarioActual.set(null);
+        this.permisos.limpiarMatriz();
     }
 
     register(datos: RegistroData): Observable<UsuarioSesion> {
         return this.http.post<UsuarioSesion>(`${API_URL}/auth/register`, datos).pipe(
             tap(usuario => {
                 this.usuarioActual.set(usuario);
-                this.permisos().recargarMatriz();
+                this.permisos.recargarMatriz();
             }),
         );
     }
@@ -50,7 +63,7 @@ export class AuthService {
         return this.http.post<UsuarioSesion>(`${API_URL}/auth/login`, datos).pipe(
             tap(usuario => {
                 this.usuarioActual.set(usuario);
-                this.permisos().recargarMatriz();
+                this.permisos.recargarMatriz();
             }),
         );
     }
@@ -62,7 +75,7 @@ export class AuthService {
             this.http.get<UsuarioSesion>(`${API_URL}/auth/me`).pipe(
                 tap(u => {
                     this.usuarioActual.set(u);
-                    this.permisos().recargarMatriz();
+                    this.permisos.recargarMatriz();
                 }),
                 catchError(() => {
                     this.usuarioActual.set(null);
@@ -70,13 +83,6 @@ export class AuthService {
                 }),
             ),
         ).then(() => undefined);
-    }
-
-    logout(): void {
-        this.http.post(`${API_URL}/auth/logout`, {}).subscribe({
-            next: () => this.usuarioActual.set(null),
-            error: () => this.usuarioActual.set(null),
-        });
     }
 
     isLoggedIn(): boolean {

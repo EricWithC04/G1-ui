@@ -33,8 +33,8 @@ export class StoreHeader implements OnInit {
     }
   }
 
-  cerrarSesion(): void {
-    this.auth.logout();
-    this.router.navigate(['/']);
+  async cerrarSesion(): Promise<void> {
+    await this.auth.logout();
+    void this.router.navigate(['/']);
   }
 }

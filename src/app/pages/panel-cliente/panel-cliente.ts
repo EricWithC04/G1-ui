@@ -249,8 +249,8 @@ export class PanelCliente implements OnInit {
     this.perfilEmail.set(sesion.email);
 
     forkJoin({
-      pedidos: this.clientePortal.listarPedidos(),
-      facturas: this.clientePortal.listarFacturas(),
+      pedidos: this.clientePortal.listarPedidos().pipe(catchError(() => of([] as Pedido[]))),
+      facturas: this.clientePortal.listarFacturas().pipe(catchError(() => of([] as Factura[]))),
       perfil: this.clientePortal.obtenerPerfil().pipe(catchError(() => of(null))),
       tickets: this.clientePortal.listarTickets().pipe(catchError(() => of([] as Conversacion[]))),
       devoluciones: this.clientePortal.listarDevoluciones().pipe(catchError(() => of([] as SolicitudDevolucion[]))),

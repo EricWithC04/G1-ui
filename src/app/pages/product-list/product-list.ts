@@ -215,7 +215,10 @@ export class ProductList implements OnInit {
 
   borrar(id: number): void {
     if (!confirm('¿Eliminar este producto?')) return;
-    this.productService.eliminar(id).subscribe(() => this.cargar());
+    this.productService.eliminar(id).subscribe({
+      next: () => this.cargar(),
+      error: e => this.error.set(e.error?.message ?? 'No se pudo eliminar el producto.'),
+    });
   }
 
   exportarCsv(): void {

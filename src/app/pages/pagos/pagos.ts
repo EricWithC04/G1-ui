@@ -76,7 +76,7 @@ export class Pagos implements OnInit {
       this.cargarSaldos(data);
     });
     this.usuarioService.listar().subscribe(data => {
-      this.usuarios.set(data.filter(u => u.rol === 'ADMIN'));
+      this.usuarios.set(data.filter(u => u.rol === 'ADMIN' || u.rol === 'SUPERADMIN'));
     });
   }
 
