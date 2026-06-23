@@ -9,7 +9,7 @@ hizo para que cualquiera del equipo pueda **entenderlo, levantarlo y defenderlo*
 - **Íconos:** `@lucide/angular`
 - **Conexión al backend:** `HttpClient` con **rutas relativas** + proxy del dev server
 - **Estado de sesión y carrito:** `signals` + `localStorage`
-- **Documentación ERP:** [../docs/README.md](../docs/README.md)
+- **Documentación ERP:** [../docs/README.md](../docs/README.md) · **[GUARDRAILS](../docs/GUARDRAILS.md)** · [AGENTS.md](./AGENTS.md)
 
 ---
 
@@ -17,7 +17,7 @@ hizo para que cualquiera del equipo pueda **entenderlo, levantarlo y defenderlo*
 
 | Parte | Repositorio | Rama habitual | URL |
 |-------|-------------|---------------|-----|
-| **Frontend (este repo)** | `EricWithC04/G1-ui` | `banners` (banners y landings) | https://github.com/EricWithC04/G1-ui |
+| **Frontend (este repo)** | `EricWithC04/G1-ui` | `main` | https://github.com/EricWithC04/G1-ui |
 | **Backend (API REST)** | `LeanMongelos/G1-ms` | `main` | https://github.com/LeanMongelos/G1-ms |
 
 El frontend **no incluye** el backend. Para desarrollo local hay que clonar ambos repos y levantar el backend en `localhost:8080` antes de `npm start`.
