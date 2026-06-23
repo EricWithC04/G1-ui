@@ -729,3 +729,66 @@
 .pc-badge--shipping    { background: rgba(14,165,233,.15);  color: #38bdf8; }
 .pc-badge--delivered   { background: var(--pc-emerald-dim); color: #6ee7b7; }
 .pc-badge--cancelled   { background: rgba(244,63,94,.12);   color: #fda4af; }
+
+.pc-order-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255,255,255,.07);
+}
+
+.pc-textarea {
+  min-height: 5rem;
+  resize: vertical;
+}
+
+.pc-thread {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  margin: 1.25rem 0;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.pc-msg {
+  max-width: 85%;
+  padding: .75rem 1rem;
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface-deep);
+  border: 1px solid var(--pc-border);
+}
+
+.pc-msg--mine {
+  align-self: flex-end;
+  background: var(--pc-blue-dim);
+  border-color: rgba(59,130,246,.25);
+}
+
+.pc-msg-author {
+  font-size: .72rem;
+  font-weight: 600;
+  color: var(--pc-text-soft);
+  margin-bottom: .25rem;
+}
+
+.pc-msg-body {
+  font-size: .88rem;
+  color: var(--pc-text);
+  white-space: pre-wrap;
+}
+
+.pc-msg-time {
+  font-size: .68rem;
+  color: var(--pc-text-muted);
+  margin-top: .35rem;
+}
+
+.pc-reply-box {
+  display: flex;
+  flex-direction: column;
+  gap: .65rem;
+  margin-top: 1rem;
+}

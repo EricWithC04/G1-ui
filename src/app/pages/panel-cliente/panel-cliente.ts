@@ -12,11 +12,14 @@ import { ToastService } from '../../services/toast.service';
 import { AuthService, UsuarioSesion } from '../../services/auth.service';
 import { ClientePortalService } from '../../services/cliente-portal.service';
 import {
+  Conversacion,
   Envio,
   Factura,
+  MensajeConversacion,
   Pedido,
   PedidoDetalleResponse,
   PerfilCliente,
+  SolicitudDevolucion,
 } from '../../models/models';
 
 type SeccionPanel =
@@ -24,6 +27,8 @@ type SeccionPanel =
   | 'pedidos'
   | 'direcciones'
   | 'facturas'
+  | 'soporte'
+  | 'devoluciones'
   | 'seguridad';
 
 type FiltroPedidos = 'todos' | 'activos' | 'entregados' | 'cancelados';
@@ -43,12 +48,29 @@ export class PanelCliente implements OnInit {
   pedidos = signal<Pedido[]>([]);
   detallesPorPedido = signal<Map<number, PedidoDetalleResponse>>(new Map());
   facturas = signal<Factura[]>([]);
+  tickets = signal<Conversacion[]>([]);
+  devoluciones = signal<SolicitudDevolucion[]>([]);
 
   cargando = signal(true);
   error = signal<string | null>(null);
   guardando = signal(false);
 
   pedidoDetalle = signal<Pedido | null>(null);
+  ticketDetalle = signal<Conversacion | null>(null);
+  mensajesTicket = signal<MensajeConversacion[]>([]);
+  devolucionDetalle = signal<SolicitudDevolucion | null>(null);
+
+  crearTicketVisible = signal(false);
+  ticketTipo = signal('consulta');
+  ticketAsunto = signal('');
+  ticketCuerpo = signal('');
+  ticketIdPedido = signal<number | null>(null);
+  ticketRespuesta = signal('');
+
+  crearDevolucionVisible = signal(false);
+  devolucionIdPedido = signal<number | null>(null);
+  devolucionMotivo = signal('DEFECTO');
+  devolucionDescripcion = signal('');
 
   perfilEditando = signal(false);
   perfilNombre = signal('');
@@ -73,11 +95,27 @@ export class PanelCliente implements OnInit {
   ];
 
   secciones: { id: SeccionPanel; label: string; icon: string }[] = [
-    { id: 'perfil',      label: 'Perfil',      icon: '👤' },
-    { id: 'pedidos',     label: 'Pedidos',      icon: '📦' },
-    { id: 'direcciones', label: 'Direcciones',  icon: '📍' },
-    { id: 'facturas',    label: 'Facturas',     icon: '🧾' },
-    { id: 'seguridad',   label: 'Seguridad',    icon: '🔒' },
+    { id: 'perfil',       label: 'Perfil',       icon: '👤' },
+    { id: 'pedidos',      label: 'Pedidos',       icon: '📦' },
+    { id: 'facturas',     label: 'Facturas',      icon: '🧾' },
+    { id: 'soporte',      label: 'Soporte',       icon: '💬' },
+    { id: 'devoluciones', label: 'Devoluciones',  icon: '↩️' },
+    { id: 'direcciones',  label: 'Direcciones',   icon: '📍' },
+    { id: 'seguridad',    label: 'Seguridad',     icon: '🔒' },
+  ];
+
+  tiposTicket = [
+    { id: 'consulta', label: 'Consulta general', etiqueta: 'consulta' },
+    { id: 'soporte', label: 'Soporte técnico', etiqueta: 'soporte' },
+    { id: 'reclamo', label: 'Reclamo', etiqueta: 'reclamo' },
+    { id: 'devolucion', label: 'Devolución', etiqueta: 'devolucion' },
+  ];
+
+  motivosDevolucion = [
+    { id: 'DEFECTO', label: 'Producto defectuoso' },
+    { id: 'ARREPENTIMIENTO', label: 'Arrepentimiento de compra' },
+    { id: 'ENVIO_INCORRECTO', label: 'Envío incorrecto' },
+    { id: 'OTRO', label: 'Otro motivo' },
   ];
 
   pedidosOrdenados = computed(() => this.ordenarPorFecha(this.pedidos()));
@@ -108,6 +146,17 @@ export class PanelCliente implements OnInit {
       const envioEstado = this.envioDePedido(p.idPedido)?.estadoEnvio?.toUpperCase();
       return estado !== 'CANCELADO' && estado !== 'ENTREGADO' && envioEstado !== 'ENTREGADO';
     }),
+  );
+
+  ticketsAbiertos = computed(() =>
+    this.tickets().filter(t => {
+      const e = (t.estado ?? '').toUpperCase();
+      return e === 'PENDIENTE' || e === 'EN_PROCESO';
+    }).length,
+  );
+
+  pedidosElegiblesDevolucion = computed(() =>
+    this.pedidosOrdenados().filter(p => this.pedidoPuedeDevolverse(p)),
   );
 
   tieneDireccion = computed(() => {
@@ -169,10 +218,14 @@ export class PanelCliente implements OnInit {
       pedidos: this.clientePortal.listarPedidos(),
       facturas: this.clientePortal.listarFacturas(),
       perfil: this.clientePortal.obtenerPerfil().pipe(catchError(() => of(null))),
+      tickets: this.clientePortal.listarTickets().pipe(catchError(() => of([] as Conversacion[]))),
+      devoluciones: this.clientePortal.listarDevoluciones().pipe(catchError(() => of([] as SolicitudDevolucion[]))),
     }).subscribe({
-      next: ({ pedidos, facturas, perfil }) => {
+      next: ({ pedidos, facturas, perfil, tickets, devoluciones }) => {
         this.pedidos.set(pedidos);
         this.facturas.set(facturas);
+        this.tickets.set(tickets);
+        this.devoluciones.set(devoluciones);
         this.perfilCliente.set(perfil);
         this.perfilTelefono.set(perfil?.telefono ?? '');
         this.direccionCalle.set(perfil?.direccion ?? '');
@@ -212,6 +265,11 @@ export class PanelCliente implements OnInit {
   irA(seccion: SeccionPanel): void {
     this.seccionActiva.set(seccion);
     this.pedidoDetalle.set(null);
+    this.ticketDetalle.set(null);
+    this.mensajesTicket.set([]);
+    this.devolucionDetalle.set(null);
+    this.crearTicketVisible.set(false);
+    this.crearDevolucionVisible.set(false);
     this.perfilEditando.set(false);
     this.direccionEditando.set(false);
     this.passError.set(null);
@@ -398,6 +456,197 @@ export class PanelCliente implements OnInit {
 
   descargarFactura(_factura: Factura): void {
     this.toast.mostrar('La descarga de PDF estará disponible próximamente.', 'info');
+  }
+
+  pedidoPuedeDevolverse(pedido: Pedido): boolean {
+    const estado = (pedido.estado ?? '').toUpperCase();
+    return ['ENTREGADO', 'COMPLETADO', 'PAGADO', 'ENVIADO'].includes(estado);
+  }
+
+  estadoTicketLabel(estado?: string): string {
+    const map: Record<string, string> = {
+      PENDIENTE: 'Pendiente',
+      EN_PROCESO: 'En proceso',
+      RESUELTA: 'Resuelto',
+    };
+    return map[(estado ?? '').toUpperCase()] ?? estado ?? '—';
+  }
+
+  estadoDevolucionLabel(estado?: string): string {
+    const map: Record<string, string> = {
+      SOLICITADA: 'Solicitada',
+      APROBADA: 'Aprobada',
+      RECHAZADA: 'Rechazada',
+      EN_TRANSITO: 'En tránsito',
+      RECIBIDA: 'Recibida',
+      REEMBOLSADA: 'Reembolsada',
+    };
+    return map[(estado ?? '').toUpperCase()] ?? estado ?? '—';
+  }
+
+  badgeEstadoTicket(estado?: string): string {
+    const e = (estado ?? '').toUpperCase();
+    if (e === 'RESUELTA') return 'pc-badge--delivered';
+    if (e === 'EN_PROCESO') return 'pc-badge--preparing';
+    return 'pc-badge--pending';
+  }
+
+  badgeEstadoDevolucion(estado?: string): string {
+    const e = (estado ?? '').toUpperCase();
+    if (e === 'REEMBOLSADA' || e === 'RECIBIDA') return 'pc-badge--delivered';
+    if (e === 'RECHAZADA') return 'pc-badge--cancelled';
+    if (e === 'APROBADA' || e === 'EN_TRANSITO') return 'pc-badge--shipping';
+    return 'pc-badge--pending';
+  }
+
+  esMensajeCliente(msg: MensajeConversacion): boolean {
+    return (msg.direccion ?? '').toUpperCase() === 'ENTRANTE';
+  }
+
+  iniciarCrearTicket(idPedido?: number | null): void {
+    this.seccionActiva.set('soporte');
+    this.ticketDetalle.set(null);
+    this.crearTicketVisible.set(true);
+    this.ticketTipo.set('consulta');
+    this.ticketAsunto.set('');
+    this.ticketCuerpo.set('');
+    this.ticketIdPedido.set(idPedido ?? null);
+  }
+
+  cancelarCrearTicket(): void {
+    this.crearTicketVisible.set(false);
+  }
+
+  guardarTicket(): void {
+    if (!this.ticketCuerpo().trim()) {
+      this.toast.error('Escribí tu consulta.');
+      return;
+    }
+    const tipo = this.tiposTicket.find(t => t.id === this.ticketTipo());
+    const asunto = this.ticketAsunto().trim()
+      || `${tipo?.label ?? 'Consulta'}${this.ticketIdPedido() ? ` · Pedido #${this.ticketIdPedido()}` : ''}`;
+
+    this.guardando.set(true);
+    this.clientePortal.crearTicket({
+      asunto,
+      cuerpo: this.ticketCuerpo().trim(),
+      etiquetas: tipo?.etiqueta,
+      idPedido: this.ticketIdPedido() ?? undefined,
+    }).subscribe({
+      next: ticket => {
+        this.tickets.update(list => [ticket, ...list]);
+        this.crearTicketVisible.set(false);
+        this.guardando.set(false);
+        this.toast.exito('Ticket creado. Te responderemos pronto.');
+        this.verTicket(ticket);
+      },
+      error: err => {
+        this.guardando.set(false);
+        const msg = err?.error?.message ?? err?.error?.mensaje;
+        this.toast.error(typeof msg === 'string' ? msg : 'No se pudo crear el ticket.');
+      },
+    });
+  }
+
+  verTicket(ticket: Conversacion): void {
+    if (ticket.idConversacion == null) return;
+    this.ticketDetalle.set(ticket);
+    this.crearTicketVisible.set(false);
+    this.clientePortal.listarMensajesTicket(ticket.idConversacion).subscribe({
+      next: msgs => this.mensajesTicket.set(msgs),
+      error: () => this.toast.error('No se pudieron cargar los mensajes.'),
+    });
+  }
+
+  cerrarTicket(): void {
+    this.ticketDetalle.set(null);
+    this.mensajesTicket.set([]);
+    this.ticketRespuesta.set('');
+  }
+
+  enviarMensajeTicket(): void {
+    const ticket = this.ticketDetalle();
+    const cuerpo = this.ticketRespuesta().trim();
+    if (!ticket?.idConversacion || !cuerpo) return;
+
+    this.guardando.set(true);
+    this.clientePortal.responderTicket(ticket.idConversacion, cuerpo).subscribe({
+      next: msg => {
+        this.mensajesTicket.update(list => [...list, msg]);
+        this.ticketRespuesta.set('');
+        this.guardando.set(false);
+        this.tickets.update(list =>
+          list.map(t => t.idConversacion === ticket.idConversacion
+            ? { ...t, vistaPrevia: cuerpo.slice(0, 120), estado: t.estado === 'RESUELTA' ? 'PENDIENTE' : t.estado }
+            : t),
+        );
+      },
+      error: () => {
+        this.guardando.set(false);
+        this.toast.error('No se pudo enviar el mensaje.');
+      },
+    });
+  }
+
+  iniciarCrearDevolucion(idPedido?: number | null): void {
+    this.seccionActiva.set('devoluciones');
+    this.devolucionDetalle.set(null);
+    this.crearDevolucionVisible.set(true);
+    this.devolucionIdPedido.set(idPedido ?? this.pedidosElegiblesDevolucion()[0]?.idPedido ?? null);
+    this.devolucionMotivo.set('DEFECTO');
+    this.devolucionDescripcion.set('');
+  }
+
+  cancelarCrearDevolucion(): void {
+    this.crearDevolucionVisible.set(false);
+  }
+
+  guardarDevolucion(): void {
+    const idPedido = this.devolucionIdPedido();
+    if (idPedido == null) {
+      this.toast.error('Seleccioná un pedido.');
+      return;
+    }
+    if (!this.devolucionDescripcion().trim()) {
+      this.toast.error('Contanos el motivo de la devolución.');
+      return;
+    }
+
+    this.guardando.set(true);
+    this.clientePortal.crearDevolucion({
+      idPedido,
+      motivo: this.devolucionMotivo(),
+      descripcion: this.devolucionDescripcion().trim(),
+    }).subscribe({
+      next: sol => {
+        this.devoluciones.update(list => [sol, ...list]);
+        this.crearDevolucionVisible.set(false);
+        this.guardando.set(false);
+        this.toast.exito('Solicitud de devolución enviada.');
+        this.verDevolucion(sol);
+      },
+      error: err => {
+        this.guardando.set(false);
+        const msg = err?.error?.message ?? err?.error?.mensaje;
+        this.toast.error(typeof msg === 'string' ? msg : 'No se pudo crear la solicitud.');
+      },
+    });
+  }
+
+  verDevolucion(sol: SolicitudDevolucion): void {
+    if (sol.idSolicitud == null) {
+      this.devolucionDetalle.set(sol);
+      return;
+    }
+    this.crearDevolucionVisible.set(false);
+    this.clientePortal.obtenerDevolucion(sol.idSolicitud).subscribe({
+      next: d => this.devolucionDetalle.set(d),
+      error: () => this.devolucionDetalle.set(sol),
+    });
+  }
+
+  cerrarDevolucion(): void {
+    this.devolucionDetalle.set(null);
   }
 
   cambiarPassword(): void {
