@@ -5,6 +5,7 @@ import { API_URL } from './api-base';
 import {
   Conversacion,
   Cuota,
+  PrestamoCliente,
   Factura,
   MensajeConversacion,
   Pedido,
@@ -95,5 +96,9 @@ export class ClientePortalService {
 
   listarCuotas(): Observable<Cuota[]> {
     return this.http.get<Cuota[]>(`${this.base}/cuotas`);
+  }
+
+  listarPrestamos(): Observable<PrestamoCliente[]> {
+    return this.http.get<PrestamoCliente[]>(`${this.base}/prestamos`);
   }
 }

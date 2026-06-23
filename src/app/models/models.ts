@@ -278,6 +278,31 @@ export interface Cuota {
     clienteEmail?: string;
 }
 
+export interface CuotaClienteItem {
+    idCuota?: number;
+    numeroCuota?: number;
+    monto?: number;
+    fechaVencimiento?: string;
+    fechaPago?: string;
+    estado?: string;
+}
+
+export interface PrestamoCliente {
+    idPlan?: number;
+    idPedido?: number;
+    cantidadCuotas?: number;
+    interes?: number;
+    estadoPlan?: string;
+    totalFinanciado?: number;
+    cuotasPagadas?: number;
+    cuotaActual?: number;
+    idCuotaActual?: number;
+    saldoPendiente?: number;
+    montoProximaCuota?: number;
+    vencimientoProximaCuota?: string;
+    cuotas?: CuotaClienteItem[];
+}
+
 export interface Factura {
     idFactura?: number;
     pedido?: Pedido;

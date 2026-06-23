@@ -14,13 +14,14 @@ import { ClientePortalService } from '../../services/cliente-portal.service';
 import { CartService } from '../../services/cart.service';
 import {
   Conversacion,
-  Cuota,
+  CuotaClienteItem,
   Envio,
   Factura,
   MensajeConversacion,
   Pedido,
   PedidoDetalleResponse,
   PerfilCliente,
+  PrestamoCliente,
   SolicitudDevolucion,
 } from '../../models/models';
 
@@ -54,7 +55,7 @@ export class PanelCliente implements OnInit {
   facturas = signal<Factura[]>([]);
   tickets = signal<Conversacion[]>([]);
   devoluciones = signal<SolicitudDevolucion[]>([]);
-  cuotas = signal<Cuota[]>([]);
+  prestamos = signal<PrestamoCliente[]>([]);
 
   cargando = signal(true);
   error = signal<string | null>(null);
@@ -105,7 +106,7 @@ export class PanelCliente implements OnInit {
     { id: 'facturas',     label: 'Facturas',      icon: '🧾' },
     { id: 'soporte',      label: 'Soporte',       icon: '💬' },
     { id: 'devoluciones', label: 'Devoluciones',  icon: '↩️' },
-    { id: 'cuotas',       label: 'Cuotas',        icon: '💳' },
+    { id: 'cuotas',       label: 'Préstamos',     icon: '💳' },
     { id: 'direcciones',  label: 'Direcciones',   icon: '📍' },
     { id: 'ayuda',        label: 'Ayuda',         icon: '❓' },
     { id: 'seguridad',    label: 'Seguridad',     icon: '🔒' },
@@ -175,10 +176,13 @@ export class PanelCliente implements OnInit {
   );
 
   cuotasPendientes = computed(() =>
-    this.cuotas().filter(c => {
-      const e = (c.estado ?? '').toUpperCase();
-      return e === 'PENDIENTE' || e === 'VENCIDA';
-    }).length,
+    this.prestamos().reduce((sum, p) => {
+      const pendientes = (p.cuotas ?? []).filter(c => {
+        const e = (c.estado ?? '').toUpperCase();
+        return e === 'PENDIENTE' || e === 'VENCIDA';
+      }).length;
+      return sum + pendientes;
+    }, 0),
   );
 
   tieneDireccion = computed(() => {
@@ -244,14 +248,14 @@ export class PanelCliente implements OnInit {
       perfil: this.clientePortal.obtenerPerfil().pipe(catchError(() => of(null))),
       tickets: this.clientePortal.listarTickets().pipe(catchError(() => of([] as Conversacion[]))),
       devoluciones: this.clientePortal.listarDevoluciones().pipe(catchError(() => of([] as SolicitudDevolucion[]))),
-      cuotas: this.clientePortal.listarCuotas().pipe(catchError(() => of([] as Cuota[]))),
+      cuotas: this.clientePortal.listarPrestamos().pipe(catchError(() => of([] as PrestamoCliente[]))),
     }).subscribe({
       next: ({ pedidos, facturas, perfil, tickets, devoluciones, cuotas }) => {
         this.pedidos.set(pedidos);
         this.facturas.set(facturas);
         this.tickets.set(tickets);
         this.devoluciones.set(devoluciones);
-        this.cuotas.set(cuotas);
+        this.prestamos.set(cuotas);
         this.perfilCliente.set(perfil);
         this.perfilTelefono.set(perfil?.telefono ?? '');
         this.direccionCalle.set(perfil?.direccion ?? '');
@@ -543,6 +547,29 @@ export class PanelCliente implements OnInit {
     if (e === 'PAGADA') return 'pc-badge--delivered';
     if (e === 'VENCIDA') return 'pc-badge--cancelled';
     return 'pc-badge--pending';
+  }
+
+  progresoPrestamo(p: PrestamoCliente): number {
+    const total = p.cantidadCuotas ?? p.cuotas?.length ?? 0;
+    if (total <= 0) return 0;
+    return Math.round(((p.cuotasPagadas ?? 0) / total) * 100);
+  }
+
+  textoCuotaActual(p: PrestamoCliente): string {
+    const total = p.cantidadCuotas ?? 0;
+    const pagadas = p.cuotasPagadas ?? 0;
+    if (p.cuotaActual == null || total === 0) {
+      return pagadas >= total && total > 0 ? `Préstamo finalizado (${total} de ${total})` : 'Sin cuotas pendientes';
+    }
+    return `Estás en la cuota ${p.cuotaActual} de ${total}`;
+  }
+
+  esCuotaActual(p: PrestamoCliente, c: CuotaClienteItem): boolean {
+    return p.cuotaActual != null && c.numeroCuota === p.cuotaActual;
+  }
+
+  esCuotaPagada(c: CuotaClienteItem): boolean {
+    return (c.estado ?? '').toUpperCase() === 'PAGADA';
   }
 
   estadoTicketLabel(estado?: string): string {
