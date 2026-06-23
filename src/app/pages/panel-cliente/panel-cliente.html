@@ -1,0 +1,542 @@
+<div class="pc-root">
+
+  <!-- Header -->
+  <header class="pc-header">
+    <div class="admin-page-header" style="margin-bottom: 0">
+      <h1 class="admin-page-title">Mi cuenta</h1>
+      <p class="admin-page-subtitle">
+        {{ usuario()?.nombre ?? 'Cargando…' }} · NovaTech
+      </p>
+    </div>
+    <a routerLink="/" class="text-sm text-neutral-400 hover:text-white transition-colors">
+      ← Volver a la tienda
+    </a>
+  </header>
+
+  @if (error()) {
+    <div class="pos-alert pos-alert--error">{{ error() }}</div>
+  }
+
+  <div class="pc-layout">
+
+    <!-- Sidebar nav -->
+    <nav class="pc-nav" aria-label="Secciones del panel">
+      @for (s of secciones; track s.id) {
+        <button
+          type="button"
+          class="pc-nav-item"
+          [class.pc-nav-item--active]="seccionActiva() === s.id"
+          (click)="irA(s.id)"
+        >
+          <span class="pc-nav-icon">{{ s.icon }}</span>
+          <span>{{ s.label }}</span>
+          @if (s.id === 'pedidos' && pedidosActivos().length > 0) {
+            <span class="pc-nav-badge">{{ pedidosActivos().length }}</span>
+          }
+        </button>
+      }
+    </nav>
+
+    <!-- Main content -->
+    <main class="pc-main">
+
+      <!-- ═══════════════════════════════════════════════════════════
+           PERFIL
+      ══════════════════════════════════════════════════════════════ -->
+      @if (seccionActiva() === 'perfil') {
+        <div class="pc-section">
+          <div class="pc-section-header">
+            <h2 class="pc-section-title">Perfil</h2>
+            @if (!perfilEditando()) {
+              <button type="button" class="pc-btn pc-btn--outline" (click)="iniciarEdicionPerfil()">
+                Editar
+              </button>
+            }
+          </div>
+
+          @if (cargando()) {
+            <div class="pos-empty">
+              <div class="pos-spinner"></div>
+              <p class="pos-empty-title">Cargando perfil…</p>
+            </div>
+          } @else if (perfilEditando()) {
+            <div class="pc-form">
+              <div class="pc-field">
+                <label class="pos-field-label" for="pNombre">Nombre completo</label>
+                <input
+                  id="pNombre"
+                  type="text"
+                  class="pc-input"
+                  placeholder="Tu nombre"
+                  [ngModel]="perfilNombre()"
+                  (ngModelChange)="perfilNombre.set($event)"
+                />
+              </div>
+              <div class="pc-field">
+                <label class="pos-field-label" for="pEmail">Correo electrónico</label>
+                <input
+                  id="pEmail"
+                  type="email"
+                  class="pc-input"
+                  placeholder="tu@email.com"
+                  [ngModel]="perfilEmail()"
+                  (ngModelChange)="perfilEmail.set($event)"
+                />
+              </div>
+              <div class="pc-field">
+                <label class="pos-field-label" for="pTel">Teléfono</label>
+                <input
+                  id="pTel"
+                  type="tel"
+                  class="pc-input"
+                  placeholder="+54 11 0000-0000"
+                  [ngModel]="perfilTelefono()"
+                  (ngModelChange)="perfilTelefono.set($event)"
+                />
+              </div>
+              <div class="pc-form-actions">
+                <button
+                  type="button"
+                  class="pc-btn pc-btn--primary"
+                  [disabled]="guardando()"
+                  (click)="guardarPerfil()"
+                >
+                  {{ guardando() ? 'Guardando…' : 'Guardar cambios' }}
+                </button>
+                <button type="button" class="pc-btn pc-btn--ghost" (click)="cancelarEdicionPerfil()">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          } @else {
+            <div class="pc-profile-card">
+              <div class="pc-avatar">
+                {{ (usuario()?.nombre ?? 'U').charAt(0).toUpperCase() }}
+              </div>
+              <div class="pc-profile-info">
+                <p class="pc-profile-name">{{ usuario()?.nombre ?? '—' }}</p>
+                <p class="pc-profile-meta">{{ usuario()?.email ?? '—' }}</p>
+                <!-- @if (usuario()?.telefono) { -->
+                  <p class="pc-profile-meta">{{ '' }}</p>
+                <!-- } -->
+                <span class="pc-badge pc-badge--confirmed" style="margin-top: .5rem; display: inline-block">
+                  {{ usuario()?.rol ?? 'CLIENTE' }}
+                </span>
+              </div>
+            </div>
+
+            <div class="pc-info-grid">
+              <div class="pc-info-tile">
+                <p class="pc-info-value">{{ pedidos().length }}</p>
+                <p class="pc-info-label">Pedidos totales</p>
+              </div>
+              <div class="pc-info-tile">
+                <p class="pc-info-value">{{ pedidosActivos().length }}</p>
+                <p class="pc-info-label">En curso</p>
+              </div>
+              <div class="pc-info-tile">
+                <p class="pc-info-value">{{ direcciones().length }}</p>
+                <p class="pc-info-label">Direcciones</p>
+              </div>
+              <div class="pc-info-tile">
+                <p class="pc-info-value">{{ facturas().length }}</p>
+                <p class="pc-info-label">Facturas</p>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ═══════════════════════════════════════════════════════════
+           PEDIDOS
+      ══════════════════════════════════════════════════════════════ -->
+      @if (seccionActiva() === 'pedidos') {
+
+        <!-- Vista de detalle -->
+        @if (pedidoDetalle(); as p) {
+          <div class="pc-section">
+            <div class="pc-section-header">
+              <button type="button" class="pc-back-btn" (click)="cerrarDetalle()">
+                ← Volver
+              </button>
+              <span class="pc-badge" [ngClass]="estadoBadgeClass('p.estado')">{{ estadoLabel('p.estado') }}</span>
+            </div>
+
+            <h2 class="pc-section-title" style="margin-top:.5rem">Pedido #{{ p.idPedido }}</h2>
+            <p class="pc-text-muted">{{ 'p.fechaCreacion' | date:'dd/MM/yyyy HH:mm' }} · {{ 'p.metodoPago' }}</p>
+
+            <!-- Tracking -->
+            @if (p.estado !== 'CANCELADO') {
+              <div class="pc-tracking">
+                @for (paso of [
+                  { label: 'Confirmado',     n: 2 },
+                  { label: 'En preparación', n: 3 },
+                  { label: 'En camino',      n: 4 },
+                  { label: 'Entregado',      n: 5 }
+                ]; track paso.n) {
+                  <div class="pc-tracking-step" [class.pc-tracking-step--done]="pasoTracking('PENDIENTE') >= paso.n">
+                    <div class="pc-tracking-dot"></div>
+                    <p class="pc-tracking-label">{{ paso.label }}</p>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Líneas del pedido -->
+            <div class="pc-order-lines">
+              <p class="pos-section-label">Productos</p>
+              <!-- @for (l of p.lineas; track l.idProducto) {
+                <div class="pc-order-line">
+                  <div class="pc-order-line-thumb">
+                    @if (l.imagen) {
+                      <img [src]="l.imagen" [alt]="l.nombre" />
+                    } @else {
+                      📦
+                    }
+                  </div>
+                  <div class="pc-order-line-body">
+                    <p class="pc-order-line-name">{{ l.nombre }}</p>
+                    <p class="pc-text-muted">{{ l.cantidad }} × $ {{ l.precioUnitario | number:'1.2-2' }}</p>
+                  </div>
+                  <span class="pc-order-line-subtotal">$ {{ (l.cantidad * l.precioUnitario) | number:'1.2-2' }}</span>
+                </div>
+              } -->
+            </div>
+
+            <!-- Totales -->
+            <div class="pos-totals">
+              <div class="pos-total-row">
+                <span>Envío</span>
+                <!-- p.costoEnvio > 0 ? ('$ ' + (p.costoEnvio | number:'1.2-2')) : -->
+                <span>{{  'Gratis' }}</span>
+              </div>
+              <div class="pos-total-row pos-total-row--grand">
+                <span>Total</span>
+                <span>$ {{ p.total | number:'1.2-2' }}</span>
+              </div>
+            </div>
+            
+            <!-- Dirección de entrega -->
+            <!-- p.direccionEntrega -->
+            @if (true) {
+              <div class="pc-order-address">
+                <p class="pos-section-label">Dirección de entrega</p>
+                <p>{{ 'p.direccionEntrega.calle' }}, {{ 'p.direccionEntrega.ciudad' }}</p>
+                <p class="pc-text-muted">{{ 'p.direccionEntrega.provincia' }}, {{ 'p.direccionEntrega.pais' }}</p>
+              </div>
+            }
+          </div>
+
+        } @else {
+          <!-- Lista de pedidos -->
+          <div class="pc-section">
+            <div class="pc-section-header">
+              <h2 class="pc-section-title">Mis pedidos</h2>
+            </div>
+
+            @if (cargando()) {
+              <div class="pos-empty">
+                <div class="pos-spinner"></div>
+                <p class="pos-empty-title">Cargando pedidos…</p>
+              </div>
+            } @else if (pedidos().length === 0) {
+              <div class="pos-empty">
+                <p class="pos-empty-icon">📦</p>
+                <p class="pos-empty-title">Todavía no tenés pedidos</p>
+                <p class="pos-empty-desc">Cuando realices una compra, aparecerá aquí.</p>
+                <a routerLink="/tienda" class="pos-chip pos-chip--active" style="margin-top:1rem">
+                  Ir a la tienda
+                </a>
+              </div>
+            } @else {
+              @if (pedidosActivos().length > 0) {
+                <p class="pos-section-label">En curso</p>
+                <div class="pc-orders-list">
+                  @for (p of pedidosActivos(); track 'p.idPedido') {
+                    <button type="button" class="pc-order-card" (click)="verDetallePedido(p)">
+                      <div class="pc-order-card-top">
+                        <span class="pc-order-id">#{{ 'p.idPedido' }}</span>
+                        <span class="pc-badge" [ngClass]="estadoBadgeClass('p.estado')">{{ estadoLabel('p.estado') }}</span>
+                      </div>
+                      <p class="pc-text-muted">{{ 'p.fechaCreacion' | date:'dd/MM/yyyy' }}</p>
+                      <div class="pc-order-card-bottom">
+                        <span>{{ 'p.lineas?.length ?? 0' }} producto(s)</span>
+                        <span class="pc-order-total">$ {{ p.total | number:'1.2-2' }}</span>
+                      </div>
+                    </button>
+                  }
+                </div>
+              }
+
+              @if (pedidosHistorial().length > 0) {
+                <p class="pos-section-label" style="margin-top: 1.5rem">Historial</p>
+                <div class="pc-orders-list">
+                  @for (p of pedidosHistorial(); track p.idPedido) {
+                    <button type="button" class="pc-order-card pc-order-card--muted" (click)="verDetallePedido(p)">
+                      <div class="pc-order-card-top">
+                        <span class="pc-order-id">#{{ p.idPedido }}</span>
+                        <span class="pc-badge" [ngClass]="estadoBadgeClass('p.estado')">{{ estadoLabel('p.estado') }}</span>
+                      </div>
+                      <p class="pc-text-muted">{{ "p.fechaCreacion" | date:'dd/MM/yyyy' }}</p>
+                      <div class="pc-order-card-bottom">
+                        <span>{{ "p.lineas?.length ?? 0" }} producto(s)</span>
+                        <span class="pc-order-total">$ {{ p.total | number:'1.2-2' }}</span>
+                      </div>
+                    </button>
+                  }
+                </div>
+              }
+            }
+          </div>
+        }
+      }
+
+      <!-- ═══════════════════════════════════════════════════════════
+           DIRECCIONES
+      ══════════════════════════════════════════════════════════════ -->
+      @if (seccionActiva() === 'direcciones') {
+        <div class="pc-section">
+          <div class="pc-section-header">
+            <h2 class="pc-section-title">Direcciones</h2>
+            @if (!agregarDireccion()) {
+              <button type="button" class="pc-btn pc-btn--outline" (click)="iniciarNuevaDireccion()">
+                + Nueva dirección
+              </button>
+            }
+          </div>
+
+          <!-- Formulario nueva dirección -->
+          @if (agregarDireccion()) {
+            <div class="pc-form pc-form--card">
+              <p class="pos-section-label">Nueva dirección</p>
+              <div class="pc-field-row">
+                <div class="pc-field">
+                  <label class="pos-field-label" for="dCalle">Calle y número</label>
+                  <input id="dCalle" type="text" class="pc-input" placeholder="Av. Corrientes 1234"
+                    [ngModel]="nuevaDireccionCalle()" (ngModelChange)="nuevaDireccionCalle.set($event)" />
+                </div>
+                <div class="pc-field">
+                  <label class="pos-field-label" for="dCiudad">Ciudad</label>
+                  <input id="dCiudad" type="text" class="pc-input" placeholder="Buenos Aires"
+                    [ngModel]="nuevaDireccionCiudad()" (ngModelChange)="nuevaDireccionCiudad.set($event)" />
+                </div>
+              </div>
+              <div class="pc-field-row">
+                <div class="pc-field">
+                  <label class="pos-field-label" for="dProv">Provincia</label>
+                  <input id="dProv" type="text" class="pc-input" placeholder="Buenos Aires"
+                    [ngModel]="nuevaDireccionProvincia()" (ngModelChange)="nuevaDireccionProvincia.set($event)" />
+                </div>
+                <div class="pc-field">
+                  <label class="pos-field-label" for="dCp">Código postal</label>
+                  <input id="dCp" type="text" class="pc-input" placeholder="1043"
+                    [ngModel]="nuevaDireccionCodPostal()" (ngModelChange)="nuevaDireccionCodPostal.set($event)" />
+                </div>
+              </div>
+              <div class="pc-field">
+                <label class="pos-field-label" for="dPais">País</label>
+                <input id="dPais" type="text" class="pc-input"
+                  [ngModel]="nuevaDireccionPais()" (ngModelChange)="nuevaDireccionPais.set($event)" />
+              </div>
+              <label class="pc-checkbox-label">
+                <input type="checkbox"
+                  [ngModel]="nuevaDireccionEsPrincipal()"
+                  (ngModelChange)="nuevaDireccionEsPrincipal.set($event)" />
+                Establecer como dirección principal
+              </label>
+              <div class="pc-form-actions">
+                <button type="button" class="pc-btn pc-btn--primary"
+                  [disabled]="guardando()" (click)="guardarDireccion()">
+                  {{ guardando() ? 'Guardando…' : 'Guardar dirección' }}
+                </button>
+                <button type="button" class="pc-btn pc-btn--ghost" (click)="cancelarNuevaDireccion()">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          }
+
+          <!-- Lista de direcciones -->
+          @if (direcciones().length === 0 && !agregarDireccion()) {
+            <div class="pos-empty">
+              <p class="pos-empty-icon">📍</p>
+              <p class="pos-empty-title">Sin direcciones guardadas</p>
+              <p class="pos-empty-desc">Agregá una para agilizar tus compras.</p>
+            </div>
+          } @else {
+            <div class="pc-address-list">
+              @for (d of direcciones(); track d.idDireccion) {
+                <div class="pc-address-card" [class.pc-address-card--principal]="d.esPrincipal">
+                  <div class="pc-address-info">
+                    <p class="pc-address-line">{{ d.calle }}</p>
+                    <p class="pc-text-muted">{{ d.ciudad }}, {{ d.provincia }} {{ d.codigoPostal }}</p>
+                    <p class="pc-text-muted">{{ d.pais }}</p>
+                    @if (d.esPrincipal) {
+                      <span class="pc-badge pc-badge--confirmed" style="margin-top:.4rem; display:inline-block">Principal</span>
+                    }
+                  </div>
+                  <div class="pc-address-actions">
+                    @if (!d.esPrincipal) {
+                      <button type="button" class="pc-btn pc-btn--ghost pc-btn--sm"
+                        (click)="marcarPrincipal(d.idDireccion!)">
+                        Marcar principal
+                      </button>
+                    }
+                    <button type="button" class="pc-btn pc-btn--danger pc-btn--sm"
+                      (click)="eliminarDireccion(d.idDireccion!)">
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ═══════════════════════════════════════════════════════════
+           FACTURAS
+      ══════════════════════════════════════════════════════════════ -->
+      @if (seccionActiva() === 'facturas') {
+        <div class="pc-section">
+          <div class="pc-section-header">
+            <h2 class="pc-section-title">Facturas</h2>
+          </div>
+
+          @if (facturas().length === 0) {
+            <div class="pos-empty">
+              <p class="pos-empty-icon">🧾</p>
+              <p class="pos-empty-title">Sin facturas disponibles</p>
+              <p class="pos-empty-desc">Las facturas de tus compras aparecerán aquí.</p>
+            </div>
+          } @else {
+            <div class="pc-invoice-list">
+              @for (f of facturas(); track f.idFactura) {
+                <div class="pc-invoice-row">
+                  <div class="pc-invoice-icon">🧾</div>
+                  <div class="pc-invoice-info">
+                    <p class="pc-invoice-num">Factura {{ 1 }}</p>
+                    <p class="pc-text-muted">{{ "21/02/24" | date:'dd/MM/yyyy' }} · Pedido #{{ "0001" }}</p>
+                  </div>
+                  <span class="pc-invoice-amount">$ {{ f.total | number:'1.2-2' }}</span>
+                  <button
+                    type="button"
+                    class="pc-btn pc-btn--outline pc-btn--sm"
+                    (click)="descargarFactura(f)"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/>
+                      <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    PDF
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ═══════════════════════════════════════════════════════════
+           SEGURIDAD
+      ══════════════════════════════════════════════════════════════ -->
+      @if (seccionActiva() === 'seguridad') {
+        <div class="pc-section">
+          <div class="pc-section-header">
+            <h2 class="pc-section-title">Seguridad</h2>
+          </div>
+
+          <div class="pc-form">
+            <p class="pos-section-label">Cambiar contraseña</p>
+
+            @if (passExito()) {
+              <div class="pos-alert pos-alert--success">
+                ✅ Contraseña actualizada correctamente.
+              </div>
+            }
+
+            @if (passError()) {
+              <div class="pos-alert pos-alert--error">{{ passError() }}</div>
+            }
+
+            <div class="pc-field">
+              <label class="pos-field-label" for="passActual">Contraseña actual</label>
+              <input
+                id="passActual"
+                type="password"
+                class="pc-input"
+                autocomplete="current-password"
+                placeholder="••••••••"
+                [ngModel]="passActual()"
+                (ngModelChange)="passActual.set($event)"
+              />
+            </div>
+            <div class="pc-field">
+              <label class="pos-field-label" for="passNueva">Nueva contraseña</label>
+              <input
+                id="passNueva"
+                type="password"
+                class="pc-input"
+                autocomplete="new-password"
+                placeholder="Mínimo 8 caracteres"
+                [ngModel]="passNueva()"
+                (ngModelChange)="passNueva.set($event)"
+              />
+            </div>
+            <div class="pc-field">
+              <label class="pos-field-label" for="passConfirmar">Confirmar nueva contraseña</label>
+              <input
+                id="passConfirmar"
+                type="password"
+                class="pc-input"
+                autocomplete="new-password"
+                placeholder="Repetí la contraseña"
+                [ngModel]="passConfirmar()"
+                (ngModelChange)="passConfirmar.set($event)"
+              />
+            </div>
+
+            <!-- Indicador de fortaleza -->
+            @if (passNueva().length > 0) {
+              <div class="pc-pass-strength">
+                <div
+                  class="pc-pass-bar"
+                  [class.pc-pass-bar--weak]="passNueva().length < 8"
+                  [class.pc-pass-bar--medium]="passNueva().length >= 8 && passNueva().length < 12"
+                  [class.pc-pass-bar--strong]="passNueva().length >= 12"
+                ></div>
+                <span class="pc-text-muted">
+                  @if (passNueva().length < 8) { Muy corta }
+                  @else if (passNueva().length < 12) { Aceptable }
+                  @else { Segura }
+                </span>
+              </div>
+            }
+
+            <div class="pc-form-actions">
+              <button
+                type="button"
+                class="pc-btn pc-btn--primary"
+                [disabled]="!puedeCambiarPass()"
+                (click)="cambiarPassword()"
+              >
+                {{ guardando() ? 'Actualizando…' : 'Actualizar contraseña' }}
+              </button>
+            </div>
+          </div>
+
+          <div class="pc-security-info">
+            <p class="pos-section-label" style="margin-top: 1.5rem">Recomendaciones</p>
+            <ul class="pc-security-tips">
+              <li>Usá al menos 8 caracteres, combinando letras y números.</li>
+              <li>No reutilices contraseñas de otros servicios.</li>
+              <li>Cambiá tu contraseña si sospechás que fue comprometida.</li>
+            </ul>
+          </div>
+        </div>
+      }
+
+    </main>
+  </div>
+</div>
