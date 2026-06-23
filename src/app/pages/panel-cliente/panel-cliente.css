@@ -792,3 +792,42 @@
   gap: .65rem;
   margin-top: 1rem;
 }
+
+.pc-quick-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-top: 1.25rem;
+}
+
+.pc-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.pc-faq-item {
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface-deep);
+  padding: .75rem 1rem;
+}
+
+.pc-faq-q {
+  cursor: pointer;
+  font-size: .88rem;
+  font-weight: 600;
+  color: var(--pc-text);
+  list-style: none;
+}
+
+.pc-faq-q::-webkit-details-marker {
+  display: none;
+}
+
+.pc-faq-a {
+  margin: .65rem 0 0;
+  font-size: .82rem;
+  color: var(--pc-text-muted);
+  line-height: 1.5;
+}

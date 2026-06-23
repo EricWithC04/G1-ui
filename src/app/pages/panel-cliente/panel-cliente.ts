@@ -5,14 +5,16 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DatePipe, DecimalPipe, NgClass } from '@angular/common';
 import { catchError, forkJoin, of } from 'rxjs';
 import { ToastService } from '../../services/toast.service';
 import { AuthService, UsuarioSesion } from '../../services/auth.service';
 import { ClientePortalService } from '../../services/cliente-portal.service';
+import { CartService } from '../../services/cart.service';
 import {
   Conversacion,
+  Cuota,
   Envio,
   Factura,
   MensajeConversacion,
@@ -29,6 +31,8 @@ type SeccionPanel =
   | 'facturas'
   | 'soporte'
   | 'devoluciones'
+  | 'cuotas'
+  | 'ayuda'
   | 'seguridad';
 
 type FiltroPedidos = 'todos' | 'activos' | 'entregados' | 'cancelados';
@@ -50,6 +54,7 @@ export class PanelCliente implements OnInit {
   facturas = signal<Factura[]>([]);
   tickets = signal<Conversacion[]>([]);
   devoluciones = signal<SolicitudDevolucion[]>([]);
+  cuotas = signal<Cuota[]>([]);
 
   cargando = signal(true);
   error = signal<string | null>(null);
@@ -100,8 +105,18 @@ export class PanelCliente implements OnInit {
     { id: 'facturas',     label: 'Facturas',      icon: '🧾' },
     { id: 'soporte',      label: 'Soporte',       icon: '💬' },
     { id: 'devoluciones', label: 'Devoluciones',  icon: '↩️' },
+    { id: 'cuotas',       label: 'Cuotas',        icon: '💳' },
     { id: 'direcciones',  label: 'Direcciones',   icon: '📍' },
+    { id: 'ayuda',        label: 'Ayuda',         icon: '❓' },
     { id: 'seguridad',    label: 'Seguridad',     icon: '🔒' },
+  ];
+
+  faqs = [
+    { q: '¿Cómo sigo mi pedido?', a: 'Entrá a Pedidos, abrí el detalle y tocá "Ver seguimiento". También podés ver el estado en la lista.' },
+    { q: '¿Cómo solicito una devolución?', a: 'En Pedidos o Devoluciones, elegí un pedido entregado/enviado y completá el formulario. Te avisamos cuando cambie el estado.' },
+    { q: '¿Cómo contacto a soporte?', a: 'En Soporte podés crear un ticket. Si está vinculado a un pedido, incluí el número para agilizar la respuesta.' },
+    { q: '¿Dónde veo mis facturas?', a: 'En la sección Facturas aparecen los comprobantes de tus compras emitidas.' },
+    { q: '¿Puedo financiar en cuotas?', a: 'Si tu compra tiene plan de cuotas, lo verás en la sección Cuotas con vencimientos y estado de cada una.' },
   ];
 
   tiposTicket = [
@@ -159,6 +174,13 @@ export class PanelCliente implements OnInit {
     this.pedidosOrdenados().filter(p => this.pedidoPuedeDevolverse(p)),
   );
 
+  cuotasPendientes = computed(() =>
+    this.cuotas().filter(c => {
+      const e = (c.estado ?? '').toUpperCase();
+      return e === 'PENDIENTE' || e === 'VENCIDA';
+    }).length,
+  );
+
   tieneDireccion = computed(() => {
     const p = this.perfilCliente();
     return !!(p?.direccion?.trim() || p?.ciudad?.trim());
@@ -171,8 +193,10 @@ export class PanelCliente implements OnInit {
   constructor(
     private authService: AuthService,
     private clientePortal: ClientePortalService,
+    private cart: CartService,
     private toast: ToastService,
     private route: ActivatedRoute,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -220,12 +244,14 @@ export class PanelCliente implements OnInit {
       perfil: this.clientePortal.obtenerPerfil().pipe(catchError(() => of(null))),
       tickets: this.clientePortal.listarTickets().pipe(catchError(() => of([] as Conversacion[]))),
       devoluciones: this.clientePortal.listarDevoluciones().pipe(catchError(() => of([] as SolicitudDevolucion[]))),
+      cuotas: this.clientePortal.listarCuotas().pipe(catchError(() => of([] as Cuota[]))),
     }).subscribe({
-      next: ({ pedidos, facturas, perfil, tickets, devoluciones }) => {
+      next: ({ pedidos, facturas, perfil, tickets, devoluciones, cuotas }) => {
         this.pedidos.set(pedidos);
         this.facturas.set(facturas);
         this.tickets.set(tickets);
         this.devoluciones.set(devoluciones);
+        this.cuotas.set(cuotas);
         this.perfilCliente.set(perfil);
         this.perfilTelefono.set(perfil?.telefono ?? '');
         this.direccionCalle.set(perfil?.direccion ?? '');
@@ -461,6 +487,62 @@ export class PanelCliente implements OnInit {
   pedidoPuedeDevolverse(pedido: Pedido): boolean {
     const estado = (pedido.estado ?? '').toUpperCase();
     return ['ENTREGADO', 'COMPLETADO', 'PAGADO', 'ENVIADO'].includes(estado);
+  }
+
+  whatsappPedido(pedido: Pedido): string {
+    const id = pedido.idPedido ?? '';
+    const msg = encodeURIComponent(`Hola! Quiero consultar sobre mi pedido #${id}`);
+    return `https://wa.me/5491112345678?text=${msg}`;
+  }
+
+  recomprarPedido(pedido: Pedido): void {
+    const lineas = this.detalleDePedido(pedido.idPedido)?.detalles ?? [];
+    if (lineas.length === 0) {
+      this.toast.error('Todavía estamos cargando los productos de este pedido.');
+      if (pedido.idPedido != null) {
+        this.clientePortal.obtenerPedido(pedido.idPedido).subscribe({
+          next: d => {
+            const map = new Map(this.detallesPorPedido());
+            map.set(pedido.idPedido!, d);
+            this.detallesPorPedido.set(map);
+            this.recomprarPedido(pedido);
+          },
+        });
+      }
+      return;
+    }
+
+    let agregados = 0;
+    for (const l of lineas) {
+      if (l.producto?.idProducto != null) {
+        this.cart.agregar(l.producto, l.cantidad);
+        agregados++;
+      }
+    }
+
+    if (agregados === 0) {
+      this.toast.error('No se pudieron agregar productos al carrito.');
+      return;
+    }
+
+    this.toast.exito(`${agregados} producto(s) agregados al carrito.`);
+    void this.router.navigate(['/carrito']);
+  }
+
+  estadoCuotaLabel(estado?: string): string {
+    const map: Record<string, string> = {
+      PENDIENTE: 'Pendiente',
+      PAGADA: 'Pagada',
+      VENCIDA: 'Vencida',
+    };
+    return map[(estado ?? '').toUpperCase()] ?? estado ?? '—';
+  }
+
+  badgeEstadoCuota(estado?: string): string {
+    const e = (estado ?? '').toUpperCase();
+    if (e === 'PAGADA') return 'pc-badge--delivered';
+    if (e === 'VENCIDA') return 'pc-badge--cancelled';
+    return 'pc-badge--pending';
   }
 
   estadoTicketLabel(estado?: string): string {
