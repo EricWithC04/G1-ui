@@ -9,6 +9,7 @@ import { AdminPagination } from '../../components/admin-pagination/admin-paginat
 import { coincideBusqueda } from '../../utils/busqueda-admin';
 import { descargarCsv } from '../../utils/export-csv';
 import { paginar, PAGE_SIZE_DEFAULT } from '../../utils/paginar';
+import { esStockBajo, stockMinimoEfectivo } from '../../utils/stock-inventario.util';
 import { Product } from '../../models/models';
 
 type FiltroStock = 'TODOS' | 'BAJO' | 'SIN_STOCK';
@@ -47,7 +48,10 @@ export class ProductList implements OnInit {
     paginar(this.productsFiltrados(), this.pagina(), this.tamanoPagina()),
   );
 
-  conteoStockBajo = computed(() => this.products().filter(p => this.esStockBajo(p)).length);
+  conteoStockBajo = computed(() => this.products().filter(p => esStockBajo(p)).length);
+
+  readonly stockMinimo = stockMinimoEfectivo;
+  readonly esStockBajo = esStockBajo;
 
   constructor(
     private productService: ProductService,
@@ -80,17 +84,9 @@ export class ProductList implements OnInit {
 
   pasaFiltroStock(p: Product): boolean {
     const f = this.filtroStock();
-    if (f === 'BAJO') return this.esStockBajo(p);
+    if (f === 'BAJO') return esStockBajo(p);
     if (f === 'SIN_STOCK') return (p.stock ?? 0) === 0;
     return true;
-  }
-
-  stockMinimo(p: Product): number {
-    return p.stockMinimo != null && p.stockMinimo > 0 ? p.stockMinimo : 5;
-  }
-
-  esStockBajo(p: Product): boolean {
-    return (p.stock ?? 0) <= this.stockMinimo(p);
   }
 
   descripcionCorta(texto?: string, max = 72): string {
@@ -109,7 +105,7 @@ export class ProductList implements OnInit {
 
   badgeStock(p: Product): { cls: string; label: string } {
     if ((p.stock ?? 0) === 0) return { cls: 'prod-badge prod-badge--out', label: 'Sin stock' };
-    if (this.esStockBajo(p)) return { cls: 'prod-badge prod-badge--low', label: 'Stock bajo' };
+    if (esStockBajo(p)) return { cls: 'prod-badge prod-badge--low', label: 'Stock bajo' };
     return { cls: 'prod-badge prod-badge--ok', label: 'OK' };
   }
 

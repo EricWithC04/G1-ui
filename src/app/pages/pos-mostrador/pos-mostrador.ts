@@ -36,6 +36,8 @@ import { ToastService } from '../../services/toast.service';
 
 import { ConfirmarOrdenRequest, Categoria, Product, Usuario } from '../../models/models';
 
+import { esStockBajo, stockActual, stockMinimoEfectivo } from '../../utils/stock-inventario.util';
+
 
 
 interface LineaPos {
@@ -404,13 +406,13 @@ export class PosMostrador implements OnInit, OnDestroy {
 
   stockBadgeClass(p: Product): string {
 
-    const stock = p.stock ?? 0;
+    const stock = stockActual(p);
 
-    const min = p.stockMinimo ?? 5;
+    const min = stockMinimoEfectivo(p);
 
     if (stock <= 0) return 'pos-stock-badge--out';
 
-    if (stock <= min) return 'pos-stock-badge--low';
+    if (esStockBajo(p)) return 'pos-stock-badge--low';
 
     return 'pos-stock-badge--ok';
 
@@ -420,11 +422,11 @@ export class PosMostrador implements OnInit, OnDestroy {
 
   stockLabel(p: Product): string {
 
-    const stock = p.stock ?? 0;
+    const stock = stockActual(p);
 
     if (stock <= 0) return 'Sin stock';
 
-    if (stock <= (p.stockMinimo ?? 5)) return `${stock} bajo`;
+    if (esStockBajo(p)) return `${stock} bajo`;
 
     return `${stock} u.`;
 
