@@ -4,21 +4,38 @@ import { DecimalPipe } from '@angular/common';
 import { PlanCuotasService } from '../../services/plan-cuotas.service';
 import { PerfilService } from '../../services/perfil.service';
 import { PedidoService } from '../../services/pedido.service';
+import { AdminSearch } from '../../components/admin-search/admin-search';
+import { coincideBusqueda } from '../../utils/busqueda-admin';
 import { PlanCuotas, PerfilCliente, Pedido } from '../../models/models';
 
 // Pagina del modulo de Planes de cuotas (financiacion de un pedido).
 @Component({
   selector: 'app-planes',
-  imports: [FormsModule, DecimalPipe],
+  imports: [FormsModule, DecimalPipe, AdminSearch],
   templateUrl: './planes.html',
 })
 export class Planes implements OnInit {
 
   items = signal<PlanCuotas[]>([]);
-  clientes = signal<PerfilCliente[]>([]); // perfiles de cliente para el desplegable
+  clientes = signal<PerfilCliente[]>([]);
   pedidos = signal<Pedido[]>([]);
+  busqueda = signal('');
 
-  // Nuevo: rastrea qué cliente está seleccionado en el form
+  itemsFiltrados = computed(() => {
+    const q = this.busqueda();
+    return this.items().filter(p =>
+      coincideBusqueda(q,
+        p.idPlan,
+        p.pedido?.idPedido,
+        p.cliente?.usuario?.nombre,
+        p.cliente?.usuario?.email,
+        p.cantidadCuotas,
+        p.interes,
+        p.estado,
+      ),
+    );
+  });
+
   clienteSeleccionado = signal<number | undefined>(undefined)
 
   // Formulario. El estado por defecto es ACTIVO.

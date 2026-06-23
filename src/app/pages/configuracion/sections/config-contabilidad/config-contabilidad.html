@@ -1,0 +1,48 @@
+<app-config-page-shell titulo="Contabilidad y Fiscal" subtitulo="IVA, IIBB, retenciones, plan de cuentas — Argentina">
+  @if (mensaje()) { <p class="admin-alert admin-alert-success">{{ mensaje() }}</p> }
+
+  <div class="config-tabs">
+    <button type="button" class="config-tab" [class.config-tab--active]="tab() === 'resumen'" (click)="tab.set('resumen')">Resumen</button>
+    <button type="button" class="config-tab" [class.config-tab--active]="tab() === 'iva'" (click)="tab.set('iva')">Alícuotas IVA</button>
+    <button type="button" class="config-tab" [class.config-tab--active]="tab() === 'empresa'" (click)="tab.set('empresa')">Empresa y ejercicio</button>
+  </div>
+
+  @if (cargando()) {
+    <p class="text-slate-400 mt-4">Cargando…</p>
+  } @else if (data(); as d) {
+    @if (tab() === 'resumen') {
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+        <div class="admin-card p-4 text-center"><p class="text-2xl font-bold text-orange-400">{{ d.contadores['alicuotas'] ?? 0 }}</p><p class="text-xs text-slate-400">Alícuotas IVA</p></div>
+        <div class="admin-card p-4 text-center"><p class="text-2xl font-bold text-orange-400">{{ d.contadores['condicionesIva'] ?? 0 }}</p><p class="text-xs text-slate-400">Condiciones IVA</p></div>
+        <div class="admin-card p-4 text-center"><p class="text-2xl font-bold text-orange-400">{{ d.contadores['regimenes'] ?? 0 }}</p><p class="text-xs text-slate-400">Regímenes</p></div>
+        <div class="admin-card p-4 text-center"><p class="text-2xl font-bold text-orange-400">{{ d.contadores['planCuentas'] ?? 0 }}</p><p class="text-xs text-slate-400">Plan de cuentas</p></div>
+      </div>
+      <button type="button" class="admin-btn admin-btn-primary mt-4" (click)="restaurar()">Restaurar catálogos Argentina</button>
+    }
+    @if (tab() === 'iva') {
+      <div class="admin-card overflow-hidden mt-4">
+        <table class="admin-table">
+          <thead><tr><th>Código</th><th>Nombre</th><th>%</th><th>Estado</th></tr></thead>
+          <tbody>
+            @for (a of d.alicuotas; track a.idAlicuota) {
+              <tr>
+                <td>{{ a.codigo }}</td>
+                <td>{{ a.nombre }}</td>
+                <td>{{ a.porcentaje }}%</td>
+                <td><span class="admin-badge" [class.admin-badge--emitida]="a.activo">{{ a.activo ? 'Activo' : 'Inactivo' }}</span></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+    @if (tab() === 'empresa') {
+      <div class="admin-card p-5 mt-4 grid gap-3 max-w-lg">
+        <label class="text-sm text-slate-300">Moneda base<input class="admin-input mt-1" [value]="valorConfig('moneda_base')" readonly /></label>
+        <label class="text-sm text-slate-300">Ejercicio fiscal<input class="admin-input mt-1" [value]="valorConfig('ejercicio_fiscal')" readonly /></label>
+        <label class="text-sm text-slate-300">IVA general (%)<input class="admin-input mt-1" [value]="valorConfig('iva_general')" readonly /></label>
+        <label class="text-sm text-slate-300">IIBB (%)<input class="admin-input mt-1" [value]="valorConfig('iibb')" readonly /></label>
+      </div>
+    }
+  }
+</app-config-page-shell>

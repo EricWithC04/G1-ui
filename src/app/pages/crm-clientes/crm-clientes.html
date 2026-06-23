@@ -1,0 +1,63 @@
+<div class="space-y-4">
+  <div class="admin-page-header flex flex-wrap justify-between gap-3 items-start">
+    <div>
+      <h1 class="admin-page-title">Clientes</h1>
+      <p class="admin-page-subtitle">Listado de clientes activos con búsqueda y filtro por tipo.</p>
+    </div>
+    <a routerLink="/admin/crm/nuevo" class="admin-btn admin-btn-primary">Nuevo cliente</a>
+  </div>
+
+  <div class="admin-card overflow-hidden">
+    <div class="p-3 border-b border-white/10 flex flex-wrap gap-3 items-center">
+      <app-admin-search
+        class="flex-1 min-w-[12rem]"
+        [termino]="busqueda()"
+        (terminoChange)="busqueda.set($event)"
+        [total]="clientes().length"
+        [filtrados]="clientesFiltrados().length"
+        placeholder="Buscar por nombre, email, ciudad, contacto…"
+      />
+      <select class="admin-input w-auto" [ngModel]="filtroTipo()" (ngModelChange)="filtroTipo.set($event); cargar()">
+        <option value="">Todos los tipos</option>
+        @for (t of tipos; track t.value) {
+          <option [value]="t.value">{{ t.label }}</option>
+        }
+      </select>
+      <button type="button" class="admin-btn admin-btn-ghost" (click)="cargar()">Buscar</button>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="admin-table w-full">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Tipo</th>
+            <th>Ciudad</th>
+            <th>Contacto</th>
+            <th>Pedidos</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of clientesFiltrados(); track c.idCliente) {
+            <tr class="hover:bg-white/5 cursor-pointer" [routerLink]="['/admin/crm/clientes', c.idCliente]">
+              <td>
+                <p class="font-medium text-white">{{ c.usuario?.nombre }}</p>
+                <p class="text-xs text-slate-400">{{ c.usuario?.email }}</p>
+              </td>
+              <td class="text-slate-300">{{ labelTipo(c.tipoCliente) }}</td>
+              <td class="text-slate-300">{{ c.ciudad || '—' }}</td>
+              <td class="text-slate-300">{{ c.contacto || c.telefono || '—' }}</td>
+              <td class="text-slate-300">{{ c.pedidosCount ?? 0 }}</td>
+              <td><span class="text-xs text-blue-400">Ver ficha →</span></td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="text-center py-8 text-slate-400">No hay clientes que coincidan.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

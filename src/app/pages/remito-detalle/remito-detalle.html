@@ -1,0 +1,67 @@
+@if (remito(); as r) {
+  <div class="admin-content">
+  <div class="admin-page-header flex flex-wrap justify-between gap-3 print:hidden">
+    <div>
+      <h1 class="admin-page-title">{{ r.numeroRemito ?? ('Remito #' + r.idRemito) }}</h1>
+      <p class="admin-page-subtitle">{{ r.cliente?.usuario?.nombre }} · {{ r.estado }}</p>
+    </div>
+    <div class="flex gap-2">
+      <button type="button" class="admin-btn admin-btn-primary text-sm" (click)="imprimir()">Imprimir</button>
+      <a routerLink="/admin/remitos" class="admin-btn admin-btn-ghost text-sm">← Volver</a>
+    </div>
+  </div>
+
+  <article class="admin-card p-8 max-w-3xl mx-auto bg-white text-gray-900 print:shadow-none print:border-0">
+    <header class="border-b border-gray-300 pb-4 mb-6">
+      <h1 class="text-2xl font-bold">Remito de entrega</h1>
+      <p class="text-sm mt-1">{{ r.numeroRemito }} · {{ r.fecha | date:'medium' }}</p>
+    </header>
+    <section class="grid grid-cols-2 gap-4 text-sm mb-6">
+      <div>
+        <p class="font-semibold">Cliente</p>
+        <p>{{ r.cliente?.usuario?.nombre }}</p>
+        <p>{{ r.cliente?.cuit ?? '' }}</p>
+      </div>
+      <div>
+        <p class="font-semibold">Entrega</p>
+        <p>{{ r.direccionEntrega ?? r.cliente?.direccion ?? '—' }}</p>
+        <p>Estado: {{ r.estado }}</p>
+      </div>
+    </section>
+    <table class="w-full text-sm border-collapse">
+      <thead>
+        <tr class="border-b border-gray-400">
+          <th class="text-left py-2">Descripción</th>
+          <th class="text-right py-2">Cantidad</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (l of r.lineas ?? []; track l.idDetalle) {
+          <tr class="border-b border-gray-200">
+            <td class="py-2">{{ l.descripcion ?? l.producto?.nombre }}</td>
+            <td class="py-2 text-right">{{ l.cantidad }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    @if (r.notas) {
+      <p class="text-xs mt-6 text-gray-600">{{ r.notas }}</p>
+    }
+    <footer class="mt-12 grid grid-cols-2 gap-8 text-sm">
+      <div class="border-t border-gray-400 pt-2">Firma despacho</div>
+      <div class="border-t border-gray-400 pt-2">Firma recepción</div>
+    </footer>
+  </article>
+
+  <div class="flex gap-2 mt-6 print:hidden max-w-3xl mx-auto">
+    @if (r.estado === 'PREPARADO') {
+      <button type="button" class="admin-btn admin-btn-primary text-sm" [disabled]="accionando()"
+        (click)="cambiarEstado('DESPACHADO')">Marcar despachado</button>
+    }
+    @if (r.estado === 'DESPACHADO') {
+      <button type="button" class="admin-btn admin-btn-success text-sm" [disabled]="accionando()"
+        (click)="cambiarEstado('ENTREGADO')">Marcar entregado</button>
+    }
+  </div>
+  </div>
+}

@@ -1,0 +1,454 @@
+.bandeja {
+  display: grid;
+  grid-template-columns: 320px 1fr 280px;
+  flex: 1;
+  min-height: 0;
+  height: calc(100vh - 10rem);
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.bandeja-lista {
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: rgba(15, 23, 42, 0.85);
+}
+
+.bandeja-toolbar {
+  padding: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bandeja-search {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  background: rgba(30, 41, 59, 0.8);
+  color: #f1f5f9;
+}
+
+.bandeja-search::placeholder {
+  color: #64748b;
+}
+
+.bandeja-filtros {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+}
+
+.bandeja-select {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.4rem;
+  font-size: 0.75rem;
+  background: rgba(30, 41, 59, 0.8);
+  color: #e2e8f0;
+}
+
+.bandeja-select--full {
+  width: 100%;
+}
+
+.bandeja-btn-conectar {
+  padding: 0.45rem;
+  font-size: 0.8rem;
+  border: 1px dashed rgba(251, 146, 60, 0.5);
+  background: rgba(249, 115, 22, 0.08);
+  color: #fb923c;
+  border-radius: 0.4rem;
+  cursor: pointer;
+}
+
+.bandeja-btn-conectar:hover {
+  background: rgba(249, 115, 22, 0.15);
+}
+
+.bandeja-conversaciones {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.bandeja-item {
+  display: flex;
+  gap: 0.65rem;
+  padding: 0.85rem 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  transition: background 0.12s;
+  color: #e2e8f0;
+}
+
+.bandeja-item:hover,
+.bandeja-item--active {
+  background: rgba(249, 115, 22, 0.1);
+}
+
+.bandeja-item-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: rgba(51, 65, 85, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.bandeja-item-icon[data-canal='FACEBOOK'] {
+  background: #1877f2;
+  color: #fff;
+  font-weight: 700;
+}
+
+.bandeja-item-icon[data-canal='WHATSAPP'] {
+  background: #25d366;
+}
+
+.bandeja-item-icon[data-canal='INSTAGRAM'] {
+  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743);
+}
+
+.bandeja-item-body {
+  min-width: 0;
+  flex: 1;
+}
+
+.bandeja-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+}
+
+.bandeja-item-top strong {
+  color: #f8fafc;
+}
+
+.bandeja-item-preview {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin: 0.15rem 0 0;
+  font-weight: 500;
+}
+
+.bandeja-item-msg {
+  font-size: 0.72rem;
+  color: #64748b;
+  margin: 0.1rem 0 0;
+}
+
+.bandeja-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.bandeja-badge--pendiente,
+.bandeja-badge--estado {
+  background: rgba(249, 115, 22, 0.2);
+  color: #fb923c;
+  border: 1px solid rgba(251, 146, 60, 0.35);
+}
+
+.bandeja-chat {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.bandeja-chat-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background: rgba(15, 23, 42, 0.9);
+}
+
+.bandeja-estado-select {
+  max-width: 140px;
+  font-size: 0.72rem;
+}
+
+.bandeja-chat-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #f8fafc;
+}
+
+.bandeja-chat-meta {
+  margin: 0.25rem 0 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.bandeja-mensajes {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: radial-gradient(ellipse at top, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.8));
+}
+
+.bandeja-msg {
+  display: flex;
+}
+
+.bandeja-msg--out {
+  justify-content: flex-end;
+}
+
+.bandeja-msg-bubble {
+  max-width: 75%;
+  padding: 0.65rem 0.85rem;
+  border-radius: 0.75rem;
+  background: rgba(30, 41, 59, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.875rem;
+  color: #f1f5f9;
+}
+
+.bandeja-msg--out .bandeja-msg-bubble {
+  background: linear-gradient(135deg, #ea580c, #c2410c);
+  color: #fff;
+  border-color: transparent;
+}
+
+.bandeja-msg-author {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  opacity: 0.85;
+  margin-bottom: 0.25rem;
+  color: #94a3b8;
+}
+
+.bandeja-msg--out .bandeja-msg-author {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.bandeja-msg-bubble p {
+  margin: 0;
+  line-height: 1.45;
+  color: inherit;
+}
+
+.bandeja-msg-bubble time {
+  display: block;
+  font-size: 0.65rem;
+  margin-top: 0.35rem;
+  opacity: 0.75;
+}
+
+.bandeja-composer {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: rgba(15, 23, 42, 0.95);
+}
+
+.bandeja-composer-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.bandeja-composer textarea {
+  flex: 1;
+  resize: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.875rem;
+  background: rgba(30, 41, 59, 0.8);
+  color: #f1f5f9;
+}
+
+.bandeja-composer textarea::placeholder {
+  color: #64748b;
+}
+
+.bandeja-send {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: #ea580c;
+  color: #fff;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.bandeja-send:disabled {
+  opacity: 0.5;
+}
+
+.bandeja-chat-empty,
+.bandeja-empty {
+  padding: 2rem;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.bandeja-panel {
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1rem;
+  overflow-y: auto;
+  background: rgba(15, 23, 42, 0.85);
+  font-size: 0.85rem;
+  color: #cbd5e1;
+}
+
+.bandeja-panel-cliente {
+  font-weight: 600;
+  color: #fb923c;
+  margin: 0 0 1rem;
+  text-decoration: none;
+  display: block;
+}
+
+.bandeja-panel-cliente:hover {
+  color: #fdba74;
+}
+
+.bandeja-panel-block {
+  margin-bottom: 1.25rem;
+}
+
+.bandeja-panel-block h3 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  margin: 0 0 0.5rem;
+}
+
+.bandeja-panel-hint {
+  font-size: 0.7rem;
+  color: #64748b;
+  margin: 0.5rem 0 0;
+  line-height: 1.4;
+}
+
+.bandeja-panel-hint a {
+  color: #60a5fa;
+  text-decoration: none;
+}
+
+.bandeja-panel-hint a:hover {
+  text-decoration: underline;
+}
+
+.bandeja-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.bandeja-tag {
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(30, 41, 59, 0.8);
+  color: #cbd5e1;
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+.bandeja-tag--on {
+  background: rgba(249, 115, 22, 0.2);
+  border-color: rgba(251, 146, 60, 0.45);
+  color: #fdba74;
+}
+
+.bandeja-tag:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.bandeja-acciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+}
+
+.bandeja-accion {
+  padding: 0.45rem;
+  font-size: 0.72rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.4rem;
+  background: rgba(30, 41, 59, 0.8);
+  color: #e2e8f0;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+}
+
+.bandeja-accion:hover {
+  border-color: rgba(251, 146, 60, 0.45);
+  color: #fb923c;
+  background: rgba(249, 115, 22, 0.08);
+}
+
+.bandeja-historial {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.bandeja-historial li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.bandeja-historial strong {
+  display: block;
+  font-size: 0.8rem;
+  color: #f1f5f9;
+}
+
+.bandeja-historial span {
+  font-size: 0.68rem;
+  color: #64748b;
+}
+
+.bandeja-hist-empty {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 1100px) {
+  .bandeja {
+    grid-template-columns: 280px 1fr;
+  }
+  .bandeja-panel {
+    display: none;
+  }
+}

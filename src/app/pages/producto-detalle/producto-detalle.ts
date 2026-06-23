@@ -86,7 +86,9 @@ export class ProductoDetalle implements OnInit {
   }
 }
 
-  // Agrega el producto (con la cantidad elegida) al carrito.
+  aumentarCantidad(): void { this.cantidad++; }
+  disminuirCantidad(): void { if (this.cantidad > 1) this.cantidad--; }
+
   agregarAlCarrito(): void {
     const p = this.producto();
     if (!p) {

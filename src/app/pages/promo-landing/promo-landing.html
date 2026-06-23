@@ -1,0 +1,86 @@
+@if (config(); as cfg) {
+  <nav class="flex items-center gap-2 text-xs text-neutral-500 mb-6">
+    <a routerLink="/" class="hover:text-white transition-colors">Inicio</a>
+    <span>/</span>
+    <span class="text-white">{{ cfg.titulo }} {{ cfg.tituloAccent }}</span>
+  </nav>
+
+  <!-- Hero promo -->
+  <section class="store-hero store-hero--landing store-hero--animated-bg relative overflow-hidden rounded-2xl mb-8 border border-white/8"
+    [style]="cfg.theme === 'orange'
+      ? 'background: radial-gradient(110% 130% at 82% 85%, rgba(249,115,22,0.42), transparent 55%), linear-gradient(135deg,#160a0a,#08060a);'
+      : 'background: radial-gradient(100% 200% at 50% 50%, rgba(37,99,235,0.45), transparent 60%), linear-gradient(135deg,#0b1430,#070a18);'">
+    <div class="store-particles" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="relative flex flex-col sm:flex-row items-center gap-6 px-8 sm:px-12 py-10">
+      <div class="store-hero__content flex-1">
+        <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase"
+          [style]="cfg.theme === 'orange'
+            ? 'background: rgba(249,115,22,0.16); border: 1px solid rgba(249,115,22,0.45); color: #fdba74;'
+            : 'background: rgba(59,130,246,0.16); border: 1px solid rgba(59,130,246,0.45); color: #93c5fd;'">
+          ⚡ Promoción activa
+        </span>
+        <h1 class="mt-4 font-black italic leading-none tracking-tight text-white" style="font-family:'Archivo',sans-serif; font-size: clamp(48px,8vw,72px);">
+          {{ cfg.titulo }}<span [class]="cfg.theme === 'orange' ? 'text-orange-400' : 'text-cyan-400'">{{ cfg.tituloAccent }}</span>
+        </h1>
+        <p class="mt-4 text-base sm:text-lg font-semibold max-w-lg leading-snug text-neutral-200">{{ cfg.subtitulo }}</p>
+        <div class="flex gap-2 mt-6">
+          @for (item of [{ v:'02', l:'DÍAS' },{ v:'12', l:'HS' },{ v:'45', l:'MIN' }]; track item.l) {
+            <div class="store-countdown-digit text-center rounded-xl px-3 py-2 bg-white/6 border border-white/10">
+              <div class="font-black text-white text-xl">{{ item.v }}</div>
+              <div class="text-[9px] tracking-widest text-neutral-500">{{ item.l }}</div>
+            </div>
+          }
+        </div>
+      </div>
+      @if (cfg.imagen) {
+        <div class="store-hero__media shrink-0 w-full sm:w-72 h-48 sm:h-56 rounded-2xl overflow-hidden">
+          <img [src]="cfg.imagen" alt="Promoción" class="w-full h-full object-cover">
+        </div>
+      }
+    </div>
+  </section>
+
+  <h2 class="text-xl font-bold text-white mb-4">Productos en promoción</h2>
+
+  @if (agregado()) {
+    <div class="fixed bottom-24 right-6 z-40 bg-green-600/90 text-white text-sm rounded-xl px-4 py-3 shadow-xl">
+      <strong>{{ agregado() }}</strong> agregado al carrito
+    </div>
+  }
+
+  @if (cargando()) {
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="skeleton h-64 rounded-2xl"></div>
+      }
+    </div>
+  } @else if (productos().length === 0) {
+    <p class="text-neutral-400 text-center py-12">No hay productos disponibles en esta promoción.</p>
+  } @else {
+    <div class="store-product-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+      @for (p of productos(); track p.idProducto) {
+        <div class="store-product-card group flex flex-col bg-gray-800 border border-white/8 rounded-2xl overflow-hidden hover:border-blue-500/30">
+          <a [routerLink]="['/producto', p.idProducto]" class="store-product-card__image relative block aspect-square bg-slate-900 overflow-hidden">
+            @if (p.imagen) {
+              <img [src]="p.imagen" [alt]="p.nombre" class="w-full h-full object-cover">
+            } @else {
+              <div class="w-full h-full bg-gradient-to-br from-slate-700 to-slate-900"></div>
+            }
+            <span class="store-offer-badge absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full"
+              [class]="cfg.theme === 'orange' ? 'bg-orange-600/90 text-white' : 'bg-blue-600/90 text-white'">
+              OFERTA
+            </span>
+          </a>
+          <div class="p-3 flex flex-col gap-2 flex-1">
+            <a [routerLink]="['/producto', p.idProducto]" class="text-sm font-medium text-white line-clamp-2 hover:text-blue-300">{{ p.nombre }}</a>
+            <p class="text-lg font-bold text-white mt-auto">$ {{ p.precio | number:'1.0-0' }}</p>
+            <button (click)="agregarAlCarrito(p)" [disabled]="p.stock === 0"
+              class="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 text-white py-2 rounded-xl text-sm">
+              {{ p.stock === 0 ? 'Sin stock' : 'Agregar al carrito' }}
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+}

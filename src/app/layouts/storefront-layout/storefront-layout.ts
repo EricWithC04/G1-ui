@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterLink, RouterOutlet } from '@angular/router';
 import { StoreHeader } from '../../components/store-header/store-header';
 
 // Layout (marco) de la TIENDA (storefront).
@@ -9,7 +9,7 @@ import { StoreHeader } from '../../components/store-header/store-header';
 //   - abajo un pie de pagina (footer) con el logo chico.
 @Component({
   selector: 'app-storefront-layout',
-  imports: [RouterOutlet, StoreHeader],
+  imports: [RouterOutlet, RouterLink, StoreHeader],
   templateUrl: './storefront-layout.html',
 })
 export class StorefrontLayout {

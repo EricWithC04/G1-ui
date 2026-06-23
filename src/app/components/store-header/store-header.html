@@ -1,69 +1,98 @@
-<!-- Barra superior de la tienda. Fija arriba con el logo y los accesos del cliente. -->
-<nav class="bg-slate-950 border-b border-white/10 sticky top-0 z-20">
-  <div class="max-w-6xl mx-auto py-3 px-4 flex items-center justify-between gap-4">
+<!-- Barra superior de promociones -->
+<div class="bg-blue-600 text-white text-xs text-center py-1.5 px-4 hidden sm:block">
+  🚚 Envíos a todo el país &nbsp;·&nbsp; 💳 Hasta 12 cuotas &nbsp;·&nbsp; ⚡ Los mejores precios en tecnología
+</div>
 
-    <!-- Logo de NovaTech: al hacer clic vuelve al catalogo (home de la tienda). -->
-    <a routerLink="/" class="flex items-center">
-      <img src="logo.png" alt="NovaTech" class="h-12 w-auto" />
+<!-- Header principal sticky -->
+<nav class="bg-slate-950/95 backdrop-blur-sm border-b border-white/8 sticky top-0 z-30">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
+
+    <!-- Logo (recortado, sin margenes negras extra) -->
+    <a routerLink="/" class="store-logo-link shrink-0" aria-label="Ir al inicio">
+      <img src="logo.png" alt="NovaTech" />
     </a>
 
-    <!-- Links del medio. routerLinkActive marca en azul el link de la pagina actual. -->
-    <div class="flex items-center gap-1 text-sm">
-      <a
-        routerLink="/"
-        [routerLinkActiveOptions]="{ exact: true }"
-        routerLinkActive="text-white bg-white/10"
-        class="text-neutral-300 hover:text-white px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
-      >
-        Catalogo
-      </a>
+    <!-- Buscador central -->
+    <form class="flex-1 max-w-2xl mx-auto" (ngSubmit)="buscar()">
+      <div class="relative flex items-center">
+        <input
+          type="text"
+          name="busquedaHeader"
+          [(ngModel)]="busquedaHeader"
+          (keyup.enter)="buscar()"
+          placeholder="Buscar productos, marcas, categorías..."
+          class="w-full bg-gray-800 border border-white/10 rounded-xl pl-4 pr-14 py-2.5 text-sm text-white placeholder-neutral-500 transition-colors"
+        />
+        <button
+          type="submit"
+          class="absolute right-1 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg px-3.5 py-1.5 flex items-center justify-center"
+        >
+          <svg lucideSearch [size]="16"></svg>
+        </button>
+      </div>
+    </form>
 
-      <!-- Icono del carrito con un globito que muestra cuantos items hay. -->
+    <!-- Acciones a la derecha -->
+    <div class="flex items-center gap-0.5 shrink-0">
+
+      <!-- Carrito con badge -->
       <a
         routerLink="/carrito"
-        routerLinkActive="text-white bg-white/10"
-        class="relative text-neutral-300 hover:text-white px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
-        title="Carrito"
+        routerLinkActive="bg-white/8"
+        class="relative p-2.5 text-neutral-300 hover:text-white hover:bg-white/5 rounded-xl"
+        title="Mi carrito"
       >
-        <svg lucideShoppingCart size="20"></svg>
-        <!-- @if: solo mostramos el globito si hay al menos un producto en el carrito. -->
+        <svg lucideShoppingCart [size]="22"></svg>
         @if (cart.cantidadTotal() > 0) {
-          <span class="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-5 min-w-5 px-1 flex items-center justify-center">
+          <span class="absolute -top-0.5 -right-0.5 bg-blue-600 text-white text-[10px] font-bold rounded-full h-5 min-w-5 px-1 flex items-center justify-center leading-none">
             {{ cart.cantidadTotal() }}
           </span>
         }
       </a>
-    </div>
 
-    <!-- Lado derecho: depende de si hay sesion o no. -->
-    <div class="flex items-center gap-2 text-sm">
       @if (auth.usuarioActual(); as u) {
-        <!-- Si el usuario es ADMIN, le mostramos un acceso directo al panel. -->
-        @if (u.rol === 'ADMIN') {
-          <a routerLink="/admin" class="text-amber-300 hover:text-amber-200 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors">
+        <!-- Admin link -->
+        @if (esRolPanelAdmin(u.rol)) {
+          <a routerLink="/admin" class="hidden md:flex text-xs text-amber-300 hover:text-amber-200 px-3 py-2 rounded-xl hover:bg-white/5">
             Panel admin
           </a>
         }
-        <!-- Menu de "Mi cuenta": perfil y pedidos. -->
-        <a routerLink="/mis-pedidos" routerLinkActive="text-white bg-white/10"
-           class="text-neutral-300 hover:text-white px-3 py-2 rounded-lg hover:bg-white/10 transition-colors">
+        <!-- Mis pedidos -->
+        <a
+          routerLink="/mis-pedidos"
+          routerLinkActive="bg-white/8"
+          class="hidden sm:flex text-xs text-neutral-300 hover:text-white px-3 py-2 rounded-xl hover:bg-white/5"
+        >
           Mis pedidos
         </a>
-        <a routerLink="/perfil" routerLinkActive="text-white bg-white/10"
-           class="flex items-center gap-2 text-neutral-300 hover:text-white px-3 py-2 rounded-lg hover:bg-white/10 transition-colors">
-          <svg lucideUser size="18"></svg>
-          <span class="hidden sm:inline">{{ u.nombre }}</span>
+        <!-- Perfil -->
+        <a
+          routerLink="/perfil"
+          routerLinkActive="bg-white/8"
+          class="flex items-center gap-2 text-neutral-300 hover:text-white px-3 py-2 rounded-xl hover:bg-white/5 text-sm"
+        >
+          <svg lucideUser [size]="20"></svg>
+          <span class="hidden sm:inline max-w-24 truncate text-xs">{{ u.nombre }}</span>
         </a>
-        <button (click)="cerrarSesion()" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg">
+        <!-- Salir -->
+        <button
+          (click)="cerrarSesion()"
+          class="hidden sm:block text-xs text-neutral-500 hover:text-red-400 px-2 py-2 rounded-xl hover:bg-white/5"
+        >
           Salir
         </button>
       } @else {
-        <!-- Sin sesion: mostramos los botones de iniciar sesion y crear cuenta. -->
-        <a routerLink="/login" class="text-neutral-300 hover:text-white px-3 py-2 rounded-lg hover:bg-white/10 transition-colors">
-          Iniciar sesion
+        <a
+          routerLink="/login"
+          class="hidden sm:block text-sm text-neutral-300 hover:text-white px-3 py-2 rounded-xl hover:bg-white/5"
+        >
+          Ingresar
         </a>
-        <a routerLink="/register" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg">
-          Crear cuenta
+        <a
+          routerLink="/register"
+          class="bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2 rounded-xl font-medium"
+        >
+          Registrarse
         </a>
       }
     </div>

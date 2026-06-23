@@ -1,0 +1,51 @@
+<div class="header-search" (keydown)="onKeydown($event)">
+  <div class="header-search-wrap">
+    <svg class="header-search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <circle cx="11" cy="11" r="8"></circle>
+      <path d="m21 21-4.3-4.3"></path>
+    </svg>
+    <input
+      type="search"
+      class="header-search-input"
+      [value]="termino()"
+      (input)="onInput($any($event.target).value)"
+      (focus)="onFocus()"
+      placeholder="Buscar clientes, facturas, remitos…"
+      aria-label="Buscador integral"
+      autocomplete="off"
+    />
+    @if (termino()) {
+      <button type="button" class="header-search-clear" (click)="limpiar()" aria-label="Limpiar búsqueda">×</button>
+    }
+  </div>
+
+  @if (abierto()) {
+    <div class="header-search-panel" role="listbox">
+      @if (cargando()) {
+        <p class="header-search-empty">Buscando…</p>
+      } @else if (totalResultados() === 0) {
+        <p class="header-search-empty">Sin resultados para «{{ termino() }}»</p>
+      } @else {
+        @for (grupo of grupos(); track grupo.etiqueta) {
+          <div class="header-search-group">
+            <p class="header-search-group-label">{{ grupo.etiqueta }}</p>
+            @for (item of grupo.items; track item.tipo + item.id) {
+              <button
+                type="button"
+                class="header-search-item"
+                [class.header-search-item--active]="esActivo(item)"
+                role="option"
+                (click)="seleccionar(item)"
+              >
+                <span class="header-search-item-title">{{ item.titulo }}</span>
+                @if (item.subtitulo) {
+                  <span class="header-search-item-sub">{{ item.subtitulo }}</span>
+                }
+              </button>
+            }
+          </div>
+        }
+      }
+    </div>
+  }
+</div>

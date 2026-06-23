@@ -1,0 +1,175 @@
+<div class="admin-content">
+  <div class="flex items-center justify-between mb-6">
+
+    <div>
+      <h1 class="text-2xl font-bold text-white">Nuevo pedido</h1>
+      <p class="text-sm text-neutral-400 mt-1">
+        Canal: <span class="text-blue-400">{{ labelCanal(canalOrigen()) }}</span>
+      </p>
+    </div>
+    <a routerLink="/admin/pedidos" class="text-sm text-neutral-400 hover:text-white">← Volver a pedidos</a>
+  </div>
+
+  @if (exito()) {
+    <div class="bg-emerald-900/30 border border-emerald-500/40 rounded-xl p-6 mb-6">
+      <p class="text-emerald-300 font-medium">Pedido #{{ pedidoId() }} confirmado correctamente.</p>
+      <div class="flex gap-3 mt-4">
+        <button type="button" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded text-white text-sm" (click)="irAlPedido()">Ver pedido</button>
+        <a routerLink="/admin/pedidos/nuevo" class="border border-white/20 px-4 py-2 rounded text-neutral-300 text-sm hover:bg-white/5">Crear otro</a>
+      </div>
+    </div>
+  } @else {
+    @if (error()) {
+      <p class="text-red-400 text-sm mb-4">{{ error() }}</p>
+    }
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 space-y-6">
+        <section class="bg-gray-800 border border-white/10 rounded-xl p-5">
+          <h2 class="font-semibold text-white mb-4">Buscar productos</h2>
+          <input
+            type="search"
+            class="w-full bg-gray-900 border border-white/10 p-2 rounded text-white mb-3"
+            placeholder="Nombre, ID o proveedor…"
+            [ngModel]="busquedaProducto()"
+            (ngModelChange)="busquedaProducto.set($event)"
+          />
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto">
+            @for (p of productosFiltrados(); track p.idProducto) {
+              <button
+                type="button"
+                class="text-left bg-gray-900 hover:bg-gray-700 border border-white/5 rounded-lg p-3"
+                (click)="agregarProducto(p)"
+              >
+                <p class="text-white text-sm font-medium">{{ p.nombre }}</p>
+                <p class="text-xs text-neutral-500">ID {{ p.idProducto }} · Stock {{ p.stock }}</p>
+                <p class="text-sm text-blue-400 mt-1">$ {{ p.precio | number:'1.2-2' }}</p>
+              </button>
+            } @empty {
+              <p class="text-neutral-500 text-sm col-span-2">Sin resultados.</p>
+            }
+          </div>
+        </section>
+
+        <section class="bg-gray-800 border border-white/10 rounded-xl p-5">
+          <h2 class="font-semibold text-white mb-4">Líneas del pedido</h2>
+          @if (lineas().length === 0) {
+            <p class="text-neutral-500 text-sm">Todavía no hay productos.</p>
+          } @else {
+            @for (l of lineas(); track l.producto.idProducto) {
+              <div class="flex items-center gap-3 py-2 border-b border-white/5">
+                <div class="flex-1">
+                  <p class="text-white text-sm">{{ l.producto.nombre }}</p>
+                  <p class="text-xs text-neutral-500">$ {{ l.producto.precio | number:'1.2-2' }} c/u</p>
+                </div>
+                <input
+                  type="number"
+                  min="1"
+                  class="w-16 bg-gray-900 border border-white/10 p-1 rounded text-white text-sm"
+                  [ngModel]="l.cantidad"
+                  (ngModelChange)="cambiarCantidad(l.producto.idProducto, +$event)"
+                />
+                <span class="text-neutral-300 text-sm w-24 text-right">
+                  $ {{ (l.producto.precio * l.cantidad) | number:'1.2-2' }}
+                </span>
+                <button type="button" class="text-red-400 text-xs" (click)="quitarLinea(l.producto.idProducto)">Quitar</button>
+              </div>
+            }
+            <p class="text-right text-white font-semibold mt-4">Subtotal: $ {{ subtotal() | number:'1.2-2' }}</p>
+          }
+        </section>
+      </div>
+
+      <aside class="bg-gray-800 border border-white/10 rounded-xl p-5 h-fit space-y-4">
+        <h2 class="font-semibold text-white">Datos del pedido</h2>
+
+        @if (contactoNombre()) {
+          <p class="text-xs text-amber-400">Contacto CRM: {{ contactoNombre() }}</p>
+        }
+
+        <label class="text-sm text-neutral-300 block">
+          Cliente <span class="text-red-400">*</span>
+          <select
+            class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
+            [ngModel]="idUsuario()"
+            (ngModelChange)="idUsuario.set(+$event || null)"
+          >
+            <option [ngValue]="null">Seleccionar…</option>
+            @for (u of usuarios(); track u.idUsuario) {
+              <option [ngValue]="u.idUsuario">{{ u.nombre }} · {{ u.email }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="text-sm text-neutral-300 block">
+          Canal de origen
+          <select
+            class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
+            [ngModel]="canalOrigen()"
+            (ngModelChange)="canalOrigen.set($event)"
+          >
+            @for (c of canales; track c) {
+              <option [value]="c">{{ labelCanal(c) }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="text-sm text-neutral-300 block">
+          Método de pago
+          <select
+            class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
+            [ngModel]="metodoPago()"
+            (ngModelChange)="metodoPago.set($event)"
+          >
+            @for (m of metodosPago; track m) {
+              <option [value]="m">{{ m.replace('_', ' ') }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="text-sm text-neutral-300 block">
+          Tipo de entrega
+          <select
+            class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
+            [ngModel]="tipoEntrega()"
+            (ngModelChange)="tipoEntrega.set($event)"
+          >
+            <option value="RETIRO_TIENDA">Retiro en tienda</option>
+            <option value="ENVIO">Envío a domicilio</option>
+          </select>
+        </label>
+
+        @if (tipoEntrega() === 'ENVIO') {
+          <label class="text-sm text-neutral-300 block">
+            Dirección de envío
+            <textarea
+              rows="2"
+              class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
+              [ngModel]="direccionEnvio()"
+              (ngModelChange)="direccionEnvio.set($event)"
+            ></textarea>
+          </label>
+        }
+
+        <label class="text-sm text-neutral-300 block">
+          Notas
+          <textarea
+            rows="2"
+            class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
+            [ngModel]="notas()"
+            (ngModelChange)="notas.set($event)"
+          ></textarea>
+        </label>
+
+        <button
+          type="button"
+          class="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 p-3 rounded text-white font-medium"
+          [disabled]="procesando()"
+          (click)="confirmar()"
+        >
+          {{ procesando() ? 'Confirmando…' : 'Confirmar pedido' }}
+        </button>
+      </aside>
+    </div>
+  }
+</div>

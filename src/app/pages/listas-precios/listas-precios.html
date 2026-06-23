@@ -1,0 +1,159 @@
+<div class="admin-content">
+  <div class="admin-page-header">
+    <h1 class="admin-page-title">Listas de precios</h1>
+    <p class="admin-page-subtitle">
+      Configurá descuentos globales y unitarios por canal: mayorista, B2B, e-commerce y POS.
+      El sistema valida que retail no tenga mejor precio que mayoristas.
+    </p>
+  </div>
+
+  @if (cargando()) {
+    <p class="text-slate-400 text-sm py-8 text-center">Cargando listas…</p>
+  } @else {
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+      <!-- Selector de listas -->
+      <div class="xl:col-span-4 flex flex-col gap-3">
+        @for (l of listas(); track l.idListaPrecio) {
+          @let meta = metaCodigo(l.codigo);
+          <button
+            type="button"
+            class="admin-card p-4 text-left transition-all border-2"
+            [style.border-color]="sel()?.idListaPrecio === l.idListaPrecio ? (meta?.color ?? '#3b82f6') : 'transparent'"
+            (click)="seleccionar(l)"
+          >
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider" [style.color]="meta?.color">{{ l.codigo }}</span>
+                <h3 class="font-semibold text-white mt-1">{{ l.nombre }}</h3>
+                <p class="text-xs text-slate-400 mt-1">{{ meta?.desc }}</p>
+              </div>
+              <span class="text-2xl font-black text-white tabular-nums">{{ l.descuentoGlobal | number:'1.0-1' }}%</span>
+            </div>
+          </button>
+        }
+      </div>
+
+      <!-- Detalle lista -->
+      @if (sel(); as l) {
+        <div class="xl:col-span-8 flex flex-col gap-6">
+          <section class="admin-card p-5">
+            <h2 class="font-semibold text-white mb-1">Descuento global — {{ l.nombre }}</h2>
+            <p class="text-xs text-amber-400/90 mb-4">{{ reglasJerarquia() }}</p>
+            <div class="flex flex-wrap items-end gap-4">
+              <label class="text-sm text-slate-300 flex-1 min-w-[140px]">
+                Descuento % sobre precio base
+                <input
+                  type="number"
+                  class="admin-input mt-1"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  [ngModel]="descuentoGlobalEdit()"
+                  (ngModelChange)="descuentoGlobalEdit.set(+$event)"
+                />
+              </label>
+              <button type="button" class="admin-btn admin-btn-primary" [disabled]="guardando()" (click)="guardarGlobal()">
+                {{ guardando() ? 'Guardando…' : 'Guardar global' }}
+              </button>
+            </div>
+            <p class="text-xs text-slate-500 mt-3">
+              Precio base = precio lista del producto (PVP) o precio catálogo si no hay lista.
+            </p>
+          </section>
+
+          <section class="admin-card p-5">
+            <h2 class="font-semibold text-white mb-3">Override unitario (por producto)</h2>
+            <p class="text-xs text-slate-400 mb-4">
+              Opcional: descuento % o precio fijo para un producto puntual. Reemplaza el global en ese ítem.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <label class="text-sm text-slate-300 relative">
+                Buscar producto
+                <input
+                  type="search"
+                  class="admin-input mt-1"
+                  placeholder="Nombre del producto…"
+                  [ngModel]="busquedaProducto()"
+                  (ngModelChange)="busquedaProducto.set($event); buscarProducto()"
+                />
+                @if (resultadosProducto().length) {
+                  <ul class="absolute z-20 left-0 right-0 mt-1 admin-card max-h-48 overflow-auto">
+                    @for (p of resultadosProducto(); track p.idProducto) {
+                      <li>
+                        <button type="button" class="w-full text-left px-3 py-2 text-sm hover:bg-white/5" (click)="elegirProducto(p)">
+                          {{ p.nombre }} · ${{ p.precio | number:'1.0-0' }}
+                        </button>
+                      </li>
+                    }
+                  </ul>
+                }
+              </label>
+
+              <div class="flex flex-col gap-2">
+                <span class="text-sm text-slate-300">Modo override</span>
+                <div class="flex gap-2">
+                  <button type="button" class="admin-btn flex-1" [class.admin-btn-primary]="modoUnitario() === 'descuento'" (click)="modoUnitario.set('descuento')">Descuento %</button>
+                  <button type="button" class="admin-btn flex-1" [class.admin-btn-primary]="modoUnitario() === 'precio'" (click)="modoUnitario.set('precio')">Precio fijo</button>
+                </div>
+                @if (modoUnitario() === 'descuento') {
+                  <input type="number" class="admin-input" placeholder="Ej. 15" min="0" max="100" step="0.01"
+                    [ngModel]="unitDescuento()" (ngModelChange)="unitDescuento.set($event === '' ? null : +$event)" />
+                } @else {
+                  <input type="number" class="admin-input" placeholder="Precio final $" min="0" step="0.01"
+                    [ngModel]="unitPrecioFijo()" (ngModelChange)="unitPrecioFijo.set($event === '' ? null : +$event)" />
+                }
+              </div>
+            </div>
+
+            <button type="button" class="admin-btn admin-btn-primary" [disabled]="guardando() || !productoSel()" (click)="guardarUnitario()">
+              Agregar / actualizar override
+            </button>
+          </section>
+
+          <section class="admin-card overflow-hidden">
+            <div class="admin-card-header">Overrides activos ({{ detalles().length }})</div>
+            @if (detalles().length === 0) {
+              <p class="p-4 text-sm text-slate-500">Sin overrides — se usa solo el descuento global.</p>
+            } @else {
+              <div class="overflow-x-auto">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Producto</th>
+                      <th>Desc. unit. %</th>
+                      <th>Precio fijo</th>
+                      <th class="text-right">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (d of detalles(); track d.idDetalle) {
+                      <tr>
+                        <td>{{ d.producto?.nombre }}</td>
+                        <td>{{ d.descuentoPorcentaje != null ? (d.descuentoPorcentaje | number:'1.0-2') + '%' : '—' }}</td>
+                        <td>{{ d.precioFijo != null ? ('$' + (d.precioFijo | number:'1.0-2')) : '—' }}</td>
+                        <td class="text-right">
+                          <button type="button" class="text-red-400 text-sm hover:underline" (click)="eliminarDetalle(d)">Quitar</button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </section>
+
+          <section class="admin-card p-4 text-sm text-slate-400">
+            <h3 class="font-semibold text-slate-200 mb-2">Asignación automática por canal</h3>
+            <ul class="list-disc pl-5 space-y-1">
+              <li><strong class="text-slate-300">POS</strong> → Local</li>
+              <li><strong class="text-slate-300">Web</strong> → E-commerce</li>
+              <li><strong class="text-slate-300">CRM / Admin</strong> → B2B (cliente mayorista → Mayorista)</li>
+              <li><strong class="text-slate-300">Tipo cliente MAYORISTA</strong> → Lista mayorista</li>
+            </ul>
+          </section>
+        </div>
+      }
+    </div>
+  }
+</div>

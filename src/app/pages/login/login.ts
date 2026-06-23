@@ -3,6 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { esRolPanelAdmin } from '../../config/config-rbac';
 
 // Pagina de inicio de sesion.
 // Tiene un formulario con email y contrasena. Al enviarlo, le pega al backend
@@ -16,7 +17,7 @@ import { AuthService } from '../../services/auth.service';
 })
 export class Login {
 
-  // Formulario reactivo con validaciones.
+  readonly anio = new Date().getFullYear();
   form: FormGroup;
 
   // Mensaje de error para mostrar si el login falla (signal = reactivo).
@@ -42,11 +43,10 @@ export class Login {
     this.auth.login({ email, contrasena }).subscribe({
       next: usuario => {
         this.cargando.set(false);
-        // Segun el rol, mandamos a un lado u otro.
-        if (usuario.rol === 'ADMIN') {
-          this.router.navigate(['/admin']);
+        if (esRolPanelAdmin(usuario.rol)) {
+          this.router.navigate(['/admin'], { replaceUrl: true });
         } else {
-          this.router.navigate(['/']);
+          this.router.navigate(['/'], { replaceUrl: true });
         }
       },
       error: (err: HttpErrorResponse) => {

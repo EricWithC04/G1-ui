@@ -1,0 +1,28 @@
+<aside class="admin-sidebar">
+  <div class="admin-sidebar-brand">
+    <p class="admin-sidebar-brand-title">NovaTech ERP</p>
+    <p class="admin-sidebar-brand-sub">Panel administrativo</p>
+  </div>
+
+  <nav class="admin-sidebar-nav">
+    @for (section of sections; track section.title) {
+      <div class="admin-sidebar-section">
+        <p class="admin-sidebar-section-title">{{ section.title }}</p>
+        <ul class="admin-sidebar-links">
+          @for (link of section.links; track link.path) {
+            <li>
+              <a
+                [routerLink]="'/' + link.path"
+                [routerLinkActiveOptions]="{ exact: link.exact ?? link.path === 'admin' }"
+                routerLinkActive="admin-sidebar-link-active"
+                class="admin-sidebar-link"
+              >
+                {{ link.label }}
+              </a>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+  </nav>
+</aside>

@@ -13,7 +13,7 @@ import { AuthService } from '../../services/auth.service';
 })
 export class Register {
 
-  // Formulario reactivo con validaciones.
+  readonly anio = new Date().getFullYear();
   form: FormGroup;
 
   // Mensajes para el usuario.

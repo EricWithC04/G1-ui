@@ -1,0 +1,51 @@
+<div class="p-4 max-w-2xl">
+  <a routerLink="/admin/crm/clientes" class="text-sm text-slate-400 hover:text-white">← Clientes</a>
+  <h1 class="admin-page-title mt-2">Nuevo cliente</h1>
+  <p class="admin-page-subtitle mb-6">Alta de cliente con datos comerciales básicos.</p>
+
+  @if (error()) { <p class="admin-alert admin-alert-error mb-4">{{ error() }}</p> }
+
+  <form class="admin-card p-5 flex flex-col gap-4" #f="ngForm" (ngSubmit)="guardar(f)">
+    <label class="text-sm text-slate-300">Nombre *
+      <input class="admin-input" [(ngModel)]="form.usuario.nombre" name="nombre" required>
+    </label>
+    <label class="text-sm text-slate-300">Email *
+      <input class="admin-input" type="email" [(ngModel)]="form.usuario.email" name="email" required>
+    </label>
+    <label class="text-sm text-slate-300">Tipo
+      <select class="admin-input" [(ngModel)]="form.tipoCliente" name="tipo" (ngModelChange)="onTipoChange()">
+        @for (t of tipos; track t.value) { <option [value]="t.value">{{ t.label }}</option> }
+      </select>
+    </label>
+    <div class="grid grid-cols-2 gap-4">
+      <label class="text-sm text-slate-300">CUIT
+        <input class="admin-input" [(ngModel)]="form.cuit" name="cuit">
+      </label>
+      <label class="text-sm text-slate-300">Contacto
+        <input class="admin-input" [(ngModel)]="form.contacto" name="contacto">
+      </label>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <label class="text-sm text-slate-300">Teléfono
+        <input class="admin-input" [(ngModel)]="form.telefono" name="tel">
+      </label>
+      <label class="text-sm text-slate-300">Ciudad
+        <input class="admin-input" [(ngModel)]="form.ciudad" name="ciudad">
+      </label>
+    </div>
+    <label class="text-sm text-slate-300">Dirección
+      <input class="admin-input" [(ngModel)]="form.direccion" name="dir">
+    </label>
+    <label class="text-sm text-slate-300">Condición IVA
+      <select class="admin-input" [(ngModel)]="form.condicionIva" name="iva">
+        @for (c of condicionesIva; track c.value) {
+          <option [value]="c.value">{{ c.label }}</option>
+        }
+      </select>
+    </label>
+    <div class="flex gap-3">
+      <button type="submit" class="admin-btn admin-btn-primary" [disabled]="guardando()">Crear cliente</button>
+      <a routerLink="/admin/crm/clientes" class="admin-btn admin-btn-ghost">Cancelar</a>
+    </div>
+  </form>
+</div>

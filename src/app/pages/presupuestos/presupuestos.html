@@ -1,0 +1,199 @@
+<div class="admin-content">
+
+  <div class="admin-page-header flex flex-wrap justify-between gap-3">
+
+    <div>
+
+      <h1 class="admin-page-title">Presupuestos</h1>
+
+      <p class="admin-page-subtitle">Cotizaciones comerciales con validez, aprobación y conversión a factura o remito.</p>
+
+    </div>
+
+    <a routerLink="/admin/presupuestos/nuevo" class="admin-btn admin-btn-primary">Nuevo presupuesto</a>
+
+  </div>
+
+
+
+  @if (cargando()) { <p class="text-slate-400 text-sm animate-pulse mb-4">Cargando presupuestos…</p> }
+
+
+
+  <div class="admin-stat-grid mb-6">
+
+    <div class="admin-stat admin-stat--blue">
+
+      <p class="admin-stat-value">{{ items().length }}</p>
+
+      <p class="admin-stat-label">Total</p>
+
+    </div>
+
+    <div class="admin-stat admin-stat--emerald">
+
+      <p class="admin-stat-value">{{ items().filter(p => p.estado === 'APROBADO').length }}</p>
+
+      <p class="admin-stat-label">Aprobados</p>
+
+    </div>
+
+    <div class="admin-stat admin-stat--amber">
+
+      <p class="admin-stat-value">{{ items().filter(p => p.estado === 'ENVIADO' || p.estado === 'BORRADOR').length }}</p>
+
+      <p class="admin-stat-label">Pendientes</p>
+
+    </div>
+
+    <div class="admin-stat admin-stat--violet">
+
+      <p class="admin-stat-value">{{ items().filter(p => p.estado === 'FACTURADO').length }}</p>
+
+      <p class="admin-stat-label">Facturados</p>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="admin-card overflow-hidden">
+
+    <div class="admin-card-header">Listado</div>
+
+    <div class="p-4 border-b border-white/10 flex flex-col sm:flex-row gap-3">
+
+      <div class="flex-1">
+
+        <app-admin-search
+
+          [termino]="busqueda()"
+
+          (terminoChange)="busqueda.set($event)"
+
+          [total]="items().length"
+
+          [filtrados]="itemsFiltrados().length"
+
+          placeholder="Buscar por número, cliente, estado o total…"
+
+        />
+
+      </div>
+
+      <label class="text-sm text-slate-300 shrink-0">
+
+        Estado
+
+        <select class="admin-input mt-1" [ngModel]="filtroEstado()" (ngModelChange)="filtroEstado.set($event)">
+
+          <option value="">Todos</option>
+
+          <option value="BORRADOR">Borrador</option>
+
+          <option value="ENVIADO">Enviado</option>
+
+          <option value="APROBADO">Aprobado</option>
+
+          <option value="FACTURADO">Facturado</option>
+
+          <option value="VENCIDO">Vencido</option>
+
+        </select>
+
+      </label>
+
+    </div>
+
+    <div class="overflow-x-auto">
+
+      <table class="admin-table">
+
+        <thead>
+
+          <tr>
+
+            <th>Número</th>
+
+            <th>Cliente</th>
+
+            <th>Fecha</th>
+
+            <th>Validez</th>
+
+            <th>Subtotal</th>
+
+            <th>Total</th>
+
+            <th>Estado</th>
+
+            <th class="text-right">Acciones</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          @for (p of itemsFiltrados(); track p.idPresupuesto) {
+
+            <tr class="hover:bg-white/5">
+
+              <td class="font-mono text-blue-300">{{ p.numeroPresupuesto ?? ('#' + p.idPresupuesto) }}</td>
+
+              <td>{{ p.cliente?.usuario?.nombre }}</td>
+
+              <td class="text-xs text-slate-400">{{ p.fecha | date:'shortDate' }}</td>
+
+              <td class="text-xs text-slate-400">{{ p.validezHasta | date:'shortDate' }}</td>
+
+              <td>${{ p.subtotal | number:'1.2-2' }}</td>
+
+              <td class="font-semibold">${{ p.total | number:'1.2-2' }}</td>
+
+              <td><span [class]="badgeEstado(p.estado)">{{ p.estado }}</span></td>
+
+              <td class="text-right space-x-2 whitespace-nowrap">
+
+                <a [routerLink]="['/admin/presupuestos', p.idPresupuesto]" class="admin-btn admin-btn-ghost text-xs py-1 px-2">Ver</a>
+
+                @if (p.estado !== 'FACTURADO') {
+
+                  <a [routerLink]="['/admin/presupuestos', p.idPresupuesto, 'editar']" class="admin-btn admin-btn-ghost text-xs py-1 px-2">Editar</a>
+
+                  @if (p.estado === 'APROBADO' || p.estado === 'ENVIADO') {
+
+                    <a [routerLink]="['/admin/facturacion/nueva']" [queryParams]="{ presupuestoId: p.idPresupuesto }" class="admin-btn admin-btn-primary text-xs py-1 px-2">Facturar</a>
+
+                  }
+
+                }
+
+              </td>
+
+            </tr>
+
+          } @empty {
+
+            <tr><td colspan="8" class="text-center text-slate-400 py-8">
+
+              @if (busqueda() || filtroEstado()) { No hay presupuestos que coincidan. }
+
+              @else { Sin presupuestos. <a routerLink="/admin/presupuestos/nuevo" class="text-blue-400 hover:underline">Crear el primero</a>. }
+
+            </td></tr>
+
+          }
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</div>
+
+
