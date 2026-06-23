@@ -2,107 +2,117 @@
 
 @if (cargando()) {
   <div class="max-w-lg mx-auto bg-gray-800 border border-white/10 rounded-2xl p-8 text-center">
-    <p class="text-neutral-300">Buscando la informacion de tu envio...</p>
+    <p class="text-neutral-300">Buscando la información de tu envío…</p>
   </div>
-} @else if (pedido(); as p) {
+} @else if (error()) {
+  <div class="max-w-lg mx-auto bg-gray-800 border border-red-500/30 rounded-2xl p-8 text-center">
+    <p class="text-red-300 mb-4">{{ error() }}</p>
+    <a routerLink="/panel-cliente" [queryParams]="{ seccion: 'pedidos' }" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-lg text-sm">
+      Volver a mis pedidos
+    </a>
+  </div>
+} @else if (detalle(); as d) {
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-    <!-- Columna izquierda: estado del envio (timeline) -->
     <div class="bg-gray-800 border border-white/10 rounded-2xl p-5 flex flex-col gap-6">
       <div>
-        <h2 class="text-lg font-semibold text-white">Pedido #{{ p.numeroPedido }}</h2>
-        <p class="text-sm text-neutral-400">Realizado el {{ p.fecha }}</p>
+        <h2 class="text-lg font-semibold text-white">Pedido #{{ d.pedido.idPedido }}</h2>
+        <p class="text-sm text-neutral-400">Realizado el {{ d.pedido.fecha | date:'dd/MM/yyyy HH:mm' }}</p>
       </div>
 
-      <!-- Barra de progreso general -->
       <div>
         <div class="w-full bg-gray-900 rounded-full h-2 overflow-hidden">
           <div class="bg-blue-600 h-2 rounded-full transition-all" [style.width.%]="progreso()"></div>
         </div>
         @if (entregado()) {
           <p class="text-sm text-green-400 font-medium mt-2">Tu pedido fue entregado.</p>
+        } @else if (envio()?.fechaDespacho) {
+          <p class="text-sm text-neutral-400 mt-2">Despachado el {{ envio()!.fechaDespacho | date:'dd/MM/yyyy' }}</p>
         } @else {
-          <p class="text-sm text-neutral-400 mt-2">Llegada estimada: {{ p.fechaEstimada }}</p>
+          <p class="text-sm text-neutral-400 mt-2">Estamos preparando tu envío.</p>
         }
       </div>
 
-      <!-- Timeline de etapas -->
       <div class="flex flex-col">
         @for (etapa of etapas(); track etapa.id; let i = $index; let last = $last) {
           <div class="flex gap-3">
             <div class="flex flex-col items-center">
               <div
                 class="w-7 h-7 rounded-full flex items-center justify-center border-2 shrink-0 text-xs font-bold"
-                [ngClass]="etapa.fecha
+                [ngClass]="etapa.completada
                   ? 'border-blue-500 bg-blue-600 text-white'
                   : 'border-white/10 bg-gray-900 text-neutral-500'"
               >
-                @if (etapa.fecha) { ✓ } @else { {{ i + 1 }} }
+                @if (etapa.completada) { ✓ } @else { {{ i + 1 }} }
               </div>
               @if (!last) {
                 <div
                   class="w-0.5 flex-1 my-1"
-                  [ngClass]="etapas()[i + 1].fecha ? 'bg-blue-600' : 'bg-white/10'"
+                  [ngClass]="etapas()[i + 1].completada ? 'bg-blue-600' : 'bg-white/10'"
                 ></div>
               }
             </div>
             <div class="pb-6">
-              <p class="text-sm font-medium" [ngClass]="etapa.fecha ? 'text-white' : 'text-neutral-500'">
+              <p class="text-sm font-medium" [ngClass]="etapa.completada ? 'text-white' : 'text-neutral-500'">
                 {{ etapa.nombre }}
               </p>
               <p class="text-xs text-neutral-500 mt-0.5">{{ etapa.descripcion }}</p>
-              @if (etapa.fecha) {
-                <p class="text-xs text-neutral-400 mt-1">{{ etapa.fecha }}</p>
-              }
             </div>
           </div>
         }
       </div>
     </div>
 
-    <!-- Columna derecha: datos de envio + resumen del pedido -->
     <div class="flex flex-col gap-6">
 
       <div class="bg-slate-950 border border-white/10 rounded-2xl p-5">
-        <h2 class="text-lg font-semibold text-white mb-4">Datos de envio</h2>
-        <div class="flex flex-col gap-2 text-sm">
-          <div class="flex justify-between gap-4">
-            <span class="text-neutral-400">Direccion</span>
-            <span class="text-white text-right">{{ p.direccionEnvio }}</span>
+        <h2 class="text-lg font-semibold text-white mb-4">Datos de envío</h2>
+        @if (envio(); as e) {
+          <div class="flex flex-col gap-2 text-sm">
+            <div class="flex justify-between gap-4">
+              <span class="text-neutral-400">Dirección</span>
+              <span class="text-white text-right">{{ e.direccionEnvio || '—' }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-neutral-400">Empresa de logística</span>
+              <span class="text-white">{{ e.empresaLogistica || '—' }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-neutral-400">Número de seguimiento</span>
+              <span class="text-white">{{ e.numeroTracking || '—' }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-neutral-400">Estado</span>
+              <span class="text-white">{{ e.estadoEnvio?.replace('_', ' ') ?? '—' }}</span>
+            </div>
           </div>
-          <div class="flex justify-between">
-            <span class="text-neutral-400">Empresa de logistica</span>
-            <span class="text-white">{{ p.empresaLogistica }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-neutral-400">Numero de seguimiento</span>
-            <span class="text-white">{{ p.numeroSeguimiento }}</span>
-          </div>
-        </div>
+        } @else {
+          <p class="text-sm text-neutral-400">Todavía no hay datos de envío para este pedido.</p>
+        }
       </div>
 
       <div class="bg-slate-950 border border-white/10 rounded-2xl p-5">
         <h2 class="text-lg font-semibold text-white mb-4">Resumen del pedido</h2>
         <div class="flex flex-col gap-2">
-          @for (item of p.items; track item.nombre) {
+          @for (item of lineas(); track item.idDetalle) {
             <div class="flex justify-between text-sm">
-              <span class="text-neutral-300">{{ item.nombre }} x{{ item.cantidad }}</span>
-              <span class="text-white">$ {{ (item.precio * item.cantidad) | number:'1.2-2' }}</span>
+              <span class="text-neutral-300">{{ item.producto?.nombre ?? 'Producto' }} x{{ item.cantidad }}</span>
+              <span class="text-white">$ {{ (item.precioUnitario * item.cantidad) | number:'1.2-2' }}</span>
             </div>
           }
         </div>
         <div class="border-t border-white/10 mt-4 pt-4 flex justify-between">
           <span class="text-white font-semibold">Total</span>
-          <span class="text-white font-bold">$ {{ p.total | number:'1.2-2' }}</span>
+          <span class="text-white font-bold">$ {{ d.pedido.total | number:'1.2-2' }}</span>
         </div>
       </div>
 
-      <div class="flex justify-center gap-2">
-        <a routerLink="/mis-pedidos" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-lg text-sm">
+      <div class="flex justify-center gap-2 flex-wrap">
+        <a routerLink="/panel-cliente" [queryParams]="{ seccion: 'pedidos' }" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-lg text-sm">
           Ver mis pedidos
         </a>
         <a routerLink="/" class="bg-gray-700 hover:bg-gray-600 text-white px-5 py-2 rounded-lg text-sm">
-          Volver al catalogo
+          Volver al catálogo
         </a>
       </div>
     </div>

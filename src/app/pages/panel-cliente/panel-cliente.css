@@ -4,6 +4,13 @@
    superficie #0f172a, naranja #f97316, azul #3b82f6, esmeralda #10b981
 ══════════════════════════════════════════════════════════════ */
 
+.pc-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
 .pc-root {
   --pc-orange:       #f97316;
   --pc-orange-dim:   rgba(249, 115, 22, 0.15);
