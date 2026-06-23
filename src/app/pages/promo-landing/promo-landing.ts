@@ -4,6 +4,7 @@ import { DecimalPipe } from '@angular/common';
 import { ProductService } from '../../services/product';
 import { CartService } from '../../services/cart.service';
 import { PROMO_LANDINGS, PromoLandingConfig } from '../../data/landing-pages';
+import { CANAL_ECOMMERCE, normalizarListaPrecioCanal } from '../../utils/producto-canal.util';
 import { Product } from '../../models/models';
 
 // Pagina de promociones especiales (Hot Sale, Cyber Week).
@@ -37,10 +38,12 @@ export class PromoLanding implements OnInit {
     }
     this.config.set(cfg);
 
-    const filtros = cfg.categoriaId ? { categoriaId: cfg.categoriaId } : undefined;
+    const filtros = cfg.categoriaId
+      ? { categoriaId: cfg.categoriaId, canal: CANAL_ECOMMERCE }
+      : { canal: CANAL_ECOMMERCE };
     this.productService.listarConFiltros(filtros).subscribe({
       next: items => {
-        this.productos.set(items);
+        this.productos.set(normalizarListaPrecioCanal(items));
         this.cargando.set(false);
       },
       error: () => this.cargando.set(false),

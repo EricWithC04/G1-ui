@@ -48,6 +48,15 @@ export class ProductService extends BaseApiService<Product> {
         return p.precioCanal ?? p.precio ?? 0;
     }
 
+    /** Detalle con precio resuelto por canal (WEB → lista ECOMMERCE). */
+    obtenerPorCanal(id: number, canal = 'WEB', tipoCliente?: string): Observable<Product> {
+        let params = new HttpParams().set('canal', canal);
+        if (tipoCliente) {
+            params = params.set('tipoCliente', tipoCliente);
+        }
+        return this.http.get<Product>(`${this.url}/${id}`, { params });
+    }
+
     // --- Alias en ingles para no romper codigo viejo que ya los usaba ---
     getProducts(filtros?: { nombre?: string; categoriaId?: number }): Observable<Product[]> {
         return this.listarConFiltros(filtros);
@@ -56,9 +65,5 @@ export class ProductService extends BaseApiService<Product> {
     createProduct(product: Product): Observable<Product> { return this.crear(product); }
     updateProduct(id: number, product: Product): Observable<Product> { return this.actualizar(id, product); }
     deleteProduct(id: number): Observable<void> { return this.eliminar(id); }
-
-    listarStockBajo(): Observable<Product[]> {
-        return this.http.get<Product[]>(`${this.url}/stock-bajo`);
-    }
 }
 

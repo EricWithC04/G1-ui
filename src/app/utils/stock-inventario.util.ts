@@ -13,3 +13,33 @@ export function stockActual(p: Product): number {
 export function esStockBajo(p: Product): boolean {
   return stockActual(p) <= stockMinimoEfectivo(p);
 }
+
+export function sinStock(p: Product): boolean {
+  return stockActual(p) === 0;
+}
+
+export interface EtiquetaStock {
+  texto: string;
+  clase: string;
+  punto: 'green' | 'amber' | 'red';
+}
+
+export function etiquetaStock(p: Product): EtiquetaStock {
+  if (sinStock(p)) {
+    return { texto: 'Sin stock', clase: 'text-red-500/70', punto: 'red' };
+  }
+  if (esStockBajo(p)) {
+    const n = stockActual(p);
+    return {
+      texto: n === 1 ? 'Última unidad' : `Últimas ${n} unidades`,
+      clase: 'text-amber-500/70',
+      punto: 'amber',
+    };
+  }
+  const n = stockActual(p);
+  return {
+    texto: `En stock (${n} disponibles)`,
+    clase: 'text-green-500/70',
+    punto: 'green',
+  };
+}

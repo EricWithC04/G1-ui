@@ -346,9 +346,8 @@
           <span class="text-neutral-600 text-xs">(4.0)</span>
         </div>
         @if (p.stock !== null && p.stock !== undefined) {
-          <p class="text-xs" [class]="p.stock > 5 ? 'text-green-500/70' : p.stock > 0 ? 'text-amber-500/70' : 'text-red-500/70'">
-            {{ p.stock > 0 ? 'Stock: ' + p.stock + ' unid.' : 'Sin stock' }}
-          </p>
+          @let st = stockInfo(p);
+          <p class="text-xs" [class]="st.clase">{{ st.texto }}</p>
         }
         <p class="text-lg font-bold text-white mt-auto">$ {{ p.precio | number:'1.0-0' }}</p>
         @if (p.stock === 0) {

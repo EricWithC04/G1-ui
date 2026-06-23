@@ -6,6 +6,8 @@ import { ProductService } from '../../services/product';
 import { ResenaService } from '../../services/resena.service';
 import { CartService } from '../../services/cart.service';
 import { AuthService } from '../../services/auth.service';
+import { CANAL_ECOMMERCE, normalizarPrecioCanal } from '../../utils/producto-canal.util';
+import { etiquetaStock } from '../../utils/stock-inventario.util';
 import { Product, Resena } from '../../models/models';
 
 // Pagina de detalle de un producto.
@@ -52,9 +54,9 @@ export class ProductoDetalle implements OnInit {
       return;
     }
 
-    // Pedimos el producto al backend.
-    this.productService.obtener(id).subscribe({
-      next: p => this.producto.set(p),
+    // Pedimos el producto al backend con precio canal ecommerce.
+    this.productService.obtenerPorCanal(id, CANAL_ECOMMERCE).subscribe({
+      next: p => this.producto.set(normalizarPrecioCanal(p)),
       error: () => this.router.navigate(['/']),
     });
 
@@ -67,6 +69,10 @@ export class ProductoDetalle implements OnInit {
   // y tambien despues de crear una resena nueva (para refrescar la lista).
   private cargarResenas(productoId: number): void {
     this.resenaService.listarPorProducto(productoId).subscribe(rs => this.resenas.set(rs));
+  }
+
+  stockInfo(p: Product) {
+    return etiquetaStock(p);
   }
 
   // Promedio simple de estrellas (para mostrar la nota general del producto).

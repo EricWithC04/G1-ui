@@ -4,6 +4,7 @@ import { DecimalPipe } from '@angular/common';
 import { ProductService } from '../../services/product';
 import { CartService } from '../../services/cart.service';
 import { CATEGORIA_LANDINGS, CategoriaLandingConfig } from '../../data/landing-pages';
+import { CANAL_ECOMMERCE, normalizarListaPrecioCanal } from '../../utils/producto-canal.util';
 import { Product } from '../../models/models';
 
 // Pagina dedicada de una categoria (ej: /notebooks, /monitores).
@@ -35,9 +36,9 @@ export class CategoriaLanding implements OnInit {
       return;
     }
     this.config.set(cfg);
-    this.productService.listarConFiltros({ categoriaId: cfg.categoriaId }).subscribe({
+    this.productService.listarConFiltros({ categoriaId: cfg.categoriaId, canal: CANAL_ECOMMERCE }).subscribe({
       next: items => {
-        this.productos.set(items);
+        this.productos.set(normalizarListaPrecioCanal(items));
         this.cargando.set(false);
       },
       error: () => this.cargando.set(false),

@@ -9,6 +9,7 @@ import { AdminPagination } from '../../components/admin-pagination/admin-paginat
 import { coincideBusqueda } from '../../utils/busqueda-admin';
 import { descargarCsv } from '../../utils/export-csv';
 import { paginar, PAGE_SIZE_DEFAULT } from '../../utils/paginar';
+import { DashboardService } from '../../services/dashboard.service';
 import { esStockBajo, stockMinimoEfectivo } from '../../utils/stock-inventario.util';
 import { Product } from '../../models/models';
 
@@ -49,6 +50,9 @@ export class ProductList implements OnInit {
   );
 
   conteoStockBajo = computed(() => this.products().filter(p => esStockBajo(p)).length);
+  /** Mismo contador que el dashboard (API); fallback al conteo local. */
+  conteoStockBajoBanner = signal<number | null>(null);
+  conteoStockBajoVisible = computed(() => this.conteoStockBajoBanner() ?? this.conteoStockBajo());
 
   readonly stockMinimo = stockMinimoEfectivo;
   readonly esStockBajo = esStockBajo;
@@ -56,6 +60,7 @@ export class ProductList implements OnInit {
   constructor(
     private productService: ProductService,
     private ordenService: OrdenCompraService,
+    private dashboardService: DashboardService,
     private router: Router,
     private route: ActivatedRoute,
   ) {}
@@ -66,6 +71,10 @@ export class ProductList implements OnInit {
       if (stock === 'BAJO') this.filtroStock.set('BAJO');
     });
     this.cargar();
+    this.dashboardService.kpis().subscribe({
+      next: k => this.conteoStockBajoBanner.set(k.productosBajoStock),
+      error: () => this.conteoStockBajoBanner.set(null),
+    });
   }
 
   cargar(): void {
