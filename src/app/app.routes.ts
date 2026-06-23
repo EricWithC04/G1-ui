@@ -61,6 +61,7 @@ import { RemitoDetalle } from './pages/remito-detalle/remito-detalle';
 import { PedidoNuevo } from './pages/pedido-nuevo/pedido-nuevo';
 import { PosMostrador } from './pages/pos-mostrador/pos-mostrador';
 import { ListasPrecios } from './pages/listas-precios/listas-precios';
+import { PanelCliente } from './pages/panel-cliente/panel-cliente';
 
 export const routes: Routes = [
 
@@ -78,6 +79,7 @@ export const routes: Routes = [
             // Paginas de promos (banners del home)
             { path: 'hot-sale', component: PromoLanding },
             { path: 'cyber-week', component: PromoLanding },
+            { path: 'panel-cliente', component: PanelCliente },
             // Paginas por categoria (banners del home)
             { path: 'categoria/:slug', component: CategoriaLanding },
             // Alias cortos para las categorias principales
