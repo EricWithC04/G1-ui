@@ -35,6 +35,10 @@ export class Creditos implements OnInit {
         c.monto,
         c.estado,
         c.fechaVencimiento,
+        c.idPlan,
+        c.idPedido,
+        c.clienteNombre,
+        c.clienteEmail,
         c.plan?.idPlan,
         c.plan?.pedido?.idPedido,
         c.plan?.cliente?.usuario?.nombre,
@@ -103,6 +107,6 @@ export class Creditos implements OnInit {
   }
 
   nombreCliente(c: Cuota): string {
-    return c.plan?.cliente?.usuario?.nombre ?? '—';
+    return c.clienteNombre ?? c.plan?.cliente?.usuario?.nombre ?? '—';
   }
 }
