@@ -106,6 +106,11 @@ export class CreateProduct implements OnInit {
     lector.readAsDataURL(archivo);
   }
 
+<<<<<<< HEAD
+=======
+  errorGuardado = signal('');
+
+>>>>>>> origin/development
   bloquearCaracteresInvalidos(event: KeyboardEvent): void {
     if (['e', 'E', '+', '-'].includes(event.key)) {
       event.preventDefault();

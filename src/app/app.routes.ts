@@ -28,6 +28,7 @@ import { CarritoCompra } from './pages/carrito-compra/carrito-compra';
 import { Checkout } from './pages/checkout/checkout';
 import { MisPedidos } from './pages/mis-pedidos/mis-pedidos';
 import { PerfilCliente } from './pages/perfil-cliente/perfil-cliente';
+import { SeguimientoEnvio } from './pages/seguimiento-envio/seguimiento-envio';
 import { CategoriaLanding } from './pages/categoria-landing/categoria-landing';
 import { PromoLanding } from './pages/promo-landing/promo-landing';
 import { CrmClientes } from './pages/crm-clientes/crm-clientes';
@@ -60,6 +61,7 @@ import { RemitoDetalle } from './pages/remito-detalle/remito-detalle';
 import { PedidoNuevo } from './pages/pedido-nuevo/pedido-nuevo';
 import { PosMostrador } from './pages/pos-mostrador/pos-mostrador';
 import { ListasPrecios } from './pages/listas-precios/listas-precios';
+import { PanelCliente } from './pages/panel-cliente/panel-cliente';
 
 export const routes: Routes = [
 
@@ -77,6 +79,7 @@ export const routes: Routes = [
             // Paginas de promos (banners del home)
             { path: 'hot-sale', component: PromoLanding },
             { path: 'cyber-week', component: PromoLanding },
+            { path: 'panel-cliente', component: PanelCliente },
             // Paginas por categoria (banners del home)
             { path: 'categoria/:slug', component: CategoriaLanding },
             // Alias cortos para las categorias principales
@@ -88,6 +91,7 @@ export const routes: Routes = [
             { path: 'audio', redirectTo: 'categoria/audio', pathMatch: 'full' },
             { path: 'sillas-gamer', redirectTo: 'categoria/sillas-gamer', pathMatch: 'full' },
             // Las siguientes necesitan estar logueado (authGuard):
+            { path: 'seguimiento-envio/:id', component: SeguimientoEnvio, canActivate: [authGuard] },
             { path: 'carrito', component: CarritoCompra, canActivate: [authGuard] },
             { path: 'checkout', component: Checkout, canActivate: [authGuard] },
             { path: 'mis-pedidos', component: MisPedidos, canActivate: [authGuard] },
