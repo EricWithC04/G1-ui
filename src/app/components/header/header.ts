@@ -15,8 +15,8 @@ export class Header {
 
   constructor(public auth: AuthService, private router: Router) {}
 
-  cerrarSesion(): void {
-    this.auth.logout();
-    this.router.navigate(['/login']);
+  async cerrarSesion(): Promise<void> {
+    await this.auth.logout();
+    void this.router.navigate(['/login']);
   }
 }
