@@ -57,17 +57,15 @@
       </div>
 
       <!-- Stock -->
+      @let st = stockInfo(p);
       <div class="flex items-center gap-2 text-sm">
-        @if (p.stock && p.stock > 5) {
-          <span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
-          <span class="text-green-400">En stock ({{ p.stock }} disponibles)</span>
-        } @else if (p.stock && p.stock > 0) {
-          <span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span>
-          <span class="text-amber-400">Últimas {{ p.stock }} unidades</span>
-        } @else {
-          <span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span>
-          <span class="text-red-400">Sin stock</span>
-        }
+        <span class="w-2 h-2 rounded-full inline-block"
+          [class.bg-green-500]="st.punto === 'green'"
+          [class.bg-amber-500]="st.punto === 'amber'"
+          [class.bg-red-500]="st.punto === 'red'"></span>
+        <span [class.text-green-400]="st.punto === 'green'"
+          [class.text-amber-400]="st.punto === 'amber'"
+          [class.text-red-400]="st.punto === 'red'">{{ st.texto }}</span>
       </div>
 
       <!-- Selector de cantidad -->

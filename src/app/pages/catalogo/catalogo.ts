@@ -5,6 +5,8 @@ import { DecimalPipe } from '@angular/common';
 import { ProductService } from '../../services/product';
 import { CategoriaService } from '../../services/categoria.service';
 import { CartService } from '../../services/cart.service';
+import { CANAL_ECOMMERCE, normalizarPrecioCanal } from '../../utils/producto-canal.util';
+import { etiquetaStock } from '../../utils/stock-inventario.util';
 import { Product, Categoria } from '../../models/models';
 
 // Pagina principal de la tienda (catalogo).
@@ -69,16 +71,13 @@ export class Catalogo implements OnInit {
         } else if (this.categoriaId) {
             filtros = { categoriaId: this.categoriaId };
         }
-        this.productService.listarConFiltros({ ...filtros, canal: 'WEB' }).subscribe(items =>
-            this.productos.set(items.map(p => this.normalizarPrecioCanal(p))),
+        this.productService.listarConFiltros({ ...filtros, canal: CANAL_ECOMMERCE }).subscribe(items =>
+            this.productos.set(items.map(p => normalizarPrecioCanal(p))),
         );
     }
 
-    private normalizarPrecioCanal(p: Product): Product {
-        if (p.precioCanal != null) {
-            return { ...p, precio: p.precioCanal };
-        }
-        return p;
+    stockInfo(p: Product) {
+        return etiquetaStock(p);
     }
 
     filtrarCategoria(id: number): void {

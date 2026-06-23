@@ -14,10 +14,10 @@
 @if (ok()) { <p class="admin-alert admin-alert-success">{{ ok() }}</p> }
 @if (error()) { <p class="admin-alert admin-alert-error">{{ error() }}</p> }
 
-@if (conteoStockBajo() > 0) {
+@if (conteoStockBajoVisible() > 0) {
   <div class="prod-alert-banner">
     <div>
-      <p class="font-semibold text-amber-200">{{ conteoStockBajo() }} producto(s) con stock bajo</p>
+      <p class="font-semibold text-amber-200">{{ conteoStockBajoVisible() }} producto(s) con stock bajo</p>
       <p class="text-xs text-amber-200/70 mt-0.5">Generá órdenes de compra agrupadas por proveedor en un click.</p>
     </div>
     <button type="button" class="admin-btn admin-btn-success text-sm" [disabled]="procesando()" (click)="generarOcAutomatica()">
