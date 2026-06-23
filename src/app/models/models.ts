@@ -500,6 +500,7 @@ export interface Conversacion {
     etiquetas?: string;
     fechaCreacion?: string;
     ultimaActividad?: string;
+    pedido?: Pedido;
 }
 
 export interface MensajeConversacion {
@@ -508,6 +509,18 @@ export interface MensajeConversacion {
     remitenteNombre?: string;
     cuerpo?: string;
     fecha?: string;
+}
+
+export interface SolicitudDevolucion {
+    idSolicitud?: number;
+    pedido?: Pedido;
+    cliente?: PerfilCliente;
+    motivo?: string;
+    estado?: string;
+    descripcion?: string;
+    lineasJson?: string;
+    fechaCreacion?: string;
+    fechaActualizacion?: string;
 }
 
 export interface IntegracionCanal {

@@ -33,6 +33,9 @@
           @if (s.id === 'pedidos' && pedidosActivos().length > 0) {
             <span class="pc-nav-badge">{{ pedidosActivos().length }}</span>
           }
+          @if (s.id === 'soporte' && ticketsAbiertos() > 0) {
+            <span class="pc-nav-badge">{{ ticketsAbiertos() }}</span>
+          }
         </button>
       }
     </nav>
@@ -140,6 +143,10 @@
                 <p class="pc-info-value">{{ facturas().length }}</p>
                 <p class="pc-info-label">Facturas</p>
               </div>
+              <div class="pc-info-tile">
+                <p class="pc-info-value">{{ ticketsAbiertos() }}</p>
+                <p class="pc-info-label">Tickets abiertos</p>
+              </div>
             </div>
           }
         </div>
@@ -229,6 +236,17 @@
                 }
               </div>
             }
+
+            <div class="pc-order-actions">
+              <button type="button" class="pc-btn pc-btn--ghost pc-btn--sm" (click)="iniciarCrearTicket(p.idPedido ?? null)">
+                Abrir ticket
+              </button>
+              @if (pedidoPuedeDevolverse(p)) {
+                <button type="button" class="pc-btn pc-btn--ghost pc-btn--sm" (click)="iniciarCrearDevolucion(p.idPedido ?? null)">
+                  Solicitar devolución
+                </button>
+              }
+            </div>
           </div>
 
         } @else {
@@ -411,6 +429,230 @@
             </div>
           }
         </div>
+      }
+
+      <!-- SOPORTE / TICKETS -->
+      @if (seccionActiva() === 'soporte') {
+        @if (ticketDetalle(); as t) {
+          <div class="pc-section">
+            <div class="pc-section-header">
+              <button type="button" class="pc-back-btn" (click)="cerrarTicket()">← Volver</button>
+              <span class="pc-badge" [ngClass]="badgeEstadoTicket(t.estado)">{{ estadoTicketLabel(t.estado) }}</span>
+            </div>
+            <h2 class="pc-section-title">{{ t.asunto }}</h2>
+            <p class="pc-text-muted">
+              Ticket #{{ t.idConversacion }}
+              @if (t.pedido?.idPedido) { · Pedido #{{ t.pedido!.idPedido }} }
+              · {{ t.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}
+            </p>
+
+            <div class="pc-thread">
+              @for (m of mensajesTicket(); track m.idMensaje) {
+                <div class="pc-msg" [class.pc-msg--mine]="esMensajeCliente(m)">
+                  <p class="pc-msg-author">{{ esMensajeCliente(m) ? 'Vos' : (m.remitenteNombre ?? 'NovaTech') }}</p>
+                  <p class="pc-msg-body">{{ m.cuerpo }}</p>
+                  <p class="pc-msg-time">{{ m.fecha | date:'dd/MM/yyyy HH:mm' }}</p>
+                </div>
+              }
+            </div>
+
+            @if ((t.estado ?? '').toUpperCase() !== 'RESUELTA') {
+              <div class="pc-reply-box">
+                <textarea
+                  class="pc-input pc-textarea"
+                  rows="3"
+                  placeholder="Escribí tu respuesta…"
+                  [ngModel]="ticketRespuesta()"
+                  (ngModelChange)="ticketRespuesta.set($event)"
+                ></textarea>
+                <button
+                  type="button"
+                  class="pc-btn pc-btn--primary"
+                  [disabled]="guardando() || !ticketRespuesta().trim()"
+                  (click)="enviarMensajeTicket()"
+                >
+                  {{ guardando() ? 'Enviando…' : 'Enviar' }}
+                </button>
+              </div>
+            } @else {
+              <p class="pc-text-muted" style="margin-top:1rem">Este ticket fue marcado como resuelto. Podés abrir uno nuevo si necesitás más ayuda.</p>
+            }
+          </div>
+        } @else {
+          <div class="pc-section">
+            <div class="pc-section-header">
+              <h2 class="pc-section-title">Soporte</h2>
+              @if (!crearTicketVisible()) {
+                <button type="button" class="pc-btn pc-btn--outline" (click)="iniciarCrearTicket()">+ Nuevo ticket</button>
+              }
+            </div>
+
+            @if (crearTicketVisible()) {
+              <div class="pc-form pc-form--card">
+                <p class="pos-section-label">Nuevo ticket</p>
+                <div class="pc-field">
+                  <label class="pos-field-label">Tipo de consulta</label>
+                  <select class="pc-input" [ngModel]="ticketTipo()" (ngModelChange)="ticketTipo.set($event)">
+                    @for (tipo of tiposTicket; track tipo.id) {
+                      <option [value]="tipo.id">{{ tipo.label }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="pc-field">
+                  <label class="pos-field-label">Pedido relacionado (opcional)</label>
+                  <select class="pc-input" [ngModel]="ticketIdPedido()" (ngModelChange)="ticketIdPedido.set($event ? +$event : null)">
+                    <option [ngValue]="null">Sin pedido</option>
+                    @for (p of pedidos(); track p.idPedido) {
+                      <option [ngValue]="p.idPedido">#{{ p.idPedido }} · {{ p.fecha | date:'dd/MM/yyyy' }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="pc-field">
+                  <label class="pos-field-label">Asunto (opcional)</label>
+                  <input type="text" class="pc-input" placeholder="Ej: Problema con mi pedido"
+                    [ngModel]="ticketAsunto()" (ngModelChange)="ticketAsunto.set($event)" />
+                </div>
+                <div class="pc-field">
+                  <label class="pos-field-label">Mensaje</label>
+                  <textarea class="pc-input pc-textarea" rows="4" placeholder="Contanos en qué podemos ayudarte"
+                    [ngModel]="ticketCuerpo()" (ngModelChange)="ticketCuerpo.set($event)"></textarea>
+                </div>
+                <div class="pc-form-actions">
+                  <button type="button" class="pc-btn pc-btn--primary" [disabled]="guardando()" (click)="guardarTicket()">
+                    {{ guardando() ? 'Enviando…' : 'Crear ticket' }}
+                  </button>
+                  <button type="button" class="pc-btn pc-btn--ghost" (click)="cancelarCrearTicket()">Cancelar</button>
+                </div>
+              </div>
+            }
+
+            @if (tickets().length === 0 && !crearTicketVisible()) {
+              <div class="pos-empty">
+                <p class="pos-empty-icon">💬</p>
+                <p class="pos-empty-title">Sin tickets</p>
+                <p class="pos-empty-desc">¿Tenés una consulta? Creá un ticket y te respondemos.</p>
+              </div>
+            } @else if (!crearTicketVisible()) {
+              <div class="pc-orders-list">
+                @for (t of tickets(); track t.idConversacion) {
+                  <button type="button" class="pc-order-card" (click)="verTicket(t)">
+                    <div class="pc-order-card-top">
+                      <span class="pc-order-id">#{{ t.idConversacion }}</span>
+                      <span class="pc-badge" [ngClass]="badgeEstadoTicket(t.estado)">{{ estadoTicketLabel(t.estado) }}</span>
+                    </div>
+                    <p class="pc-order-line-name">{{ t.asunto }}</p>
+                    <p class="pc-text-muted">{{ t.vistaPrevia }}</p>
+                    <p class="pc-text-muted">{{ t.ultimaActividad | date:'dd/MM/yyyy HH:mm' }}</p>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        }
+      }
+
+      <!-- DEVOLUCIONES -->
+      @if (seccionActiva() === 'devoluciones') {
+        @if (devolucionDetalle(); as d) {
+          <div class="pc-section">
+            <div class="pc-section-header">
+              <button type="button" class="pc-back-btn" (click)="cerrarDevolucion()">← Volver</button>
+              <span class="pc-badge" [ngClass]="badgeEstadoDevolucion(d.estado)">{{ estadoDevolucionLabel(d.estado) }}</span>
+            </div>
+            <h2 class="pc-section-title">Devolución #{{ d.idSolicitud }}</h2>
+            <p class="pc-text-muted">Pedido #{{ d.pedido?.idPedido }} · {{ d.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</p>
+            <div class="pc-info-grid" style="margin-top:1rem">
+              <div class="pc-info-tile">
+                <p class="pc-info-label">Motivo</p>
+                <p class="pc-info-value" style="font-size:.95rem">{{ d.motivo }}</p>
+              </div>
+              <div class="pc-info-tile">
+                <p class="pc-info-label">Estado</p>
+                <p class="pc-info-value" style="font-size:.95rem">{{ estadoDevolucionLabel(d.estado) }}</p>
+              </div>
+            </div>
+            @if (d.descripcion) {
+              <div class="pc-form--card" style="margin-top:1rem">
+                <p class="pos-section-label">Descripción</p>
+                <p class="pc-text-muted">{{ d.descripcion }}</p>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="pc-section">
+            <div class="pc-section-header">
+              <h2 class="pc-section-title">Devoluciones</h2>
+              @if (!crearDevolucionVisible() && pedidosElegiblesDevolucion().length > 0) {
+                <button type="button" class="pc-btn pc-btn--outline" (click)="iniciarCrearDevolucion()">+ Nueva solicitud</button>
+              }
+            </div>
+
+            @if (crearDevolucionVisible()) {
+              <div class="pc-form pc-form--card">
+                <p class="pos-section-label">Solicitar devolución</p>
+                <div class="pc-field">
+                  <label class="pos-field-label">Pedido</label>
+                  <select class="pc-input" [ngModel]="devolucionIdPedido()" (ngModelChange)="devolucionIdPedido.set(+$event)">
+                    @for (p of pedidosElegiblesDevolucion(); track p.idPedido) {
+                      <option [ngValue]="p.idPedido">#{{ p.idPedido }} · $ {{ p.total | number:'1.2-2' }} · {{ p.fecha | date:'dd/MM/yyyy' }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="pc-field">
+                  <label class="pos-field-label">Motivo</label>
+                  <select class="pc-input" [ngModel]="devolucionMotivo()" (ngModelChange)="devolucionMotivo.set($event)">
+                    @for (m of motivosDevolucion; track m.id) {
+                      <option [value]="m.id">{{ m.label }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="pc-field">
+                  <label class="pos-field-label">Descripción</label>
+                  <textarea class="pc-input pc-textarea" rows="4" placeholder="Contanos qué pasó con el producto"
+                    [ngModel]="devolucionDescripcion()" (ngModelChange)="devolucionDescripcion.set($event)"></textarea>
+                </div>
+                <div class="pc-form-actions">
+                  <button type="button" class="pc-btn pc-btn--primary" [disabled]="guardando()" (click)="guardarDevolucion()">
+                    {{ guardando() ? 'Enviando…' : 'Enviar solicitud' }}
+                  </button>
+                  <button type="button" class="pc-btn pc-btn--ghost" (click)="cancelarCrearDevolucion()">Cancelar</button>
+                </div>
+              </div>
+            }
+
+            @if (devoluciones().length === 0 && !crearDevolucionVisible()) {
+              <div class="pos-empty">
+                <p class="pos-empty-icon">↩️</p>
+                <p class="pos-empty-title">Sin devoluciones</p>
+                <p class="pos-empty-desc">
+                  @if (pedidosElegiblesDevolucion().length > 0) {
+                    Podés solicitar la devolución de un pedido entregado o enviado.
+                  } @else {
+                    Cuando tengas un pedido elegible, podrás solicitar devolución acá.
+                  }
+                </p>
+                @if (pedidosElegiblesDevolucion().length > 0) {
+                  <button type="button" class="pos-chip pos-chip--active" style="margin-top:1rem" (click)="iniciarCrearDevolucion()">
+                    Nueva solicitud
+                  </button>
+                }
+              </div>
+            } @else if (!crearDevolucionVisible()) {
+              <div class="pc-orders-list">
+                @for (d of devoluciones(); track d.idSolicitud) {
+                  <button type="button" class="pc-order-card" (click)="verDevolucion(d)">
+                    <div class="pc-order-card-top">
+                      <span class="pc-order-id">#{{ d.idSolicitud }}</span>
+                      <span class="pc-badge" [ngClass]="badgeEstadoDevolucion(d.estado)">{{ estadoDevolucionLabel(d.estado) }}</span>
+                    </div>
+                    <p class="pc-text-muted">Pedido #{{ d.pedido?.idPedido }} · {{ d.motivo }}</p>
+                    <p class="pc-text-muted">{{ d.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</p>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        }
       }
 
       <!-- SEGURIDAD -->
