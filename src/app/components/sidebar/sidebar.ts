@@ -37,7 +37,7 @@ export class Sidebar {
       links: [
         { path: 'admin/crm', label: 'CRM' },
         { path: 'admin/pedidos', label: 'Pedidos' },
-        { path: 'admin/pos', label: 'POS mostrador' },
+        { path: 'admin/pos', label: 'Punto de venta' },
         { path: 'admin/pagos', label: 'Pagos' },
         { path: 'admin/envios', label: 'Envíos' },
       ],
