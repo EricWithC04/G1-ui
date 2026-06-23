@@ -6,10 +6,6 @@ import { CategoriaService } from '../../services/categoria.service';
 import { Product, Categoria } from '../../models/models';
 import { aEntero, esEnteroNoNegativo, mensajeEntero } from '../../utils/validadores-admin';
 
-// Pagina con el formulario de producto.
-// Sirve para DOS cosas segun la URL:
-//   /productos/nuevo         -> crear un producto
-//   /productos/5/editar      -> editar el producto con id 5
 @Component({
   selector: 'app-create-product',
   imports: [RouterLink, FormsModule],
@@ -17,29 +13,13 @@ import { aEntero, esEnteroNoNegativo, mensajeEntero } from '../../utils/validado
 })
 export class CreateProduct implements OnInit {
 
-  // Objeto que se va completando con el formulario.
-  // Tiene la misma forma que espera el backend (incluida la categoria por id).
-  product: Product = {
-    nombre: '',
-    descripcion: '',
-    precio: 0,
-    precioLista: 0,
-    stock: 0,
-    stockMinimo: 5,
-    proveedor: '',
-    categoria: { idCategoria: 1 },
-  };
-
-  // Lista de categorias para el desplegable (la traemos del backend).
+  product: Product = this.productoVacio();
   categorias = signal<Categoria[]>([]);
-
-  // Si estamos editando, guardamos el id del producto. Si es null, estamos creando.
   editandoId: number | null = null;
-
-  // Mensaje de error para la foto (por ejemplo si pesa demasiado).
+  cargandoProducto = signal(false);
   errorImagen = signal<string>('');
+  errorGuardado = signal('');
 
-  // Tamano maximo permitido para la foto (en bytes). 2 MB.
   private readonly MAX_IMAGEN_BYTES = 2 * 1024 * 1024;
 
   constructor(
@@ -50,61 +30,81 @@ export class CreateProduct implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Cargamos las categorias para el desplegable.
     this.categoriaService.listar().subscribe(cats => this.categorias.set(cats));
 
-    // Miramos si la URL trae un id (modo edicion).
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.editandoId = Number(id);
-      // Traemos el producto del backend y llenamos el formulario con sus datos.
-      this.productService.obtener(this.editandoId).subscribe(p => {
-        this.product = p;
-      });
-    }
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.editandoId = Number(id);
+        this.cargarProducto(this.editandoId);
+      } else {
+        this.editandoId = null;
+        this.product = this.productoVacio();
+      }
+    });
   }
 
-  // true si estamos editando (sirve para cambiar textos en la pantalla).
+  private productoVacio(): Product {
+    return {
+      nombre: '',
+      descripcion: '',
+      precio: 0,
+      precioLista: 0,
+      stock: 0,
+      stockMinimo: 5,
+      proveedor: '',
+      categoria: { idCategoria: 1 },
+    };
+  }
+
+  private cargarProducto(id: number): void {
+    this.cargandoProducto.set(true);
+    this.errorGuardado.set('');
+    this.productService.obtener(id).subscribe({
+      next: p => {
+        const idCat = p.categoria?.idCategoria ?? this.categorias()[0]?.idCategoria ?? 1;
+        this.product = {
+          ...p,
+          categoria: { idCategoria: idCat },
+        };
+        this.cargandoProducto.set(false);
+      },
+      error: () => {
+        this.cargandoProducto.set(false);
+        this.errorGuardado.set('No se pudo cargar el producto.');
+        this.router.navigate(['/admin/productos']);
+      },
+    });
+  }
+
   get esEdicion(): boolean {
     return this.editandoId !== null;
   }
 
-  // Se llama cuando el usuario elige un archivo de imagen.
-  // Lee la foto y la guarda como texto base64 dentro de product.imagen.
   onImagenSeleccionada(evento: Event): void {
     this.errorImagen.set('');
-
-    // El input nos da una lista de archivos; tomamos el primero.
     const input = evento.target as HTMLInputElement;
     const archivo = input.files?.[0];
-    if (!archivo) {
-      return;
-    }
+    if (!archivo) return;
 
-    // Validamos que sea una imagen.
     if (!archivo.type.startsWith('image/')) {
       this.errorImagen.set('El archivo tiene que ser una imagen (jpg, png, etc.).');
       input.value = '';
       return;
     }
 
-    // Validamos que no pese demasiado.
     if (archivo.size > this.MAX_IMAGEN_BYTES) {
       this.errorImagen.set('La imagen es muy pesada. Maximo 2 MB.');
       input.value = '';
       return;
     }
 
-    // FileReader convierte el archivo a un "data URL" en base64.
-    // Cuando termina de leer, guardamos ese texto en el producto.
     const lector = new FileReader();
     lector.onload = () => {
       this.product.imagen = lector.result as string;
     };
     lector.readAsDataURL(archivo);
   }
-
-  errorGuardado = signal('');
 
   bloquearCaracteresInvalidos(event: KeyboardEvent): void {
     if (['e', 'E', '+', '-'].includes(event.key)) {
