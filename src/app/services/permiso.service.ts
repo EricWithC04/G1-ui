@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { AuthService } from './auth.service';
 import { ConfigModuloService, RbacMatriz } from './config-modulo.service';
 import { esRolConAccesoTotal, tienePermiso } from '../config/config-rbac';
@@ -6,13 +6,8 @@ import { esRolConAccesoTotal, tienePermiso } from '../config/config-rbac';
 @Injectable({ providedIn: 'root' })
 export class PermisoService {
   private matriz = signal<RbacMatriz | null>(null);
-
-  constructor(
-    private auth: AuthService,
-    private configModulo: ConfigModuloService,
-  ) {
-    this.recargarMatriz();
-  }
+  private auth = inject(AuthService);
+  private configModulo = inject(ConfigModuloService);
 
   recargarMatriz(): void {
     this.configModulo.matrizRbac().subscribe({
