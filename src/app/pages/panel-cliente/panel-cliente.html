@@ -155,7 +155,7 @@
             <div class="pc-quick-links">
               <button type="button" class="pos-chip" (click)="irA('pedidos')">Ver pedidos</button>
               <button type="button" class="pos-chip" (click)="irA('soporte')">Crear ticket</button>
-              <button type="button" class="pos-chip" (click)="irA('cuotas')">Mis cuotas</button>
+              <button type="button" class="pos-chip" (click)="irA('cuotas')">Mis préstamos</button>
               <button type="button" class="pos-chip" (click)="irA('ayuda')">Centro de ayuda</button>
             </div>
           }
@@ -676,36 +676,97 @@
         }
       }
 
-      <!-- CUOTAS -->
+      <!-- CUOTAS / PRÉSTAMOS -->
       @if (seccionActiva() === 'cuotas') {
         <div class="pc-section">
           <div class="pc-section-header">
-            <h2 class="pc-section-title">Mis cuotas</h2>
+            <h2 class="pc-section-title">Mis préstamos</h2>
           </div>
 
-          @if (cuotas().length === 0) {
+          @if (prestamos().length === 0) {
             <div class="pos-empty">
               <p class="pos-empty-icon">💳</p>
-              <p class="pos-empty-title">Sin cuotas activas</p>
-              <p class="pos-empty-desc">Si financiás una compra, las cuotas aparecerán acá con sus vencimientos.</p>
+              <p class="pos-empty-title">Sin financiación activa</p>
+              <p class="pos-empty-desc">Si comprás en cuotas, acá verás en qué cuota vas y el cronograma completo.</p>
             </div>
           } @else {
-            <p class="pos-section-label">Próximos vencimientos</p>
-            <div class="pc-invoice-list">
-              @for (c of cuotas(); track c.idCuota) {
-                <div class="pc-invoice-row">
-                  <div class="pc-invoice-icon">💳</div>
-                  <div class="pc-invoice-info">
-                    <p class="pc-invoice-num">Cuota {{ c.numeroCuota }} · Pedido #{{ c.idPedido ?? '—' }}</p>
-                    <p class="pc-text-muted">Vence {{ c.fechaVencimiento | date:'dd/MM/yyyy' }}</p>
+            @for (p of prestamos(); track p.idPlan) {
+              <div class="pc-loan-card">
+                <div class="pc-loan-header">
+                  <div>
+                    <h3 class="pc-loan-title">Préstamo personal · Pedido #{{ p.idPedido ?? '—' }}</h3>
+                    <p class="pc-text-muted">{{ textoCuotaActual(p) }}</p>
                   </div>
-                  <span class="pc-badge" [ngClass]="badgeEstadoCuota(c.estado)">{{ estadoCuotaLabel(c.estado) }}</span>
-                  <span class="pc-invoice-amount">$ {{ c.monto | number:'1.2-2' }}</span>
+                  <span class="pc-badge" [class.pc-badge--delivered]="p.estadoPlan === 'FINALIZADO'" [class.pc-badge--confirmed]="p.estadoPlan === 'ACTIVO'">
+                    {{ p.estadoPlan ?? 'ACTIVO' }}
+                  </span>
                 </div>
-              }
-            </div>
+
+                <div class="pc-loan-progress">
+                  <div class="pc-loan-progress-bar">
+                    <div class="pc-loan-progress-fill" [style.width.%]="progresoPrestamo(p)"></div>
+                  </div>
+                  <p class="pc-text-muted">{{ p.cuotasPagadas ?? 0 }} de {{ p.cantidadCuotas ?? 0 }} cuotas pagadas · {{ progresoPrestamo(p) }}%</p>
+                </div>
+
+                <div class="pc-loan-summary">
+                  <div class="pc-info-tile">
+                    <p class="pc-info-label">Total financiado</p>
+                    <p class="pc-info-value" style="font-size:1rem">$ {{ p.totalFinanciado | number:'1.2-2' }}</p>
+                  </div>
+                  <div class="pc-info-tile">
+                    <p class="pc-info-label">Saldo pendiente</p>
+                    <p class="pc-info-value" style="font-size:1rem">$ {{ p.saldoPendiente | number:'1.2-2' }}</p>
+                  </div>
+                  @if (p.cuotaActual != null) {
+                    <div class="pc-info-tile pc-info-tile--highlight">
+                      <p class="pc-info-label">Próximo pago · Cuota {{ p.cuotaActual }}</p>
+                      <p class="pc-info-value" style="font-size:1rem">$ {{ p.montoProximaCuota | number:'1.2-2' }}</p>
+                      <p class="pc-text-muted">Vence {{ p.vencimientoProximaCuota | date:'dd/MM/yyyy' }}</p>
+                    </div>
+                  }
+                </div>
+
+                <p class="pos-section-label">Cronograma</p>
+                <div class="pc-schedule">
+                  @for (c of p.cuotas ?? []; track c.idCuota) {
+                    <div
+                      class="pc-schedule-row"
+                      [class.pc-schedule-row--current]="esCuotaActual(p, c)"
+                      [class.pc-schedule-row--paid]="esCuotaPagada(c)"
+                    >
+                      <div class="pc-schedule-num">
+                        @if (esCuotaPagada(c)) { ✓ } @else { {{ c.numeroCuota }} }
+                      </div>
+                      <div class="pc-schedule-body">
+                        <p class="pc-schedule-title">
+                          Cuota {{ c.numeroCuota }} de {{ p.cantidadCuotas }}
+                          @if (esCuotaActual(p, c)) {
+                            <span class="pc-badge pc-badge--confirmed" style="margin-left:.35rem">Actual</span>
+                          }
+                        </p>
+                        <p class="pc-text-muted">
+                          Vence {{ c.fechaVencimiento | date:'dd/MM/yyyy' }}
+                          @if (c.fechaPago) { · Pagada {{ c.fechaPago | date:'dd/MM/yyyy' }} }
+                        </p>
+                      </div>
+                      <span class="pc-badge" [ngClass]="badgeEstadoCuota(c.estado)">{{ estadoCuotaLabel(c.estado) }}</span>
+                      <span class="pc-schedule-amount">$ {{ c.monto | number:'1.2-2' }}</span>
+                    </div>
+                  }
+                </div>
+
+                @if (p.cuotaActual != null) {
+                  <div class="pc-form-actions" style="margin-top:1rem">
+                    <button type="button" class="pc-btn pc-btn--primary pc-btn--sm" (click)="iniciarCrearTicket(p.idPedido)">
+                      Consultar cuota {{ p.cuotaActual }}
+                    </button>
+                  </div>
+                }
+              </div>
+            }
             <p class="pc-text-muted" style="margin-top:1rem;font-size:.8rem">
-              Para abonar una cuota contactá a soporte o usá los medios indicados en tu factura.
+              Para registrar el pago de una cuota contactá a soporte o usá los medios indicados en tu factura.
             </p>
           }
         </div>

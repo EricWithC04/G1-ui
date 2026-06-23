@@ -831,3 +831,131 @@
   color: var(--pc-text-muted);
   line-height: 1.5;
 }
+
+.pc-loan-card {
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface-deep);
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.pc-loan-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.pc-loan-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--pc-text);
+  margin: 0;
+}
+
+.pc-loan-progress {
+  margin-bottom: 1rem;
+}
+
+.pc-loan-progress-bar {
+  height: 8px;
+  background: rgba(255,255,255,.08);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: .35rem;
+}
+
+.pc-loan-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--pc-blue), var(--pc-emerald));
+  border-radius: 999px;
+  transition: width .3s;
+}
+
+.pc-loan-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: .75rem;
+  margin-bottom: 1rem;
+}
+
+.pc-info-tile--highlight {
+  border-color: rgba(59,130,246,.35);
+  background: var(--pc-blue-dim);
+}
+
+.pc-schedule {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.pc-schedule-row {
+  display: grid;
+  grid-template-columns: 2rem 1fr auto auto;
+  gap: .75rem;
+  align-items: center;
+  padding: .65rem .75rem;
+  border-radius: .65rem;
+  border: 1px solid transparent;
+  background: rgba(0,0,0,.15);
+}
+
+.pc-schedule-row--current {
+  border-color: rgba(59,130,246,.4);
+  background: var(--pc-blue-dim);
+}
+
+.pc-schedule-row--paid {
+  opacity: .75;
+}
+
+.pc-schedule-num {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .75rem;
+  font-weight: 700;
+  background: rgba(255,255,255,.08);
+  color: var(--pc-text-soft);
+}
+
+.pc-schedule-row--paid .pc-schedule-num {
+  background: var(--pc-emerald-dim);
+  color: var(--pc-emerald);
+}
+
+.pc-schedule-row--current .pc-schedule-num {
+  background: var(--pc-blue-dim);
+  color: #93c5fd;
+}
+
+.pc-schedule-title {
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--pc-text);
+  margin: 0;
+}
+
+.pc-schedule-amount {
+  font-weight: 600;
+  color: var(--pc-emerald);
+  font-size: .85rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .pc-schedule-row {
+    grid-template-columns: 2rem 1fr;
+    grid-template-rows: auto auto;
+  }
+  .pc-schedule-row .pc-badge,
+  .pc-schedule-row .pc-schedule-amount {
+    grid-column: 2;
+  }
+}
