@@ -9,8 +9,11 @@
     {{ esEdicion ? 'Editar producto' : 'Crear producto' }}
   </h1>
 
-  <!-- (ngSubmit) -> al apretar "Guardar" se ejecuta guardarProducto(). -->
-  <form #f="ngForm" class="flex flex-col gap-4 bg-gray-800 border border-white/10 p-6 rounded-xl" (ngSubmit)="guardarProducto(f)">
+  @if (cargandoProducto()) {
+    <p class="text-sm text-slate-400 animate-pulse mb-4">Cargando producto…</p>
+  }
+
+  <form #f="ngForm" class="flex flex-col gap-4 bg-gray-800 border border-white/10 p-6 rounded-xl" (ngSubmit)="guardarProducto(f)" [class.opacity-60]="cargandoProducto()" [class.pointer-events-none]="cargandoProducto()">
 
     <!-- Aclaracion general: el ID del producto lo genera solo el sistema, no se carga. -->
     <p class="text-xs text-neutral-400">
