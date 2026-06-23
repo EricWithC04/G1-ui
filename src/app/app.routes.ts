@@ -79,7 +79,7 @@ export const routes: Routes = [
             // Paginas de promos (banners del home)
             { path: 'hot-sale', component: PromoLanding },
             { path: 'cyber-week', component: PromoLanding },
-            { path: 'panel-cliente', component: PanelCliente },
+            { path: 'panel-cliente', component: PanelCliente, canActivate: [authGuard] },
             // Paginas por categoria (banners del home)
             { path: 'categoria/:slug', component: CategoriaLanding },
             // Alias cortos para las categorias principales
