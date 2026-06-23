@@ -6,6 +6,7 @@ import { AdminLayout } from './layouts/admin-layout/admin-layout';
 
 // Guards (porteros) que controlan quien puede entrar a cada ruta.
 import { authGuard } from './guards/auth.guard';
+import { clienteGuard } from './guards/cliente.guard';
 import { adminGuard } from './guards/admin.guard';
 import { guestGuard } from './guards/guest.guard';
 
@@ -77,7 +78,7 @@ export const routes: Routes = [
             // Paginas de promos (banners del home)
             { path: 'hot-sale', component: PromoLanding },
             { path: 'cyber-week', component: PromoLanding },
-            { path: 'panel-cliente', component: PanelCliente, canActivate: [authGuard] },
+            { path: 'panel-cliente', component: PanelCliente, canActivate: [clienteGuard] },
             // Paginas por categoria (banners del home)
             { path: 'categoria/:slug', component: CategoriaLanding },
             // Alias cortos para las categorias principales
@@ -89,11 +90,11 @@ export const routes: Routes = [
             { path: 'audio', redirectTo: 'categoria/audio', pathMatch: 'full' },
             { path: 'sillas-gamer', redirectTo: 'categoria/sillas-gamer', pathMatch: 'full' },
             // Las siguientes necesitan estar logueado (authGuard):
-            { path: 'seguimiento-envio/:id', component: SeguimientoEnvio, canActivate: [authGuard] },
+            { path: 'seguimiento-envio/:id', component: SeguimientoEnvio, canActivate: [clienteGuard] },
             { path: 'carrito', component: CarritoCompra, canActivate: [authGuard] },
             { path: 'checkout', component: Checkout, canActivate: [authGuard] },
-            { path: 'mis-pedidos', component: PanelCliente, canActivate: [authGuard], data: { seccion: 'pedidos' } },
-            { path: 'perfil', component: PanelCliente, canActivate: [authGuard], data: { seccion: 'perfil' } },
+            { path: 'mis-pedidos', component: PanelCliente, canActivate: [clienteGuard], data: { seccion: 'pedidos' } },
+            { path: 'perfil', component: PanelCliente, canActivate: [clienteGuard], data: { seccion: 'perfil' } },
         ],
     },
     

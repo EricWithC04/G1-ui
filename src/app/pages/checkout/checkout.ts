@@ -78,7 +78,7 @@ export class Checkout {
 
   constructor(
     public cart: CartService,
-    private auth: AuthService,
+    public auth: AuthService,
     private ordenVentaService: OrdenVentaService,
     private sanitizer: DomSanitizer,
     private router: Router,
