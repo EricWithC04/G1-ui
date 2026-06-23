@@ -1,102 +1,100 @@
-# AGENTS.md — NovaTech Store (Frontend)
+# AGENTS.md — NovaTech ERP (Frontend / G1-ui)
 
-Guía para **agentes de IA y desarrolladores** que trabajan en este repositorio.
-Todo el trabajo de frontend se documenta y commitea **en español** (mensajes, ramas descriptivas, PRs).
+Guía para **agentes de IA y desarrolladores** en el repo **EricWithC04/G1-ui**.
 
----
+## Antes de cualquier cambio
+
+Leer **[docs/GUARDRAILS.md](./docs/GUARDRAILS.md)** — reglas anti-regresión obligatorias.
 
 ## Repositorios
 
-| Componente | GitHub | Rama de referencia | Descripción |
-|------------|--------|--------------------|-------------|
-| **Frontend** | [EricWithC04/G1-ui](https://github.com/EricWithC04/G1-ui) | `banners` | Angular 22 — tienda + panel admin |
-| **Backend** | [LeanMongelos/G1-ms](https://github.com/LeanMongelos/G1-ms) | `main` | Spring Boot — API REST + MySQL |
+| Componente | GitHub | Rama | Puerto |
+|------------|--------|------|--------|
+| **Frontend (este repo)** | EricWithC04/G1-ui | `main` | 4200 |
+| **Backend** | LeanMongelos/G1-ms | `main` | 8080 |
 
-- URL exacta del backend: **https://github.com/LeanMongelos/G1-ms**
-- URL exacta del frontend: **https://github.com/EricWithC04/G1-ui**
+- Trabajo local git: `D:\notech\_g1-ui-clone` → sincronizar a `D:\notech\frontend`
+- **No** mezclar código Java en este repo
 
-No mezclar código de backend en este repo. La integración es solo vía HTTP (rutas relativas + proxy en desarrollo).
+## Arranque local
 
----
+```powershell
+# Terminal 1 — Backend (repo G1-ms)
+$env:DB_PASSWORD="tu_clave_mysql"
+$env:JWT_SECRET="dev-only-cambiar-en-produccion-novatech-2026-secreto-largo"
+cd D:\notech\backend
+.\mvnw.cmd spring-boot:run -DskipTests
 
-## Cómo levantar el entorno
+# Terminal 2 — Frontend
+cd D:\notech\frontend
+npm install
+npm start
+```
 
-1. **Backend** (repo `LeanMongelos/G1-ms`): Java + MySQL, puerto **8080**.
-2. **Frontend** (este repo):
-   ```bash
-   npm install
-   npm start   # ng serve con proxy.conf.json → localhost:8080
-   ```
-3. App en **http://localhost:4200**.
+- Tienda: http://localhost:4200
+- Admin: http://localhost:4200/admin
+- **Siempre** `npm start` (incluye `proxy.conf.json`)
 
-Credenciales demo (datos del backend): `admin@novatech.com` / `admin123`, `cliente@novatech.com` / `cliente123`.
+## Credenciales demo
 
----
+| Email | Rol | Password |
+|-------|-----|----------|
+| superadmin@novatech.com | SUPERADMIN | admin123 |
+| cliente@novatech.com | CLIENTE | cliente123 |
 
-## Arquitectura rápida
+## Arquitectura
 
-- **Angular standalone** (sin NgModules), **signals** para estado reactivo.
-- **Storefront:** layouts en `src/app/layouts/storefront-layout/`, páginas en `src/app/pages/`.
-- **Admin:** `src/app/layouts/admin-layout/`, rutas bajo `/admin`.
-- **API:** `src/app/services/` — `apiUrl` vacío en `environment.ts`; el proxy reenvía al backend.
-- **Modelos:** `src/app/models/`.
-- **Guards:** `auth.guard.ts`, `admin.guard.ts`.
+- Angular 22 **standalone**, **signals**
+- Storefront: `layouts/storefront-layout/`, rutas `/`
+- Admin: `layouts/admin-layout/`, rutas `/admin/**`
+- API: `services/` + `apiUrl: ''` en `environment.ts`
+- Guards: `authGuard`, `adminGuard`, `clienteGuard`, `permisoGuard`
+- Interceptors: `credentials.interceptor`, `httpErrorInterceptor`
 
-Documentación detallada del frontend: [`README.md`](./README.md).
+Documentación monorepo: `D:\notech\docs\` (ARCHITECTURE, ADMIN-ERP, RBAC, …)
 
----
+## Reglas que NO romper
 
-## Rama `banners` — qué incluye
+### Proxy
 
-Funcionalidad principal de esta rama:
+Nueva ruta backend → clave en `proxy.conf.json`. Sin proxy = HTML en lugar de JSON.
 
-### Landings y banners
-- Config central: `src/app/data/landing-pages.ts`.
-- Páginas:
-  - `src/app/pages/categoria-landing/` — rutas `/categoria/:slug` y aliases (`/notebooks`, `/monitores`, etc.).
-  - `src/app/pages/promo-landing/` — `/hot-sale`, `/cyber-week`.
-- En el catálogo (`catalogo.html`), los banners usan `routerLink` hacia esas rutas (ya no solo anclas al listado).
+### DI circular
 
-### UI / tienda
-- Separación body/footer: clases `.store-body-footer-divider`, `.store-footer` en `styles.css`.
-- Logo agrandado: `public/logo.png` (backup en `public/logo-original.png`), estilos `.store-logo-link`.
+`AuthService` no debe `inject(PermisoService)` en campo. Usar `Injector` lazy (ver `auth.service.ts`).
 
-### Admin — validación de categorías
-- Utilidad: `src/app/utils/categoria-nombre.ts`.
-- Reglas: nombre empieza con letra, sin `.`, sin `--`, mínimo 2 letras, no más dígitos que letras.
-- Usado en `src/app/pages/categorias/`.
+### Auth
 
-### Proxy de desarrollo
-- `proxy.conf.json` + `"proxyConfig"` en `angular.json` — obligatorio usar `npm start`.
+- Sesión: signal + cookie HttpOnly
+- App init: `restaurarSesion()` awaited
+- Logout: await + navigate + limpiar matriz permisos
 
----
+### Panel cliente
 
-## Convenciones para commits y ramas
+Resiliente con `catchError`; rutas `/cliente/*` vía proxy.
 
-- **Ramas:** nombres cortos en minúsculas, en español o inglés técnico (`banners`, `fix-checkout`, `validacion-categorias`).
-- **Commits:** mensajes en **español**, imperativo, una idea por commit.
-  - Ejemplo: `Agrega landings de categoría y promos con banners en catálogo`
-- **No commitear:** `node_modules/`, `dist/`, `.env`, credenciales, archivos `*.zip`.
-- **No pushear** al backend salvo que el usuario lo pida explícitamente.
+### RBAC UI
 
----
+`PermisoService.puede()`; superadmin acceso total vía `config-rbac.ts`.
 
-## Checklist antes de push
+## Checklist antes de PR
 
-- [ ] Backend local responde en `:8080` y el flujo probado con `npm start`.
-- [ ] Sin secretos en el diff.
-- [ ] `npm run build` sin errores (si hubo cambios grandes).
-- [ ] README/AGENTS actualizados si cambian repos, rutas o convenciones.
+- [ ] Backend smoke verde: `.\mvnw.cmd test -Dtest="com.novatech.store.smoke.*"` (repo G1-ms)
+- [ ] Catálogo y login probados con `npm start`
+- [ ] Smoke manual: presupuestos, remitos, facturación, envíos, contabilidad, panel-cliente
+- [ ] Sin secretos en diff
+- [ ] Actualizar GUARDRAILS si descubrís un footgun nuevo
 
----
+## Commits
 
-## Orden de subida incremental
+- Español, imperativo, una idea por commit
+- No: `node_modules/`, `dist/`, `.env`
 
-En el monorepo local (`notech/`) existe `orden-subida-frontend.md` con el checklist por etapas (scaffold → modelos → servicios → páginas). Útil para PRs pequeños; la rama `banners` puede agrupar varias etapas ya integradas.
+## Documentación
 
----
-
-## Contacto / ownership
-
-- Frontend: repo **EricWithC04/G1-ui** (colaboradores del equipo UI).
-- Backend: repo **LeanMongelos/G1-ms** (API compartida del grupo).
+| Doc | Contenido |
+|-----|-----------|
+| [docs/GUARDRAILS.md](./docs/GUARDRAILS.md) | Anti-regresiones |
+| [README.md](./README.md) | Setup frontend |
+| [../backend/SMOKE.md](../backend/SMOKE.md) | Tests API (repo backend) |
+| `notech/docs/GUARDRAILS.md` | Copia canónica monorepo |
