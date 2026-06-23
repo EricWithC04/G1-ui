@@ -37,15 +37,19 @@
       <h1 class="text-2xl sm:text-3xl font-bold text-white leading-tight">{{ p.nombre }}</h1>
 
       <!-- Rating -->
-      <div class="flex items-center gap-2">
-        <div class="flex text-amber-400">
-          @for (s of [1,2,3,4,5]; track s) {
-            <span [class]="s <= promedio ? 'text-amber-400' : 'text-neutral-600'">★</span>
-          }
+      @if (resenas().length > 0) {
+        <div class="flex items-center gap-2">
+          <div class="flex text-amber-400">
+            @for (s of [1,2,3,4,5]; track s) {
+              <span [class]="s <= promedio ? 'text-amber-400' : 'text-neutral-600'">★</span>
+            }
+          </div>
+          <span class="text-sm text-neutral-400">{{ promedio | number:'1.1-1' }} / 5</span>
+          <span class="text-xs text-neutral-600">({{ resenas().length }} reseñas)</span>
         </div>
-        <span class="text-sm text-neutral-400">{{ promedio | number:'1.1-1' }} / 5</span>
-        <span class="text-xs text-neutral-600">({{ resenas().length }} reseñas)</span>
-      </div>
+      } @else {
+        <p class="text-sm text-neutral-500">Sin reseñas todavía</p>
+      }
 
       <!-- Descripción -->
       <p class="text-neutral-300 leading-relaxed text-sm">{{ p.descripcion }}</p>
@@ -128,7 +132,11 @@
       @if (resenas().length > 0) {
         <div class="flex items-center gap-2">
           <span class="text-amber-400 text-lg font-bold">{{ promedio | number:'1.1-1' }}</span>
-          <div class="flex text-amber-400 text-sm">★★★★☆</div>
+          <div class="flex text-amber-400 text-sm">
+            @for (s of [1,2,3,4,5]; track s) {
+              <span [class]="s <= promedio ? 'text-amber-400' : 'text-neutral-600'">★</span>
+            }
+          </div>
           <span class="text-xs text-neutral-500">{{ resenas().length }} opiniones</span>
         </div>
       }

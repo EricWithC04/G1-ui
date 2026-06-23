@@ -60,7 +60,7 @@
       <label class="text-sm text-neutral-300">
         Precio de venta <span class="text-red-400">*</span>
         <input class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white" type="number"
-          [(ngModel)]="product.precio" #precioCtrl="ngModel" name="precio" required step="0.01" placeholder="Ej: 45000.00"
+          [(ngModel)]="product.precio" #precioCtrl="ngModel" name="precio" required min="0.01" step="0.01" placeholder="Ej: 45000.00"
           (keydown)="bloquearCaracteresInvalidos($event)"
         >
         <span class="block text-xs text-neutral-400 mt-1">Precio final en la tienda.</span>
@@ -97,7 +97,12 @@
     @if (precioCtrl.invalid && precioCtrl.touched) {
       <p class="text-xs text-red-400 mt-1">
         @if (precioCtrl.hasError('required')) { El campo es obligatorio. }
+        @if (precioCtrl.hasError('min')) { El precio debe ser mayor a cero. }
       </p>
+    }
+
+    @if (categoriaCtrl.invalid && categoriaCtrl.touched) {
+      <p class="text-xs text-red-400 mt-1">Seleccioná una categoría.</p>
     }
 
     @if (stockCtrl.invalid && stockCtrl.touched) {
@@ -114,7 +119,7 @@
     <label class="text-sm text-neutral-300">
       Categoria <span class="text-red-400">*</span>
       <select class="mt-1 w-full bg-gray-900 border border-white/10 p-2 rounded text-white"
-        [(ngModel)]="product.categoria.idCategoria" name="categoria">
+        [(ngModel)]="product.categoria.idCategoria" name="categoria" #categoriaCtrl="ngModel" required>
         @for (cat of categorias(); track cat.idCategoria) {
           <option [ngValue]="cat.idCategoria">{{ cat.nombre }}</option>
         }

@@ -8,6 +8,15 @@ import { AuthService } from '../../services/auth.service';
 import { OrdenVentaService } from '../../services/orden-venta.service';
 import { ConfirmarOrdenRequest } from '../../models/models';
 import { generarQrSvg } from '../../utils/qrcode';
+import {
+  esTarjetaNumero,
+  esTextoRequerido,
+  esVencimientoTarjeta,
+  mensajeTarjetaNumero,
+  mensajeTextoRequerido,
+  mensajeVencimientoTarjeta,
+  primerErrorCampos,
+} from '../../utils/validadores-form';
 
 interface PlanFinanciacion {
   cuotas: number;
@@ -76,6 +85,8 @@ export class Checkout {
   error = signal<string | null>(null);
   numeroPedido = signal<number | null>(null);
 
+  erroresCampo = signal<Record<string, string>>({});
+
   constructor(
     public cart: CartService,
     public auth: AuthService,
@@ -91,6 +102,7 @@ export class Checkout {
   seleccionarMetodo(metodo: string): void {
     this.metodoPago.set(metodo);
     this.error.set(null);
+    this.erroresCampo.set({});
     this.mpProcesando.set(false);
     this.mpAprobado.set(false);
     this.billeteraConfirmada.set(false);
@@ -141,10 +153,21 @@ export class Checkout {
   }
 
   private validarMetodo(): string | null {
+    const errores: Record<string, string> = {};
     switch (this.metodoPago()) {
       case 'TARJETA':
-        if (!this.tarjetaNumero.trim() || !this.tarjetaTitular.trim()) {
-          return 'Completa los datos de la tarjeta.';
+        if (!esTarjetaNumero(this.tarjetaNumero)) {
+          errores['tarjetaNumero'] = mensajeTarjetaNumero();
+        }
+        if (!esVencimientoTarjeta(this.tarjetaVencimiento)) {
+          errores['tarjetaVencimiento'] = mensajeVencimientoTarjeta();
+        }
+        if (!esTextoRequerido(this.tarjetaTitular, 3)) {
+          errores['tarjetaTitular'] = mensajeTextoRequerido('Titular', 3);
+        }
+        if (Object.keys(errores).length > 0) {
+          this.erroresCampo.set(errores);
+          return 'Completa los datos de la tarjeta correctamente.';
         }
         return null;
       case 'MERCADO_PAGO':
@@ -204,8 +227,16 @@ export class Checkout {
       this.error.set('Tu carrito esta vacio.');
       return;
     }
-    if (this.tipoEntrega() === 'ENVIO' && !this.direccion.trim()) {
-      this.error.set('Ingresa una direccion de envio.');
+
+    const errores: Record<string, string> = {};
+    if (this.tipoEntrega() === 'ENVIO') {
+      if (!esTextoRequerido(this.direccion, 10)) {
+        errores['direccion'] = mensajeTextoRequerido('Dirección de envío', 10);
+      }
+    }
+    this.erroresCampo.set(errores);
+    if (Object.keys(errores).length > 0) {
+      this.error.set('Revisá los datos de entrega.');
       return;
     }
 
@@ -216,6 +247,7 @@ export class Checkout {
     }
 
     this.error.set(null);
+    this.erroresCampo.set({});
     this.procesando.set(true);
 
     const esPrestamo = this.metodoPago() === 'PRESTAMO_CASA';
@@ -245,9 +277,21 @@ export class Checkout {
       },
       error: (err) => {
         this.procesando.set(false);
+        const fieldMsg = primerErrorCampos(err?.error?.fields);
+        if (fieldMsg) {
+          this.error.set(fieldMsg);
+          if (err?.error?.fields) {
+            this.erroresCampo.set(err.error.fields);
+          }
+          return;
+        }
         const msg = err?.error?.message ?? err?.error?.mensaje;
         this.error.set(typeof msg === 'string' ? msg : 'Hubo un problema al procesar la compra. Intenta de nuevo.');
       },
     });
+  }
+
+  errorCampo(nombre: string): string | null {
+    return this.erroresCampo()[nombre] ?? null;
   }
 }

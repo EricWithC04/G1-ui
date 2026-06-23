@@ -4,7 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProductService } from '../../services/product';
 import { CategoriaService } from '../../services/categoria.service';
 import { Product, Categoria } from '../../models/models';
-import { aEntero, esEnteroNoNegativo, mensajeEntero } from '../../utils/validadores-admin';
+import { aEntero, esEnteroNoNegativo, esNumeroPositivo, mensajeEntero } from '../../utils/validadores-admin';
 
 @Component({
   selector: 'app-create-product',
@@ -126,6 +126,14 @@ export class CreateProduct implements OnInit {
   guardarProducto(f: NgForm): void {
     if (f.invalid) {
       Object.values(f.controls).forEach(c => c.markAsTouched());
+      return;
+    }
+    if (!this.product.categoria?.idCategoria) {
+      this.errorGuardado.set('Seleccioná una categoría.');
+      return;
+    }
+    if (!esNumeroPositivo(this.product.precio)) {
+      this.errorGuardado.set('El precio debe ser mayor a cero.');
       return;
     }
     if (!esEnteroNoNegativo(this.product.stock)) {
