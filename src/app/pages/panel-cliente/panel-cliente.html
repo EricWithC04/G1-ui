@@ -252,35 +252,42 @@
                 </a>
               </div>
             } @else {
-              @if (pedidosActivos().length > 0) {
-                <p class="pos-section-label">En curso</p>
-                <div class="pc-orders-list">
-                  @for (p of pedidosActivos(); track p.idPedido) {
-                    <button type="button" class="pc-order-card" (click)="verDetallePedido(p)">
-                      <div class="pc-order-card-top">
-                        <span class="pc-order-id">#{{ p.idPedido }}</span>
-                        <span class="pc-badge" [ngClass]="estadoBadgeClass(p)">{{ estadoLabel(estadoPedido(p)) }}</span>
-                      </div>
-                      <p class="pc-text-muted">{{ p.fecha | date:'dd/MM/yyyy' }}</p>
-                      <div class="pc-order-card-bottom">
-                        <span>{{ cantidadProductos(p.idPedido) }} producto(s)</span>
-                        <span class="pc-order-total">$ {{ p.total | number:'1.2-2' }}</span>
-                      </div>
-                    </button>
-                  }
-                </div>
-              }
+              <div class="pc-filters">
+                @for (f of filtrosPedido; track f.id) {
+                  <button
+                    type="button"
+                    class="pos-chip"
+                    [class.pos-chip--active]="filtroPedidos() === f.id"
+                    (click)="setFiltroPedidos(f.id)"
+                  >
+                    {{ f.label }}
+                  </button>
+                }
+              </div>
 
-              @if (pedidosHistorial().length > 0) {
-                <p class="pos-section-label" style="margin-top: 1.5rem">Historial</p>
+              @if (pedidosFiltrados().length === 0) {
+                <div class="pos-empty">
+                  <p class="pos-empty-icon">📦</p>
+                  <p class="pos-empty-title">No hay pedidos con este filtro</p>
+                  <button type="button" class="pos-chip pos-chip--active" style="margin-top:1rem" (click)="setFiltroPedidos('todos')">
+                    Ver todos
+                  </button>
+                </div>
+              } @else {
+                <p class="pos-section-label">Ordenados del más reciente al más antiguo</p>
                 <div class="pc-orders-list">
-                  @for (p of pedidosHistorial(); track p.idPedido) {
-                    <button type="button" class="pc-order-card pc-order-card--muted" (click)="verDetallePedido(p)">
+                  @for (p of pedidosFiltrados(); track p.idPedido) {
+                    <button
+                      type="button"
+                      class="pc-order-card"
+                      [class.pc-order-card--muted]="p.estado === 'ENTREGADO' || p.estado === 'CANCELADO'"
+                      (click)="verDetallePedido(p)"
+                    >
                       <div class="pc-order-card-top">
                         <span class="pc-order-id">#{{ p.idPedido }}</span>
                         <span class="pc-badge" [ngClass]="estadoBadgeClass(p)">{{ estadoLabel(estadoPedido(p)) }}</span>
                       </div>
-                      <p class="pc-text-muted">{{ p.fecha | date:'dd/MM/yyyy' }}</p>
+                      <p class="pc-text-muted">{{ p.fecha | date:'dd/MM/yyyy HH:mm' }}</p>
                       <div class="pc-order-card-bottom">
                         <span>{{ cantidadProductos(p.idPedido) }} producto(s)</span>
                         <span class="pc-order-total">$ {{ p.total | number:'1.2-2' }}</span>

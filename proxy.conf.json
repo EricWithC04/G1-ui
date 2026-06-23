@@ -2,6 +2,12 @@
   "//": "Proxy del dev server de Angular hacia el backend Spring Boot (localhost:8080).",
   "//rutas": "Cada clave es una ruta RAIZ de la API (segun @RequestMapping de cada controller).",
   "//efecto": "Asi el frontend usa rutas RELATIVAS y todo sale por el mismo origen (sin CORS).",
+  "/cliente": {
+    "target": "http://localhost:8080",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
   "/auth": {
     "target": "http://localhost:8080",
     "secure": false,

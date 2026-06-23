@@ -7,12 +7,10 @@ import {
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DatePipe, DecimalPipe, NgClass } from '@angular/common';
-import { forkJoin } from 'rxjs';
+import { catchError, forkJoin, of } from 'rxjs';
 import { ToastService } from '../../services/toast.service';
 import { AuthService, UsuarioSesion } from '../../services/auth.service';
-import { PedidoService } from '../../services/pedido.service';
-import { PerfilService } from '../../services/perfil.service';
-import { FacturaService } from '../../services/factura.service';
+import { ClientePortalService } from '../../services/cliente-portal.service';
 import {
   Envio,
   Factura,
@@ -28,6 +26,8 @@ type SeccionPanel =
   | 'facturas'
   | 'seguridad';
 
+type FiltroPedidos = 'todos' | 'activos' | 'entregados' | 'cancelados';
+
 @Component({
   selector: 'app-panel-cliente',
   imports: [FormsModule, DecimalPipe, DatePipe, NgClass, RouterLink],
@@ -36,6 +36,7 @@ type SeccionPanel =
 })
 export class PanelCliente implements OnInit {
   seccionActiva = signal<SeccionPanel>('perfil');
+  filtroPedidos = signal<FiltroPedidos>('todos');
 
   usuario = signal<UsuarioSesion | null>(null);
   perfilCliente = signal<PerfilCliente | null>(null);
@@ -64,6 +65,13 @@ export class PanelCliente implements OnInit {
   passError = signal<string | null>(null);
   passExito = signal(false);
 
+  filtrosPedido: { id: FiltroPedidos; label: string }[] = [
+    { id: 'todos', label: 'Todos' },
+    { id: 'activos', label: 'En curso' },
+    { id: 'entregados', label: 'Entregados' },
+    { id: 'cancelados', label: 'Cancelados' },
+  ];
+
   secciones: { id: SeccionPanel; label: string; icon: string }[] = [
     { id: 'perfil',      label: 'Perfil',      icon: '👤' },
     { id: 'pedidos',     label: 'Pedidos',      icon: '📦' },
@@ -72,12 +80,34 @@ export class PanelCliente implements OnInit {
     { id: 'seguridad',   label: 'Seguridad',    icon: '🔒' },
   ];
 
-  pedidosActivos = computed(() =>
-    this.pedidos().filter(p => p.estado !== 'CANCELADO' && p.estado !== 'ENTREGADO'),
-  );
+  pedidosOrdenados = computed(() => this.ordenarPorFecha(this.pedidos()));
 
-  pedidosHistorial = computed(() =>
-    this.pedidos().filter(p => p.estado === 'ENTREGADO' || p.estado === 'CANCELADO'),
+  pedidosFiltrados = computed(() => {
+    const filtro = this.filtroPedidos();
+    return this.pedidosOrdenados().filter(p => {
+      const estado = (p.estado ?? '').toUpperCase();
+      const envioEstado = this.envioDePedido(p.idPedido)?.estadoEnvio?.toUpperCase().replace(/ /g, '_');
+      const entregado = estado === 'ENTREGADO' || envioEstado === 'ENTREGADO';
+      const cancelado = estado === 'CANCELADO';
+      switch (filtro) {
+        case 'activos':
+          return !cancelado && !entregado;
+        case 'entregados':
+          return entregado && !cancelado;
+        case 'cancelados':
+          return cancelado;
+        default:
+          return true;
+      }
+    });
+  });
+
+  pedidosActivos = computed(() =>
+    this.pedidosOrdenados().filter(p => {
+      const estado = (p.estado ?? '').toUpperCase();
+      const envioEstado = this.envioDePedido(p.idPedido)?.estadoEnvio?.toUpperCase();
+      return estado !== 'CANCELADO' && estado !== 'ENTREGADO' && envioEstado !== 'ENTREGADO';
+    }),
   );
 
   tieneDireccion = computed(() => {
@@ -91,9 +121,7 @@ export class PanelCliente implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private pedidoService: PedidoService,
-    private perfilService: PerfilService,
-    private facturaService: FacturaService,
+    private clientePortal: ClientePortalService,
     private toast: ToastService,
     private route: ActivatedRoute,
   ) {}
@@ -114,6 +142,15 @@ export class PanelCliente implements OnInit {
     this.cargarDatos();
   }
 
+  private ordenarPorFecha(pedidos: Pedido[]): Pedido[] {
+    return [...pedidos].sort((a, b) => {
+      const fa = a.fecha ? new Date(a.fecha).getTime() : 0;
+      const fb = b.fecha ? new Date(b.fecha).getTime() : 0;
+      if (fb !== fa) return fb - fa;
+      return (b.idPedido ?? 0) - (a.idPedido ?? 0);
+    });
+  }
+
   private cargarDatos(): void {
     const sesion = this.authService.getUsuario();
     if (!sesion) {
@@ -129,29 +166,19 @@ export class PanelCliente implements OnInit {
     this.perfilEmail.set(sesion.email);
 
     forkJoin({
-      pedidos: this.pedidoService.listar(),
-      perfiles: this.perfilService.listar(),
-      facturas: this.facturaService.listar(),
+      pedidos: this.clientePortal.listarPedidos(),
+      facturas: this.clientePortal.listarFacturas(),
+      perfil: this.clientePortal.obtenerPerfil().pipe(catchError(() => of(null))),
     }).subscribe({
-      next: ({ pedidos, perfiles, facturas }) => {
-        const mios = pedidos
-          .filter(p => p.usuario?.idUsuario === sesion.idUsuario)
-          .sort((a, b) => (b.idPedido ?? 0) - (a.idPedido ?? 0));
-        this.pedidos.set(mios);
-
-        const perfil = perfiles.find(p => p.usuario?.idUsuario === sesion.idUsuario) ?? null;
+      next: ({ pedidos, facturas, perfil }) => {
+        this.pedidos.set(pedidos);
+        this.facturas.set(facturas);
         this.perfilCliente.set(perfil);
         this.perfilTelefono.set(perfil?.telefono ?? '');
         this.direccionCalle.set(perfil?.direccion ?? '');
         this.direccionCiudad.set(perfil?.ciudad ?? '');
-
-        const misFacturas = facturas
-          .filter(f => f.pedido?.usuario?.idUsuario === sesion.idUsuario)
-          .sort((a, b) => (b.fechaEmision ?? '').localeCompare(a.fechaEmision ?? ''));
-        this.facturas.set(misFacturas);
-
         this.cargando.set(false);
-        this.cargarDetallesPedidos(mios);
+        this.cargarDetallesPedidos(pedidos);
       },
       error: () => {
         this.error.set('No se pudieron cargar los datos de tu cuenta.');
@@ -164,7 +191,7 @@ export class PanelCliente implements OnInit {
     const ids = pedidos.filter(p => p.idPedido != null).map(p => p.idPedido!);
     if (ids.length === 0) return;
 
-    forkJoin(ids.map(id => this.pedidoService.obtenerDetalle(id))).subscribe({
+    forkJoin(ids.map(id => this.clientePortal.obtenerPedido(id))).subscribe({
       next: detalles => {
         const map = new Map<number, PedidoDetalleResponse>();
         detalles.forEach(d => {
@@ -175,6 +202,11 @@ export class PanelCliente implements OnInit {
         this.detallesPorPedido.set(map);
       },
     });
+  }
+
+  setFiltroPedidos(filtro: FiltroPedidos): void {
+    this.filtroPedidos.set(filtro);
+    this.pedidoDetalle.set(null);
   }
 
   irA(seccion: SeccionPanel): void {
@@ -206,16 +238,19 @@ export class PanelCliente implements OnInit {
     }
 
     this.guardando.set(true);
-    this.authService.actualizarPerfil({
+    this.clientePortal.actualizarPerfil({
       nombre: this.perfilNombre().trim(),
       email: this.perfilEmail().trim(),
+      telefono: this.perfilTelefono().trim() || undefined,
     }).subscribe({
-      next: u => {
-        this.usuario.set(u);
+      next: p => {
+        this.perfilCliente.set(p);
         this.perfilEditando.set(false);
         this.guardando.set(false);
+        void this.authService.restaurarSesion().then(() => {
+          this.usuario.set(this.authService.getUsuario());
+        });
         this.toast.exito('Perfil actualizado correctamente.');
-        this.guardarTelefonoPerfil();
       },
       error: () => {
         this.guardando.set(false);
@@ -224,31 +259,10 @@ export class PanelCliente implements OnInit {
     });
   }
 
-  private guardarTelefonoPerfil(): void {
-    const perfil = this.perfilCliente();
-    const sesion = this.authService.getUsuario();
-    if (!sesion || !this.perfilTelefono().trim()) return;
-
-    const payload: PerfilCliente = {
-      ...(perfil ?? { usuario: { idUsuario: sesion.idUsuario, nombre: sesion.nombre, email: sesion.email, rol: sesion.rol } }),
-      telefono: this.perfilTelefono().trim(),
-    };
-
-    if (perfil?.idCliente != null) {
-      this.perfilService.actualizar(perfil.idCliente, payload).subscribe({
-        next: p => this.perfilCliente.set(p),
-      });
-    } else {
-      this.perfilService.crear(payload).subscribe({
-        next: p => this.perfilCliente.set(p),
-      });
-    }
-  }
-
   verDetallePedido(p: Pedido): void {
     this.pedidoDetalle.set(p);
     if (p.idPedido != null && !this.detallesPorPedido().has(p.idPedido)) {
-      this.pedidoService.obtenerDetalle(p.idPedido).subscribe({
+      this.clientePortal.obtenerPedido(p.idPedido).subscribe({
         next: d => {
           const map = new Map(this.detallesPorPedido());
           map.set(p.idPedido!, d);
@@ -364,19 +378,11 @@ export class PanelCliente implements OnInit {
     if (!sesion) return;
 
     this.guardando.set(true);
-    const perfil = this.perfilCliente();
-    const payload: PerfilCliente = {
-      ...(perfil ?? { usuario: { idUsuario: sesion.idUsuario, nombre: sesion.nombre, email: sesion.email, rol: sesion.rol } }),
+    this.clientePortal.actualizarPerfil({
       direccion: this.direccionCalle().trim(),
       ciudad: this.direccionCiudad().trim(),
-      telefono: this.perfilTelefono().trim() || perfil?.telefono,
-    };
-
-    const req = perfil?.idCliente != null
-      ? this.perfilService.actualizar(perfil.idCliente, payload)
-      : this.perfilService.crear(payload);
-
-    req.subscribe({
+      telefono: this.perfilTelefono().trim() || undefined,
+    }).subscribe({
       next: p => {
         this.perfilCliente.set(p);
         this.direccionEditando.set(false);
