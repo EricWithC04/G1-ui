@@ -36,6 +36,9 @@
           @if (s.id === 'soporte' && ticketsAbiertos() > 0) {
             <span class="pc-nav-badge">{{ ticketsAbiertos() }}</span>
           }
+          @if (s.id === 'cuotas' && cuotasPendientes() > 0) {
+            <span class="pc-nav-badge">{{ cuotasPendientes() }}</span>
+          }
         </button>
       }
     </nav>
@@ -148,6 +151,13 @@
                 <p class="pc-info-label">Tickets abiertos</p>
               </div>
             </div>
+
+            <div class="pc-quick-links">
+              <button type="button" class="pos-chip" (click)="irA('pedidos')">Ver pedidos</button>
+              <button type="button" class="pos-chip" (click)="irA('soporte')">Crear ticket</button>
+              <button type="button" class="pos-chip" (click)="irA('cuotas')">Mis cuotas</button>
+              <button type="button" class="pos-chip" (click)="irA('ayuda')">Centro de ayuda</button>
+            </div>
           }
         </div>
       }
@@ -238,6 +248,9 @@
             }
 
             <div class="pc-order-actions">
+              <button type="button" class="pc-btn pc-btn--primary pc-btn--sm" (click)="recomprarPedido(p)">
+                Volver a comprar
+              </button>
               <button type="button" class="pc-btn pc-btn--ghost pc-btn--sm" (click)="iniciarCrearTicket(p.idPedido ?? null)">
                 Abrir ticket
               </button>
@@ -246,6 +259,14 @@
                   Solicitar devolución
                 </button>
               }
+              <a
+                [href]="whatsappPedido(p)"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="pc-btn pc-btn--ghost pc-btn--sm"
+              >
+                WhatsApp
+              </a>
             </div>
           </div>
 
@@ -653,6 +674,65 @@
             }
           </div>
         }
+      }
+
+      <!-- CUOTAS -->
+      @if (seccionActiva() === 'cuotas') {
+        <div class="pc-section">
+          <div class="pc-section-header">
+            <h2 class="pc-section-title">Mis cuotas</h2>
+          </div>
+
+          @if (cuotas().length === 0) {
+            <div class="pos-empty">
+              <p class="pos-empty-icon">💳</p>
+              <p class="pos-empty-title">Sin cuotas activas</p>
+              <p class="pos-empty-desc">Si financiás una compra, las cuotas aparecerán acá con sus vencimientos.</p>
+            </div>
+          } @else {
+            <p class="pos-section-label">Próximos vencimientos</p>
+            <div class="pc-invoice-list">
+              @for (c of cuotas(); track c.idCuota) {
+                <div class="pc-invoice-row">
+                  <div class="pc-invoice-icon">💳</div>
+                  <div class="pc-invoice-info">
+                    <p class="pc-invoice-num">Cuota {{ c.numeroCuota }} · Pedido #{{ c.idPedido ?? '—' }}</p>
+                    <p class="pc-text-muted">Vence {{ c.fechaVencimiento | date:'dd/MM/yyyy' }}</p>
+                  </div>
+                  <span class="pc-badge" [ngClass]="badgeEstadoCuota(c.estado)">{{ estadoCuotaLabel(c.estado) }}</span>
+                  <span class="pc-invoice-amount">$ {{ c.monto | number:'1.2-2' }}</span>
+                </div>
+              }
+            </div>
+            <p class="pc-text-muted" style="margin-top:1rem;font-size:.8rem">
+              Para abonar una cuota contactá a soporte o usá los medios indicados en tu factura.
+            </p>
+          }
+        </div>
+      }
+
+      <!-- AYUDA -->
+      @if (seccionActiva() === 'ayuda') {
+        <div class="pc-section">
+          <div class="pc-section-header">
+            <h2 class="pc-section-title">Centro de ayuda</h2>
+          </div>
+          <p class="pc-text-muted" style="margin-bottom:1rem">Preguntas frecuentes sobre tu cuenta NovaTech.</p>
+          <div class="pc-faq-list">
+            @for (f of faqs; track f.q) {
+              <details class="pc-faq-item">
+                <summary class="pc-faq-q">{{ f.q }}</summary>
+                <p class="pc-faq-a">{{ f.a }}</p>
+              </details>
+            }
+          </div>
+          <div class="pc-form-actions" style="margin-top:1.5rem">
+            <button type="button" class="pc-btn pc-btn--primary" (click)="iniciarCrearTicket()">Crear ticket de soporte</button>
+            <a href="https://wa.me/5491112345678" target="_blank" rel="noopener noreferrer" class="pc-btn pc-btn--outline">
+              WhatsApp NovaTech
+            </a>
+          </div>
+        </div>
       }
 
       <!-- SEGURIDAD -->

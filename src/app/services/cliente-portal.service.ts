@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { API_URL } from './api-base';
 import {
   Conversacion,
+  Cuota,
   Factura,
   MensajeConversacion,
   Pedido,
@@ -90,5 +91,9 @@ export class ClientePortalService {
 
   obtenerDevolucion(id: number): Observable<SolicitudDevolucion> {
     return this.http.get<SolicitudDevolucion>(`${this.base}/devoluciones/${id}`);
+  }
+
+  listarCuotas(): Observable<Cuota[]> {
+    return this.http.get<Cuota[]>(`${this.base}/cuotas`);
   }
 }
