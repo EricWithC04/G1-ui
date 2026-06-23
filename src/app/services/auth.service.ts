@@ -1,7 +1,9 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, firstValueFrom, of, tap } from 'rxjs';
 import { API_URL } from './api-base';
+import { PermisoService } from './permiso.service';
+import { esRolPanelAdmin } from '../config/config-rbac';
 
 export interface UsuarioSesion {
     idUsuario: number;
@@ -27,17 +29,25 @@ export class AuthService {
     /** Sesión solo en memoria — el JWT vive en cookie HttpOnly (no visible en F12 → Application). */
     usuarioActual = signal<UsuarioSesion | null>(null);
 
+    private permisos = inject(PermisoService);
+
     constructor(private http: HttpClient) { }
 
     register(datos: RegistroData): Observable<UsuarioSesion> {
         return this.http.post<UsuarioSesion>(`${API_URL}/auth/register`, datos).pipe(
-            tap(usuario => this.usuarioActual.set(usuario)),
+            tap(usuario => {
+                this.usuarioActual.set(usuario);
+                this.permisos.recargarMatriz();
+            }),
         );
     }
 
     login(datos: LoginData): Observable<UsuarioSesion> {
         return this.http.post<UsuarioSesion>(`${API_URL}/auth/login`, datos).pipe(
-            tap(usuario => this.usuarioActual.set(usuario)),
+            tap(usuario => {
+                this.usuarioActual.set(usuario);
+                this.permisos.recargarMatriz();
+            }),
         );
     }
 
@@ -46,7 +56,10 @@ export class AuthService {
         localStorage.removeItem('novatech_usuario');
         return firstValueFrom(
             this.http.get<UsuarioSesion>(`${API_URL}/auth/me`).pipe(
-                tap(u => this.usuarioActual.set(u)),
+                tap(u => {
+                    this.usuarioActual.set(u);
+                    this.permisos.recargarMatriz();
+                }),
                 catchError(() => {
                     this.usuarioActual.set(null);
                     return of(null);
@@ -71,10 +84,7 @@ export class AuthService {
     }
 
     esAdmin(): boolean {
-        const rol = this.getRol();
-        if (!rol) return false;
-        if (rol === 'SUPERADMIN' || rol === 'ADMIN') return true;
-        return rol !== 'CLIENTE';
+        return esRolPanelAdmin(this.getRol());
     }
 
     esSuperAdmin(): boolean {

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { LucideShoppingCart, LucideUser, LucideSearch } from '@lucide/angular';
 import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
+import { esRolPanelAdmin } from '../../config/config-rbac';
 
 // Encabezado de la TIENDA (storefront). Lo ve el cliente en todas las paginas publicas.
 // Muestra: el logo, el link al catalogo, el icono del carrito con la cantidad de items,
@@ -16,6 +17,7 @@ import { CartService } from '../../services/cart.service';
 export class StoreHeader {
 
   busquedaHeader = '';
+  readonly esRolPanelAdmin = esRolPanelAdmin;
 
   constructor(public auth: AuthService, public cart: CartService, private router: Router) {}
 

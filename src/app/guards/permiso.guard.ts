@@ -12,7 +12,7 @@ export function permisoGuard(permiso: string): CanActivateFn {
       return router.createUrlTree(['/login']);
     }
     if (!permisos.puede(permiso)) {
-      return router.createUrlTree(['/admin/configuracion']);
+      return router.createUrlTree(['/admin']);
     }
     return true;
   };
