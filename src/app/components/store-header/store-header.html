@@ -56,8 +56,10 @@
           <a routerLink="/admin" class="hidden md:flex text-xs text-amber-300 hover:text-amber-200 px-3 py-2 rounded-xl hover:bg-white/5">
             Panel admin
           </a>
+          <span class="hidden sm:inline max-w-24 truncate text-xs text-neutral-400 px-1">{{ u.nombre }}</span>
         }
-        <!-- Mi cuenta -->
+        @if (auth.esCliente()) {
+        <!-- Mi cuenta (solo clientes) -->
         <a
           routerLink="/panel-cliente"
           routerLinkActive="bg-white/8"
@@ -66,6 +68,7 @@
           <svg lucideUser [size]="20"></svg>
           <span class="hidden sm:inline max-w-24 truncate text-xs">{{ u.nombre }}</span>
         </a>
+        }
         <!-- Salir -->
         <button
           (click)="cerrarSesion()"

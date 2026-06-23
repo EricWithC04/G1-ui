@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, firstValueFrom, of, tap } from 'rxjs';
 import { API_URL } from './api-base';
 import { PermisoService } from './permiso.service';
-import { esRolPanelAdmin } from '../config/config-rbac';
+import { esRolPanelAdmin, esRolCliente } from '../config/config-rbac';
 
 export interface UsuarioSesion {
     idUsuario: number;
@@ -89,6 +89,10 @@ export class AuthService {
 
     esAdmin(): boolean {
         return esRolPanelAdmin(this.getRol());
+    }
+
+    esCliente(): boolean {
+        return esRolCliente(this.getRol());
     }
 
     esSuperAdmin(): boolean {

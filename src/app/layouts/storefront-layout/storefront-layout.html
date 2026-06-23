@@ -58,7 +58,12 @@
           <ul class="flex flex-col gap-2 text-sm text-neutral-500">
             <li><a routerLink="/login" class="hover:text-white transition-colors">Iniciar sesión</a></li>
             <li><a routerLink="/register" class="hover:text-white transition-colors">Crear cuenta</a></li>
-            <li><a routerLink="/panel-cliente" class="hover:text-white transition-colors">Mi cuenta</a></li>
+            @if (auth.esCliente()) {
+              <li><a routerLink="/panel-cliente" class="hover:text-white transition-colors">Mi cuenta</a></li>
+            }
+            @if (auth.esAdmin()) {
+              <li><a routerLink="/admin" class="hover:text-white transition-colors">Panel admin</a></li>
+            }
             <li><a routerLink="/carrito" class="hover:text-white transition-colors">Mi carrito</a></li>
           </ul>
         </div>

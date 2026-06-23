@@ -64,6 +64,10 @@ export function esRolPanelAdmin(rol: string | null | undefined): boolean {
   return rol !== 'CLIENTE';
 }
 
+export function esRolCliente(rol: string | null | undefined): boolean {
+  return rol === 'CLIENTE';
+}
+
 export function permisosDeRol(rol: string | null | undefined): Set<string> {
   if (!rol) return new Set();
   const list = ROLE_PERMISSIONS[rol] ?? [];

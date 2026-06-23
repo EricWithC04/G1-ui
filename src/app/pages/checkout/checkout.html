@@ -12,9 +12,15 @@
       </p>
     }
     <div class="flex gap-3 flex-wrap justify-center">
-      <a routerLink="/mis-pedidos" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium active:scale-95">
-        Ver mis pedidos
-      </a>
+      @if (auth.esCliente()) {
+        <a routerLink="/mis-pedidos" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium active:scale-95">
+          Ver mis pedidos
+        </a>
+      } @else if (auth.esAdmin()) {
+        <a routerLink="/admin/pedidos" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium active:scale-95">
+          Ver pedidos en admin
+        </a>
+      }
       <a routerLink="/" class="bg-gray-800 hover:bg-gray-700 border border-white/10 text-white px-6 py-3 rounded-xl active:scale-95">
         Volver al catálogo
       </a>
