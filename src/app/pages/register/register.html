@@ -54,11 +54,8 @@
             placeholder="Ej: Juan Pérez"
             class="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-600"
           />
-          @if (form.get('nombre')?.hasError('required') && form.get('nombre')?.touched) {
-            <p class="text-xs text-red-400 mt-1">Nombre requerido.</p>
-          }
-          @if (form.get('nombre')?.hasError('minlength') && form.get('nombre')?.touched) {
-            <p class="text-xs text-red-400 mt-1">Mínimo 3 caracteres.</p>
+          @if (mensajeErrorCampo('nombre'); as msg) {
+            <p class="text-xs text-red-400 mt-1">{{ msg }}</p>
           }
         </div>
 
@@ -70,11 +67,8 @@
             placeholder="tucorreo@ejemplo.com"
             class="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-600"
           />
-          @if (form.get('email')?.hasError('required') && form.get('email')?.touched) {
-            <p class="text-xs text-red-400 mt-1">Email requerido.</p>
-          }
-          @if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
-            <p class="text-xs text-red-400 mt-1">Email inválido.</p>
+          @if (mensajeErrorCampo('email'); as msg) {
+            <p class="text-xs text-red-400 mt-1">{{ msg }}</p>
           }
         </div>
 
@@ -86,11 +80,8 @@
             placeholder="Mínimo 6 caracteres"
             class="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-600"
           />
-          @if (form.get('contrasena')?.hasError('required') && form.get('contrasena')?.touched) {
-            <p class="text-xs text-red-400 mt-1">Contraseña requerida.</p>
-          }
-          @if (form.get('contrasena')?.hasError('minlength') && form.get('contrasena')?.touched) {
-            <p class="text-xs text-red-400 mt-1">Mínimo 6 caracteres.</p>
+          @if (mensajeErrorCampo('contrasena'); as msg) {
+            <p class="text-xs text-red-400 mt-1">{{ msg }}</p>
           }
         </div>
 

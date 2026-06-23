@@ -13,6 +13,12 @@ import { AuthService, UsuarioSesion } from '../../services/auth.service';
 import { ClientePortalService } from '../../services/cliente-portal.service';
 import { CartService } from '../../services/cart.service';
 import {
+  esEmailValido,
+  esTelefonoValido,
+  mensajeEmail,
+  mensajeTelefono,
+} from '../../utils/validadores-form';
+import {
   Conversacion,
   CuotaClienteItem,
   Envio,
@@ -324,6 +330,15 @@ export class PanelCliente implements OnInit {
       this.toast.error('El nombre no puede estar vacío.');
       return;
     }
+    if (!esEmailValido(this.perfilEmail())) {
+      this.toast.error(mensajeEmail());
+      return;
+    }
+    const tel = this.perfilTelefono().trim();
+    if (tel && !esTelefonoValido(tel)) {
+      this.toast.error(mensajeTelefono());
+      return;
+    }
 
     this.guardando.set(true);
     this.clientePortal.actualizarPerfil({
@@ -459,6 +474,11 @@ export class PanelCliente implements OnInit {
   guardarDireccion(): void {
     if (!this.direccionCalle().trim() || !this.direccionCiudad().trim()) {
       this.toast.error('Completá dirección y ciudad.');
+      return;
+    }
+    const tel = this.perfilTelefono().trim();
+    if (tel && !esTelefonoValido(tel)) {
+      this.toast.error(mensajeTelefono());
       return;
     }
 
