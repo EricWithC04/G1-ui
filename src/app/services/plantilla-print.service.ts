@@ -3,6 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
+/**
+ * Servicio Angular `plantilla-print.service`: llama API `/ plantilla-print` y expone Observables al UI.
+ */
 export interface PlantillaRenderResponse {
   html?: string;
   css?: string;

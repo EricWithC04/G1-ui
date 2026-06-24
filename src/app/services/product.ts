@@ -7,6 +7,9 @@ import { BaseApiService } from './api-base';
 // @Injectable -> le dice a Angular que esta clase se puede "inyectar"
 // (Angular la crea y la pasa sola a quien la necesite).
 // providedIn: 'root' -> hay una sola instancia para toda la app.
+/**
+ * Servicio Angular `product`: llama API `/ product` y expone Observables al UI.
+ */
 @Injectable({ providedIn: 'root' })
 export class ProductService extends BaseApiService<Product> {
 

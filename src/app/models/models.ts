@@ -8,6 +8,9 @@
 // ============================================================
 
 // Una categoria de productos (ej: Notebooks, Perifericos).
+/**
+ * Modelos TypeScript: interfaces que reflejan entidades/DTOs del backend.
+ */
 export interface Categoria {
     idCategoria?: number; // lo genera el backend al crear
     nombre?: string;

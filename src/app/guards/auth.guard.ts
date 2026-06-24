@@ -10,6 +10,9 @@ import { AuthService } from '../services/auth.service';
 //  Este guard protege las paginas que necesitan estar logueado
 //  (carrito, checkout, mis-pedidos, perfil). Si no hay sesion, manda a /login.
 // ============================================================
+/**
+ * Guard de ruta `auth.guard`: decide si el router permite entrar según sesión/rol/permiso.
+ */
 export const authGuard: CanActivateFn = () => {
     // inject() nos deja pedir servicios dentro de una funcion (no hace falta constructor).
     const auth = inject(AuthService);

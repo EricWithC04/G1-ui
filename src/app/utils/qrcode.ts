@@ -572,6 +572,9 @@ function toUtf8ByteArray(str: string): number[] {
 //  - borde: cuantos modulos en blanco dejar alrededor (margen).
 //  Devuelve un string con el SVG listo para inyectar en el HTML.
 // ============================================================
+/**
+ * Utilidad frontend `qrcode`: helpers puros (validación, formato, exportación).
+ */
 export function generarQrSvg(texto: string, borde = 2): string {
     const qr = QrCode.encodeText(texto);
     const dim = qr.size + borde * 2;

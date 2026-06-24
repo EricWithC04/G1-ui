@@ -1,3 +1,6 @@
+/**
+ * Utilidad frontend `canal-origen`: helpers puros (validación, formato, exportación).
+ */
 export const CANALES_ORIGEN = [
   'WEB',
   'ADMIN',

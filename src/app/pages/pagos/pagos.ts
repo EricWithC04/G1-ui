@@ -11,6 +11,9 @@ import { AdminSearch } from '../../components/admin-search/admin-search';
 import { coincideBusqueda } from '../../utils/busqueda-admin';
 import { Pago, Pedido, Usuario } from '../../models/models';
 
+/**
+ * Página `pagos`: pantalla Angular (componente + template) del módulo pagos.
+ */
 @Component({
   selector: 'app-pagos',
   imports: [FormsModule, DatePipe, DecimalPipe, AdminSearch, RouterLink],

@@ -4,6 +4,9 @@ import { DecimalPipe } from '@angular/common';
 import { DashboardService } from '../../services/dashboard.service';
 import { DashboardKpi } from '../../models/models';
 
+/**
+ * Página `dashboard`: pantalla Angular (componente + template) del módulo dashboard.
+ */
 @Component({
   selector: 'app-dashboard',
   imports: [RouterLink, DecimalPipe],

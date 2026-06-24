@@ -6,6 +6,9 @@ import { Product } from '../models/models';
 //  Guardamos una copia de los datos del producto que necesitamos
 //  para mostrar el carrito (nombre, precio, etc.) sin volver a pedirlos.
 // ============================================================
+/**
+ * Servicio Angular `cart.service`: llama API `/ cart` y expone Observables al UI.
+ */
 export interface ItemCarrito {
     producto: Product;
     cantidad: number;

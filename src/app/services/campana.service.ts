@@ -5,6 +5,9 @@ import { BaseApiService } from './api-base';
 import { Campana, MensajeCliente } from '../models/models';
 import { environment } from '../../environments/environment';
 
+/**
+ * Servicio Angular `campana.service`: llama API `/ campana` y expone Observables al UI.
+ */
 @Injectable({ providedIn: 'root' })
 export class CampanaService extends BaseApiService<Campana> {
   constructor(http: HttpClient) {

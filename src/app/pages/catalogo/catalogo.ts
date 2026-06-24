@@ -12,6 +12,9 @@ import { Product, Categoria } from '../../models/models';
 // Pagina principal de la tienda (catalogo).
 // Muestra los productos en tarjetas, permite buscar por nombre y filtrar por categoria,
 // y agregar productos al carrito. Todo conectado al backend real.
+/**
+ * Página `catalogo`: pantalla Angular (componente + template) del módulo catalogo.
+ */
 @Component({
     selector: 'app-catalogo',
     imports: [FormsModule, RouterLink, DecimalPipe],

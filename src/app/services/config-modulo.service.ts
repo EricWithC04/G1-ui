@@ -14,6 +14,9 @@ import {
 } from '../models/models';
 import { environment } from '../../environments/environment';
 
+/**
+ * Servicio Angular `config-modulo.service`: llama API `/ config-modulo` y expone Observables al UI.
+ */
 export interface ContabilidadResumen {
   alicuotas: { idAlicuota?: number; codigo?: string; nombre?: string; porcentaje?: number; activo?: boolean }[];
   config: { clave?: string; valor?: string; descripcion?: string }[];

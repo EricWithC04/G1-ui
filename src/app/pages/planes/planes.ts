@@ -9,6 +9,9 @@ import { coincideBusqueda } from '../../utils/busqueda-admin';
 import { PlanCuotas, PerfilCliente, Pedido } from '../../models/models';
 
 // Pagina del modulo de Planes de cuotas (financiacion de un pedido).
+/**
+ * Página `planes`: pantalla Angular (componente + template) del módulo planes.
+ */
 @Component({
   selector: 'app-planes',
   imports: [FormsModule, DecimalPipe, AdminSearch],

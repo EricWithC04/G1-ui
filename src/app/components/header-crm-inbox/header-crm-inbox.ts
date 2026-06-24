@@ -12,6 +12,9 @@ const CANAL_ICON: Record<string, string> = {
   WHATSAPP: '💬',
 };
 
+/**
+ * Componente reutilizable `header-crm-inbox`: UI compartida entre varias pantallas.
+ */
 @Component({
   selector: 'app-header-crm-inbox',
   imports: [RouterLink, DatePipe],

@@ -4,6 +4,9 @@ import { Observable } from 'rxjs';
 import { DashboardKpi } from '../models/models';
 import { environment } from '../../environments/environment';
 
+/**
+ * Servicio Angular `dashboard.service`: llama API `/ dashboard` y expone Observables al UI.
+ */
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
   constructor(private http: HttpClient) {}

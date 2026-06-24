@@ -7,6 +7,9 @@ import { AdminSearch } from '../../components/admin-search/admin-search';
 import { coincideBusqueda } from '../../utils/busqueda-admin';
 import { Envio, EnvioDetalleResponse, Pedido } from '../../models/models';
 
+/**
+ * Página `envios`: pantalla Angular (componente + template) del módulo envios.
+ */
 @Component({
   selector: 'app-envios',
   imports: [FormsModule, AdminSearch, RouterLink],

@@ -8,6 +8,9 @@ import { AdminSearch } from '../../components/admin-search/admin-search';
 import { coincideBusqueda } from '../../utils/busqueda-admin';
 import { Cuota } from '../../models/models';
 
+/**
+ * Página `creditos`: pantalla Angular (componente + template) del módulo creditos.
+ */
 @Component({
   selector: 'app-creditos',
   imports: [FormsModule, DatePipe, DecimalPipe, RouterLink, AdminSearch],

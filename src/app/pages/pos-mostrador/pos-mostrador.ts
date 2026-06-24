@@ -72,6 +72,9 @@ interface VentaExitosa {
 
 
 
+/**
+ * Página `pos-mostrador`: pantalla Angular (componente + template) del módulo pos-mostrador.
+ */
 @Component({
 
   selector: 'app-pos-mostrador',

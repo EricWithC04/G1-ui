@@ -6,6 +6,9 @@ import { AdminBuscarItem, AdminBuscarResponse, AdminService } from '../../servic
 
 type GrupoBusqueda = { etiqueta: string; items: AdminBuscarItem[] };
 
+/**
+ * Componente reutilizable `header-global-search`: UI compartida entre varias pantallas.
+ */
 @Component({
   selector: 'app-header-global-search',
   imports: [FormsModule],

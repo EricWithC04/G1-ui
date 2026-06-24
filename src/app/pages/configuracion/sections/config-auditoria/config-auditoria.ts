@@ -5,6 +5,9 @@ import { ConfigPageShell } from '../../../../components/config-page-shell/config
 import { ConfigModuloService } from '../../../../services/config-modulo.service';
 import { RegistroAuditoria } from '../../../../models/models';
 
+/**
+ * Página `config-auditoria`: pantalla Angular (componente + template) del módulo configuracion.
+ */
 @Component({
   selector: 'app-config-auditoria',
   imports: [ConfigPageShell, FormsModule, DatePipe, JsonPipe],

@@ -5,6 +5,9 @@ import { ConfigPageShell } from '../../../../components/config-page-shell/config
 import { ConfigModuloService } from '../../../../services/config-modulo.service';
 import { LogSistema } from '../../../../models/models';
 
+/**
+ * Página `config-logs`: pantalla Angular (componente + template) del módulo configuracion.
+ */
 @Component({
   selector: 'app-config-logs',
   imports: [ConfigPageShell, FormsModule, DatePipe, JsonPipe],

@@ -7,6 +7,9 @@ import { AdminSearch } from '../../components/admin-search/admin-search';
 import { coincideBusqueda } from '../../utils/busqueda-admin';
 import { Presupuesto } from '../../models/models';
 
+/**
+ * Página `presupuestos`: pantalla Angular (componente + template) del módulo presupuestos.
+ */
 @Component({
   selector: 'app-presupuestos',
   imports: [FormsModule, RouterLink, DatePipe, DecimalPipe, AdminSearch],

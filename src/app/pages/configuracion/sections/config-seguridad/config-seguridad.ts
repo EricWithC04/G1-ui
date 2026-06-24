@@ -6,6 +6,9 @@ import { ConfiguracionService } from '../../../../services/configuracion.service
 import { ConfigModuloService } from '../../../../services/config-modulo.service';
 import { RegistroAuditoria } from '../../../../models/models';
 
+/**
+ * Página `config-seguridad`: pantalla Angular (componente + template) del módulo configuracion.
+ */
 @Component({
   selector: 'app-config-seguridad',
   imports: [ConfigPageShell, FormsModule, DatePipe],

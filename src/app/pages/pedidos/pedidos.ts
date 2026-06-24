@@ -17,6 +17,9 @@ import { Pedido, PedidoDetalleResponse } from '../../models/models';
 
 const ESTADOS_PEDIDO = ['', 'PENDIENTE', 'PARCIAL', 'PAGADO', 'ENVIADO', 'CANCELADO'];
 
+/**
+ * Página `pedidos`: pantalla Angular (componente + template) del módulo pedidos.
+ */
 @Component({
   selector: 'app-pedidos',
   imports: [FormsModule, DatePipe, DecimalPipe, AdminSearch, RouterLink, AdminPagination],

@@ -7,6 +7,9 @@ import { httpErrorInterceptor } from './interceptors/http-error.interceptor';
 import { credentialsInterceptor } from './interceptors/credentials.interceptor';
 import { AuthService } from './services/auth.service';
 
+/**
+ * Bootstrap Angular: router, HttpClient, interceptors e inicializador de sesión.
+ */
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),

@@ -7,6 +7,9 @@ import { PermisoService } from '../../../../services/permiso.service';
 import { PlantillaPrintService, PlantillaRenderResponse } from '../../../../services/plantilla-print.service';
 import { PlantillaImpresion } from '../../../../models/models';
 
+/**
+ * Página `config-plantillas`: pantalla Angular (componente + template) del módulo configuracion.
+ */
 @Component({
   selector: 'app-config-plantillas',
   imports: [ConfigPageShell, FormsModule],

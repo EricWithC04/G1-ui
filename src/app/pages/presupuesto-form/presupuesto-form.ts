@@ -14,6 +14,9 @@ interface LineaForm {
   descuentoPorcentaje: number;
 }
 
+/**
+ * Página `presupuesto-form`: pantalla Angular (componente + template) del módulo presupuesto-form.
+ */
 @Component({
   selector: 'app-presupuesto-form',
   imports: [FormsModule, DecimalPipe, RouterLink],

@@ -5,6 +5,9 @@ import { BaseApiService } from './api-base';
 import { OrdenCompra } from '../models/models';
 import { environment } from '../../environments/environment';
 
+/**
+ * Servicio Angular `orden-compra.service`: llama API `/ orden-compra` y expone Observables al UI.
+ */
 @Injectable({ providedIn: 'root' })
 export class OrdenCompraService extends BaseApiService<OrdenCompra> {
   constructor(http: HttpClient) {

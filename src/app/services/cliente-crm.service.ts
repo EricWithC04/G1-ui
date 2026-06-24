@@ -4,6 +4,9 @@ import { Observable } from 'rxjs';
 import { ClienteHistorial, ClienteMetricas, PerfilCliente } from '../models/models';
 import { environment } from '../../environments/environment';
 
+/**
+ * Servicio Angular `cliente-crm.service`: llama API `/ cliente-crm` y expone Observables al UI.
+ */
 @Injectable({ providedIn: 'root' })
 export class ClienteCrmService {
   private base = `${environment.apiUrl}/perfiles`;

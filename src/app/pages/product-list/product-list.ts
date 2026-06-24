@@ -15,6 +15,9 @@ import { Product } from '../../models/models';
 
 type FiltroStock = 'TODOS' | 'BAJO' | 'SIN_STOCK';
 
+/**
+ * Página `product-list`: pantalla Angular (componente + template) del módulo product-list.
+ */
 @Component({
   selector: 'app-product-list',
   imports: [FormsModule, DecimalPipe, RouterLink, AdminSearch, AdminPagination],

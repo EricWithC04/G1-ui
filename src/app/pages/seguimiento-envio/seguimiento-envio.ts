@@ -11,6 +11,9 @@ interface EtapaEnvio {
   completada: boolean;
 }
 
+/**
+ * Página `seguimiento-envio`: pantalla Angular (componente + template) del módulo seguimiento-envio.
+ */
 @Component({
   selector: 'app-seguimiento-envio',
   imports: [RouterLink, DecimalPipe, DatePipe, NgClass],

@@ -30,6 +30,9 @@ const CANAL_LABEL: Record<string, string> = {
   WHATSAPP: 'WhatsApp Business',
 };
 
+/**
+ * Página `crm-bandeja`: pantalla Angular (componente + template) del módulo crm-bandeja.
+ */
 @Component({
   selector: 'app-crm-bandeja',
   imports: [FormsModule, DatePipe, DecimalPipe, RouterLink],

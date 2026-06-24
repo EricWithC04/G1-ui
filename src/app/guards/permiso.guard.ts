@@ -3,6 +3,9 @@ import { CanActivateFn, Router } from '@angular/router';
 import { PermisoService } from '../services/permiso.service';
 import { AuthService } from '../services/auth.service';
 
+/**
+ * Guard de ruta `permiso.guard`: decide si el router permite entrar según sesión/rol/permiso.
+ */
 export function permisoGuard(permiso: string): CanActivateFn {
   return () => {
     const auth = inject(AuthService);

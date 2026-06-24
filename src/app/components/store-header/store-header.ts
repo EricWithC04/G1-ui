@@ -9,6 +9,9 @@ import { esRolPanelAdmin } from '../../config/config-rbac';
 // Encabezado de la TIENDA (storefront). Lo ve el cliente en todas las paginas publicas.
 // Muestra: el logo, el link al catalogo, el icono del carrito con la cantidad de items,
 // y a la derecha el login o (si ya inicio sesion) su nombre + accesos + cerrar sesion.
+/**
+ * Componente reutilizable `store-header`: UI compartida entre varias pantallas.
+ */
 @Component({
   selector: 'app-store-header',
   imports: [RouterLink, RouterLinkActive, FormsModule, LucideShoppingCart, LucideUser, LucideSearch],

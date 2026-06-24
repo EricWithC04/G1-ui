@@ -5,6 +5,9 @@ import { BaseApiService } from './api-base';
 import { InteraccionCrm } from '../models/models';
 import { environment } from '../../environments/environment';
 
+/**
+ * Servicio Angular `interaccion-crm.service`: llama API `/ interaccion-crm` y expone Observables al UI.
+ */
 @Injectable({ providedIn: 'root' })
 export class InteraccionCrmService extends BaseApiService<InteraccionCrm> {
   constructor(http: HttpClient) {

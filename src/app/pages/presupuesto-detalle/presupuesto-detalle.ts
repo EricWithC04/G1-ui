@@ -6,6 +6,9 @@ import { RemitoService } from '../../services/remito.service';
 import { PlantillaPrintService } from '../../services/plantilla-print.service';
 import { Presupuesto } from '../../models/models';
 
+/**
+ * Página `presupuesto-detalle`: pantalla Angular (componente + template) del módulo presupuesto-detalle.
+ */
 @Component({
   selector: 'app-presupuesto-detalle',
   imports: [DatePipe, DecimalPipe, RouterLink],

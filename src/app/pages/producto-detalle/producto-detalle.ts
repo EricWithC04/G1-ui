@@ -13,6 +13,9 @@ import { Product, Resena } from '../../models/models';
 // Pagina de detalle de un producto.
 // Muestra la info del producto, deja elegir cantidad y agregarlo al carrito,
 // y lista las resenas (opiniones) que otros usuarios dejaron de ese producto.
+/**
+ * Página `producto-detalle`: pantalla Angular (componente + template) del módulo producto-detalle.
+ */
 @Component({
   selector: 'app-producto-detalle',
   imports: [FormsModule, RouterLink, DecimalPipe],

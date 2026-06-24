@@ -9,6 +9,9 @@ import { AdminSearch } from '../../components/admin-search/admin-search';
 import { coincideBusqueda } from '../../utils/busqueda-admin';
 import { Pedido, Presupuesto, Remito } from '../../models/models';
 
+/**
+ * Página `remitos`: pantalla Angular (componente + template) del módulo remitos.
+ */
 @Component({
   selector: 'app-remitos',
   imports: [FormsModule, RouterLink, DatePipe, AdminSearch],

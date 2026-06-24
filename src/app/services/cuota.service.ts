@@ -4,6 +4,9 @@ import { Observable } from 'rxjs';
 import { Cuota } from '../models/models';
 import { environment } from '../../environments/environment';
 
+/**
+ * Servicio Angular `cuota.service`: llama API `/ cuota` y expone Observables al UI.
+ */
 @Injectable({ providedIn: 'root' })
 export class CuotaService {
   private base = `${environment.apiUrl}/cuotas`;

@@ -58,6 +58,9 @@ type ModoOrigen = 'manual' | 'presupuesto' | 'pedido';
 
 
 
+/**
+ * Página `factura-nueva`: pantalla Angular (componente + template) del módulo factura-nueva.
+ */
 @Component({
 
   selector: 'app-factura-nueva',
