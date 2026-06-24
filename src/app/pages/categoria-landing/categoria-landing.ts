@@ -9,6 +9,9 @@ import { Product } from '../../models/models';
 
 // Pagina dedicada de una categoria (ej: /notebooks, /monitores).
 // Muestra un hero con info de la categoria y debajo el listado filtrado del backend.
+/**
+ * Página `categoria-landing`: pantalla Angular (componente + template) del módulo categoria-landing.
+ */
 @Component({
   selector: 'app-categoria-landing',
   imports: [RouterLink, DecimalPipe],

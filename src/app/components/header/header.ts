@@ -5,6 +5,9 @@ import { HeaderGlobalSearch } from '../header-global-search/header-global-search
 import { HeaderNotifications } from '../header-notifications/header-notifications';
 import { HeaderCrmInbox } from '../header-crm-inbox/header-crm-inbox';
 
+/**
+ * Componente reutilizable `header`: UI compartida entre varias pantallas.
+ */
 @Component({
   selector: 'app-header',
   imports: [RouterLink, HeaderGlobalSearch, HeaderNotifications, HeaderCrmInbox],

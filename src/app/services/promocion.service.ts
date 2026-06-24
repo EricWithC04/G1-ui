@@ -5,6 +5,9 @@ import { BaseApiService } from './api-base';
 import { Promocion } from '../models/models';
 import { environment } from '../../environments/environment';
 
+/**
+ * Servicio Angular `promocion.service`: llama API `/ promocion` y expone Observables al UI.
+ */
 @Injectable({ providedIn: 'root' })
 export class PromocionService extends BaseApiService<Promocion> {
   constructor(http: HttpClient) {

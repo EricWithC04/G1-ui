@@ -9,6 +9,9 @@ import { AuthService } from '../services/auth.service';
 //    - Si esta logueado pero NO es ADMIN (es un CLIENTE) -> lo mandamos a la tienda (/).
 //    - Si es ADMIN -> lo dejamos pasar.
 // ============================================================
+/**
+ * Guard de ruta `admin.guard`: decide si el router permite entrar según sesión/rol/permiso.
+ */
 export const adminGuard: CanActivateFn = () => {
     const auth = inject(AuthService);
     const router = inject(Router);

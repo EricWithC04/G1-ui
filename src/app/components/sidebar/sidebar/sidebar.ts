@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
+/**
+ * Componente reutilizable `sidebar`: UI compartida entre varias pantallas.
+ */
 export interface SidebarLink {
   path: string;
   label: string;

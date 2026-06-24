@@ -7,6 +7,9 @@ import { AdminSearch } from '../../components/admin-search/admin-search';
 import { coincideBusqueda } from '../../utils/busqueda-admin';
 import { Campana, MensajeCliente, Promocion } from '../../models/models';
 
+/**
+ * Página `campanas`: pantalla Angular (componente + template) del módulo campanas.
+ */
 @Component({
   selector: 'app-campanas',
   imports: [FormsModule, DatePipe, AdminSearch],

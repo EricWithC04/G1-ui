@@ -23,6 +23,9 @@ interface PlanFinanciacion {
   interes: number;
 }
 
+/**
+ * Página `checkout`: pantalla Angular (componente + template) del módulo checkout.
+ */
 @Component({
   selector: 'app-checkout',
   imports: [FormsModule, RouterLink, DecimalPipe, NgClass],

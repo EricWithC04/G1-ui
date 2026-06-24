@@ -3,6 +3,9 @@ import { RouterLink } from '@angular/router';
 import { interval, startWith, Subject, switchMap, takeUntil } from 'rxjs';
 import { AdminNotificacion, AdminService } from '../../services/admin.service';
 
+/**
+ * Componente reutilizable `header-notifications`: UI compartida entre varias pantallas.
+ */
 @Component({
   selector: 'app-header-notifications',
   imports: [RouterLink],

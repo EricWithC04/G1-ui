@@ -4,6 +4,9 @@ import { Observable } from 'rxjs';
 import { ListaPrecio, ListaPrecioDetalle, ListaPrecioUpdate, PrecioResuelto } from '../models/models';
 import { environment } from '../../environments/environment';
 
+/**
+ * Servicio Angular `lista-precio.service`: llama API `/ lista-precio` y expone Observables al UI.
+ */
 @Injectable({ providedIn: 'root' })
 export class ListaPrecioService {
   private url = `${environment.apiUrl}/listas-precios`;

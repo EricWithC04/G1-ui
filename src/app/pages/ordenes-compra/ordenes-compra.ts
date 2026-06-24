@@ -4,6 +4,9 @@ import { RouterLink } from '@angular/router';
 import { OrdenCompraService } from '../../services/orden-compra.service';
 import { OrdenCompra } from '../../models/models';
 
+/**
+ * Página `ordenes-compra`: pantalla Angular (componente + template) del módulo ordenes-compra.
+ */
 @Component({
   selector: 'app-ordenes-compra',
   imports: [DatePipe, DecimalPipe, RouterLink],

@@ -1,6 +1,9 @@
 // Configuracion de las paginas de aterrizaje (landing) por categoria y promos.
 // Cada banner del home apunta a una ruta propia con hero + listado filtrado.
 
+/**
+ * Módulo frontend `landing-pages` (data).
+ */
 export interface CategoriaLandingConfig {
   slug: string;
   categoriaId: number;

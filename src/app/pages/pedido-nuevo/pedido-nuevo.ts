@@ -18,6 +18,9 @@ interface LineaCarrito {
   cantidad: number;
 }
 
+/**
+ * Página `pedido-nuevo`: pantalla Angular (componente + template) del módulo pedido-nuevo.
+ */
 @Component({
   selector: 'app-pedido-nuevo',
   imports: [FormsModule, DecimalPipe, RouterLink],

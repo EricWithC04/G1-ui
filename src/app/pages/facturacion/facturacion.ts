@@ -14,6 +14,9 @@ import { labelCondicionIva } from '../../models/condiciones-iva';
 import { PlantillaPrintService } from '../../services/plantilla-print.service';
 import { Factura, Pedido } from '../../models/models';
 
+/**
+ * Página `facturacion`: pantalla Angular (componente + template) del módulo facturacion.
+ */
 @Component({
   selector: 'app-facturacion',
   imports: [FormsModule, DatePipe, DecimalPipe, AdminSearch, RouterLink, AdminPagination],

@@ -62,6 +62,9 @@ import { PosMostrador } from './pages/pos-mostrador/pos-mostrador';
 import { ListasPrecios } from './pages/listas-precios/listas-precios';
 import { PanelCliente } from './pages/panel-cliente/panel-cliente';
 
+/**
+ * Definición de rutas: tienda, login, panel admin y guards por URL.
+ */
 export const routes: Routes = [
 
     // --- Login y registro: pantallas sueltas, sin header ni footer ---

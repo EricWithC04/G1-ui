@@ -14,6 +14,9 @@ import {
   SolicitudDevolucion,
 } from '../models/models';
 
+/**
+ * Servicio Angular `cliente-portal.service`: llama API `/ cliente-portal` y expone Observables al UI.
+ */
 export interface ActualizarPerfilClienteRequest {
   direccion?: string;
   ciudad?: string;

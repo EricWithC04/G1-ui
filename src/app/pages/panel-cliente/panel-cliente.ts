@@ -44,6 +44,9 @@ type SeccionPanel =
 
 type FiltroPedidos = 'todos' | 'activos' | 'entregados' | 'cancelados';
 
+/**
+ * Página `panel-cliente`: pantalla Angular (componente + template) del módulo panel-cliente.
+ */
 @Component({
   selector: 'app-panel-cliente',
   imports: [FormsModule, DecimalPipe, DatePipe, NgClass, RouterLink],

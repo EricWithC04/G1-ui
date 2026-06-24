@@ -3,6 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
+/**
+ * Servicio Angular `admin.service`: llama API `/ admin` y expone Observables al UI.
+ */
 export interface AdminBuscarItem {
   tipo: string;
   id?: number;

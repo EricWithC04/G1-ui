@@ -3,6 +3,9 @@ import { FormsModule } from '@angular/forms';
 import { ConfigPageShell } from '../../../../components/config-page-shell/config-page-shell';
 import { ConfiguracionService } from '../../../../services/configuracion.service';
 
+/**
+ * Página `config-notificaciones`: pantalla Angular (componente + template) del módulo configuracion.
+ */
 @Component({
   selector: 'app-config-notificaciones',
   imports: [ConfigPageShell, FormsModule],

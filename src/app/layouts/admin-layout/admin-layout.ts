@@ -8,6 +8,9 @@ import { Sidebar } from '../../components/sidebar/sidebar';
 //   - arriba el encabezado (Header) con el logo,
 //   - a la izquierda el menu lateral (Sidebar) con los modulos,
 //   - a la derecha el contenido de la pagina actual (<router-outlet>).
+/**
+ * Layout `admin-layout`: marco visual (header/sidebar/outlet) de una zona del sitio.
+ */
 @Component({
   selector: 'app-admin-layout',
   imports: [RouterOutlet, Header, Sidebar],

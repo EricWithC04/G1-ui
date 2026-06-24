@@ -58,6 +58,9 @@ import { PAGE_SIZE_OPTIONS, rangoPagina, totalPaginas } from '../../utils/pagina
     .admin-btn--sm { padding: 0.25rem 0.65rem; font-size: 0.8125rem; }
   `,
 })
+/**
+ * Componente reutilizable `admin-pagination`: UI compartida entre varias pantallas.
+ */
 export class AdminPagination {
   total = input.required<number>();
   pagina = input.required<number>();

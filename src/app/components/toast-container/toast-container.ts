@@ -50,6 +50,9 @@ import { ToastService } from '../../services/toast.service';
     .toast-close:hover { opacity: 1; }
   `,
 })
+/**
+ * Componente reutilizable `toast-container`: UI compartida entre varias pantallas.
+ */
 export class ToastContainer {
   constructor(public toast: ToastService) {}
 }

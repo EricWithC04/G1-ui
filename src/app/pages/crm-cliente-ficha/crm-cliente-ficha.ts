@@ -12,6 +12,9 @@ import {
 } from '../../models/condiciones-iva';
 import { labelTipoCliente, TIPOS_CLIENTE, displayTipoCliente } from '../../models/tipos-cliente';
 
+/**
+ * Página `crm-cliente-ficha`: pantalla Angular (componente + template) del módulo crm-cliente-ficha.
+ */
 @Component({
   selector: 'app-crm-cliente-ficha',
   imports: [FormsModule, RouterLink, DatePipe, DecimalPipe],

@@ -7,6 +7,9 @@ import { ToastService } from '../../services/toast.service';
 import { ListaPrecio, ListaPrecioDetalle, Product } from '../../models/models';
 import { LISTAS_PRECIO, labelLista, jerarquiaLista } from '../../models/listas-precio';
 
+/**
+ * Página `listas-precios`: pantalla Angular (componente + template) del módulo listas-precios.
+ */
 @Component({
   selector: 'app-listas-precios',
   imports: [FormsModule, DecimalPipe],

@@ -5,6 +5,9 @@ import { BaseApiService } from './api-base';
 import { Factura, GenerarFacturaRequest } from '../models/models';
 import { environment } from '../../environments/environment';
 
+/**
+ * Servicio Angular `factura.service`: llama API `/ factura` y expone Observables al UI.
+ */
 @Injectable({ providedIn: 'root' })
 export class FacturaService extends BaseApiService<Factura> {
   constructor(http: HttpClient) {

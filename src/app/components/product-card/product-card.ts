@@ -5,6 +5,9 @@ import { LucideSquarePen, LucideTrash2 } from '@lucide/angular';
 // Tarjeta que muestra un producto (nombre, proveedor, precio) con botones
 // para editar y borrar. No sabe nada del backend: solo recibe el producto
 // y avisa "hacia afuera" cuando el usuario quiere editar o borrar.
+/**
+ * Componente reutilizable `product-card`: UI compartida entre varias pantallas.
+ */
 @Component({
   selector: 'app-product-card',
   imports: [DecimalPipe, LucideSquarePen, LucideTrash2],

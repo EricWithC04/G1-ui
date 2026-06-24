@@ -4,6 +4,9 @@ import { Observable } from 'rxjs';
 import { ConfiguracionSistema, RegistroAuditoria, LogSistema } from '../models/models';
 import { environment } from '../../environments/environment';
 
+/**
+ * Servicio Angular `configuracion.service`: llama API `/ configuracion` y expone Observables al UI.
+ */
 @Injectable({ providedIn: 'root' })
 export class ConfiguracionService {
   constructor(private http: HttpClient) {}

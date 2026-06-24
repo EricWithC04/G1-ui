@@ -3,6 +3,9 @@ import { AuthService } from './auth.service';
 import { ConfigModuloService, RbacMatriz } from './config-modulo.service';
 import { esRolConAccesoTotal, tienePermiso } from '../config/config-rbac';
 
+/**
+ * Permisos RBAC en UI: consulta matriz del backend y resuelve si el rol puede una acción.
+ */
 @Injectable({ providedIn: 'root' })
 export class PermisoService {
   private matriz = signal<RbacMatriz | null>(null);

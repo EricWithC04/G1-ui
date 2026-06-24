@@ -10,6 +10,9 @@ import {
   primerErrorCampos,
 } from '../../utils/validadores-form';
 
+/**
+ * Página `register`: pantalla Angular (componente + template) del módulo register.
+ */
 @Component({
   selector: 'app-register',
   imports: [ReactiveFormsModule, RouterLink],

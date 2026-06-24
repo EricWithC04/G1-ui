@@ -1,5 +1,8 @@
 import { Product } from '../models/models';
 
+/**
+ * Utilidad frontend `stock-inventario.util`: helpers puros (validación, formato, exportación).
+ */
 export const STOCK_MINIMO_DEFAULT = 5;
 
 export function stockMinimoEfectivo(p: Product): number {

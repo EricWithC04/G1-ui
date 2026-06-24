@@ -7,6 +7,9 @@ import { CartService } from '../../services/cart.service';
 // Pagina del CARRITO de compras.
 // Muestra los productos que el cliente fue agregando (guardados en el navegador),
 // permite cambiar cantidades y quitar productos, y muestra el total a pagar.
+/**
+ * Página `carrito-compra`: pantalla Angular (componente + template) del módulo carrito-compra.
+ */
 @Component({
   selector: 'app-carrito-compra',
   imports: [FormsModule, RouterLink, DecimalPipe],

@@ -7,6 +7,9 @@ import { CONDICIONES_IVA } from '../../../../models/condiciones-iva';
 import { Emisor } from '../../../../models/models';
 import { esCuitValido, mensajeCuit } from '../../../../utils/validadores-admin';
 
+/**
+ * Página `config-emisores`: pantalla Angular (componente + template) del módulo configuracion.
+ */
 @Component({
   selector: 'app-config-emisores',
   imports: [ConfigPageShell, FormsModule],

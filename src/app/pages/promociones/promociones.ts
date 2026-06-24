@@ -6,6 +6,9 @@ import { AdminSearch } from '../../components/admin-search/admin-search';
 import { coincideBusqueda } from '../../utils/busqueda-admin';
 import { Promocion } from '../../models/models';
 
+/**
+ * Página `promociones`: pantalla Angular (componente + template) del módulo promociones.
+ */
 @Component({
   selector: 'app-promociones',
   imports: [FormsModule, RouterLink, AdminSearch],

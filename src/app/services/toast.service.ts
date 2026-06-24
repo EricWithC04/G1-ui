@@ -1,5 +1,8 @@
 import { Injectable, signal } from '@angular/core';
 
+/**
+ * Servicio Angular `toast.service`: llama API `/ toast` y expone Observables al UI.
+ */
 export interface ToastMensaje {
   id: number;
   texto: string;

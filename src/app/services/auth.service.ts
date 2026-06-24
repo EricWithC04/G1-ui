@@ -5,6 +5,9 @@ import { API_URL } from './api-base';
 import { PermisoService } from './permiso.service';
 import { esRolPanelAdmin, esRolCliente } from '../config/config-rbac';
 
+/**
+ * Autenticación: login, registro, logout, restaurar sesión desde cookie HttpOnly.
+ */
 export interface UsuarioSesion {
     idUsuario: number;
     nombre: string;

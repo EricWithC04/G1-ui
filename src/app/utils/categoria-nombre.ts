@@ -1,5 +1,8 @@
 // Validacion compartida del nombre de categoria (mismas reglas que el backend).
 
+/**
+ * Utilidad frontend `categoria-nombre`: helpers puros (validación, formato, exportación).
+ */
 export interface ResultadoValidacionCategoria {
   valido: boolean;
   mensaje?: string;

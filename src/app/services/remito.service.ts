@@ -5,6 +5,9 @@ import { BaseApiService } from './api-base';
 import { Remito, RemitoRequest } from '../models/models';
 import { environment } from '../../environments/environment';
 
+/**
+ * Servicio Angular `remito.service`: llama API `/ remito` y expone Observables al UI.
+ */
 @Injectable({ providedIn: 'root' })
 export class RemitoService extends BaseApiService<Remito> {
   constructor(http: HttpClient) {

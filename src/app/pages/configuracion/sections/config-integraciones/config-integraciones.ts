@@ -13,6 +13,9 @@ const CANALES = [
   { tipo: 'N8N', nombre: 'n8n Webhooks', guia: 'URL de webhook para automatizaciones externas.' },
 ];
 
+/**
+ * Página `config-integraciones`: pantalla Angular (componente + template) del módulo configuracion.
+ */
 @Component({
   selector: 'app-config-integraciones',
   imports: [ConfigPageShell, FormsModule],

@@ -4,6 +4,9 @@ import { Observable } from 'rxjs';
 import { Conversacion, MensajeConversacion, IntegracionCanal } from '../models/models';
 import { environment } from '../../environments/environment';
 
+/**
+ * Servicio Angular `conversacion.service`: llama API `/ conversacion` y expone Observables al UI.
+ */
 @Injectable({ providedIn: 'root' })
 export class ConversacionService {
   private base = `${environment.apiUrl}/crm/conversaciones`;

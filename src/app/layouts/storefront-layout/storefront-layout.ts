@@ -3,6 +3,9 @@ import { RouterLink, RouterOutlet } from '@angular/router';
 import { StoreHeader } from '../../components/store-header/store-header';
 import { AuthService } from '../../services/auth.service';
 
+/**
+ * Layout `storefront-layout`: marco visual (header/sidebar/outlet) de una zona del sitio.
+ */
 @Component({
   selector: 'app-storefront-layout',
   imports: [RouterOutlet, RouterLink, StoreHeader],

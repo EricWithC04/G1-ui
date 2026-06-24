@@ -5,6 +5,9 @@ import { BaseApiService } from './api-base';
 import { Presupuesto, PresupuestoRequest } from '../models/models';
 import { environment } from '../../environments/environment';
 
+/**
+ * Servicio Angular `presupuesto.service`: llama API `/ presupuesto` y expone Observables al UI.
+ */
 @Injectable({ providedIn: 'root' })
 export class PresupuestoService extends BaseApiService<Presupuesto> {
   constructor(http: HttpClient) {

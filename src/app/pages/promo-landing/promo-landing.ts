@@ -9,6 +9,9 @@ import { Product } from '../../models/models';
 
 // Pagina de promociones especiales (Hot Sale, Cyber Week).
 // Muestra un hero de la promo y el listado de productos incluidos.
+/**
+ * Página `promo-landing`: pantalla Angular (componente + template) del módulo promo-landing.
+ */
 @Component({
   selector: 'app-promo-landing',
   imports: [RouterLink, DecimalPipe],

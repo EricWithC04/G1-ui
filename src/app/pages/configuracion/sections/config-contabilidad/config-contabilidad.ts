@@ -5,6 +5,9 @@ import { ConfigModuloService, ContabilidadResumen } from '../../../../services/c
 
 type TabId = 'empresa' | 'iva' | 'resumen';
 
+/**
+ * Página `config-contabilidad`: pantalla Angular (componente + template) del módulo configuracion.
+ */
 @Component({
   selector: 'app-config-contabilidad',
   imports: [ConfigPageShell, FormsModule],

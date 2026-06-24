@@ -6,6 +6,9 @@ import { environment } from '../../environments/environment';
 // La sacamos del "environment". Ahora esta VACIA a proposito, asi las URLs
 // quedan RELATIVAS (ej: '/productos') y salen al mismo origen que sirve la
 // app; el dev server de Angular las redirige al backend via proxy.conf.json.
+/**
+ * Clase base HTTP CRUD: listar, obtener, crear, actualizar y eliminar por recurso REST.
+ */
 export const API_URL = environment.apiUrl;
 
 // ============================================================

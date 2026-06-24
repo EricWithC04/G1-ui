@@ -5,6 +5,9 @@ import { RemitoService } from '../../services/remito.service';
 import { PlantillaPrintService } from '../../services/plantilla-print.service';
 import { Remito } from '../../models/models';
 
+/**
+ * Página `remito-detalle`: pantalla Angular (componente + template) del módulo remito-detalle.
+ */
 @Component({
   selector: 'app-remito-detalle',
   imports: [DatePipe, RouterLink],

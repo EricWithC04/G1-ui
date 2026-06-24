@@ -12,6 +12,9 @@ import { validarNombreCategoria } from '../../../../utils/categoria-nombre';
 
 type Tab = 'categorias' | 'depositos' | 'condiciones' | 'etiquetas';
 
+/**
+ * Página `config-catalogos`: pantalla Angular (componente + template) del módulo configuracion.
+ */
 @Component({
   selector: 'app-config-catalogos',
   imports: [ConfigPageShell, FormsModule, AdminSearch],

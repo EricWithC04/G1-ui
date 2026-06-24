@@ -9,6 +9,9 @@ import { UsuarioService } from '../../../../services/usuario.service';
 import { PermisoRbac, RolRbac, Usuario } from '../../../../models/models';
 import { coincideBusqueda } from '../../../../utils/busqueda-admin';
 
+/**
+ * Página `config-usuarios`: pantalla Angular (componente + template) del módulo configuracion.
+ */
 @Component({
   selector: 'app-config-usuarios',
   imports: [ConfigPageShell, FormsModule, AdminSearch, DatePipe],

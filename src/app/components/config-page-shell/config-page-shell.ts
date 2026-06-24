@@ -19,6 +19,9 @@ import { RouterLink } from '@angular/router';
     </div>
   `,
 })
+/**
+ * Componente reutilizable `config-page-shell`: UI compartida entre varias pantallas.
+ */
 export class ConfigPageShell {
   titulo = input<string>('');
   subtitulo = input<string>('');

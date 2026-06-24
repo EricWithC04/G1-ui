@@ -6,6 +6,9 @@ import { CategoriaService } from '../../services/categoria.service';
 import { Product, Categoria } from '../../models/models';
 import { aEntero, esEnteroNoNegativo, esNumeroPositivo, mensajeEntero } from '../../utils/validadores-admin';
 
+/**
+ * Página `create-product`: pantalla Angular (componente + template) del módulo create-product.
+ */
 @Component({
   selector: 'app-create-product',
   imports: [RouterLink, FormsModule],

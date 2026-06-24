@@ -11,6 +11,9 @@ interface ClienteVista extends PerfilCliente {
   pedidosCount?: number;
 }
 
+/**
+ * Página `crm-clientes`: pantalla Angular (componente + template) del módulo crm-clientes.
+ */
 @Component({
   selector: 'app-crm-clientes',
   imports: [FormsModule, RouterLink, AdminSearch],

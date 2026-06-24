@@ -4,6 +4,9 @@ import { Envio, EnvioDetalleResponse } from '../models/models';
 import { BaseApiService } from './api-base';
 import { Observable } from 'rxjs';
 
+/**
+ * Servicio Angular `envio.service`: llama API `/ envio` y expone Observables al UI.
+ */
 @Injectable({ providedIn: 'root' })
 export class EnvioService extends BaseApiService<Envio> {
     constructor(http: HttpClient) {

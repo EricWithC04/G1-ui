@@ -8,6 +8,9 @@ import { AdminSearch } from '../../components/admin-search/admin-search';
 import { CONFIG_HUB_ITEMS } from '../../config/config-rbac';
 import { PermisoService } from '../../services/permiso.service';
 
+/**
+ * Página `configuracion`: pantalla Angular (componente + template) del módulo configuracion.
+ */
 @Component({
   selector: 'app-configuracion',
   imports: [
